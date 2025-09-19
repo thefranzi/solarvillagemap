@@ -1463,954 +1463,222 @@ var hash = new L.Hash(map);
             resetLabels([layer_LOTS_5,layer_CE_14,layer_FENCE_20,layer_EX_FENCE_21]);
         });
         </script>
-		
 		<script>
-(() => {
-  // ======= BACKEND CONFIG (same as before) =======
-  const BACKEND = {
-    pinsGet:    '/api/pins',
-    pinsPost:   '/api/pins',
-    photosGet:  '/api/photos',
-    photoUpload:'/api/uploadPhoto'
-  };
-
-  // ======= state + helpers =======
-  const state = {
-    watchId: null,
-    lastFix: null,
-    track: [],
-    gps: { marker:null, accuracy:null, bearingLine:null },
-    pinsLayer: L.featureGroup().addTo(map),
-    photosLayer: L.featureGroup().addTo(map),
-    dropPinArmed: false,
-    cam: { stream:null },
-    // measurement
-    measure: {
-      mode: null,            // 'dist' | 'area' | null
-      tempPoints: [],        // LatLng[]
-      tempLayer: L.featureGroup().addTo(map),
-      tooltip: null
-    }
-  };
-
-  const ui = {
-    status: document.getElementById('gps-status'),
-    // zoom + locate
-    btnZoomIn:  document.getElementById('btn-zoom-in'),
-    btnZoomOut: document.getElementById('btn-zoom-out'),
-	btnZoomExtents: document.getElementById('btn-zoom-extents'),
-    btnLocateOnce: document.getElementById('btn-locate-once'),
-    // gps + pins
-    btnTrackToggle: document.getElementById('btn-track-toggle'),
-    btnDropPin: document.getElementById('btn-drop-pin'),
-    // measurement
-    btnMeasureDist:  document.getElementById('btn-measure-dist'),
-    btnMeasureArea:  document.getElementById('btn-measure-area'),
-    btnMeasureClear: document.getElementById('btn-measure-clear'),
-    // export
-    btnGeoJSON: document.getElementById('btn-dl-geojson'),
-    // camera
-    btnCamOn:   document.getElementById('btn-camera-on'),
-    btnCamShot: document.getElementById('btn-camera-shot'),
-    btnCamOff:  document.getElementById('btn-camera-off'),
-    camWrap:    document.getElementById('camera-wrap'),
-    video:      document.getElementById('cam-video'),
-    canvas:     document.getElementById('cam-canvas'),
-    // toggles (in-panel)
-    chkPins:   document.getElementById('chk-pins'),
-    chkPhotos: document.getElementById('chk-photos')
-  };
-
-  const fmt = n => (n==null ? '—' : Math.round(n*10)/10);
-  const setStatus = m => ui.status.textContent = 'status: ' + m;
-  const download = (name, content, type='application/octet-stream') => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([content], {type}));
-    a.download = name; a.click(); URL.revokeObjectURL(a.href);
-  };
-// Normalize coordinates to [lng, lat]; auto-fix if reversed.
-// Accepts strings or numbers.
-function normLngLat(coords) {
-  let [x, y] = coords.map(Number); // x=first, y=second
-  // If the first value looks like a latitude (<=90) and the second like a longitude (>90),
-  // swap them. Also handle impossible ranges.
-  const looksLat = Math.abs(x) <= 90 && Math.abs(y) > 90;
-  const impossible = Math.abs(x) > 180 || Math.abs(y) > 90;
-  if (looksLat || impossible) [x, y] = [y, x];
-  return [x, y];
-}
-
-  // ======= remove native zoom and locate controls so we own them in-panel =======
-  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/−
-  // If a Leaflet Locate control was present earlier, don’t add it again (we won’t call L.control.locate at all)
-
-  // ======= DO NOT add Pins/Photos into a right-side Layers control =======
-  // (We used to add overlays to L.control.layers. You asked to remove those; now we keep control clean.)
-
-  // ======= GPS visuals =======
-  const gpsIcon = L.icon({
-    iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-        <circle cx="20" cy="20" r="10" fill="#1e90ff" />
-        <circle cx="20" cy="20" r="4" fill="white"/>
-      </svg>`),
-    iconSize: [40,40], iconAnchor: [20,20]
-  });
-  // Colored icons for Pins (orange) and Photos (purple)
-const pinIcon = L.icon({
-  iconUrl:
-    'data:image/svg+xml;utf8,' +
-    encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-        <path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/>
-        <circle cx="20" cy="13" r="5.5" fill="#fff"/>
-      </svg>
-    `),
-  iconSize: [40, 40],
-  iconAnchor: [20, 38], // tip sits on the point
-  popupAnchor: [0, -32]
-});
-
-const photoIcon = L.icon({
-  iconUrl:
-    'data:image/svg+xml;utf8,' +
-    encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-        <path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/>
-        <circle cx="20" cy="22" r="6.5" fill="#fff"/>
-        <circle cx="20" cy="22" r="3.5" fill="#7e57c2"/>
-      </svg>
-    `),
-  iconSize: [40, 40],
-  iconAnchor: [20, 36],
-  popupAnchor: [0, -30]
-});
-
-// ========= Measurement Controller (capture-phase, layer-proof) =========
-const Measure = (() => {
-  let mode = null; // 'dist' | 'area' | null
-  let pts = [];
-  let captureHandler = null;
-  const tempLayers = [];
-  const panel = document.getElementById('gpscam-ui');
-
-  function addTemp(layer){ tempLayers.push(layer); layer.addTo(map); }
-  function clearTemp(){ tempLayers.splice(0).forEach(l => map.removeLayer(l)); pts = []; }
-
-  function toLatLng(ev) {
-    const rect = map.getContainer().getBoundingClientRect();
-    const x = ev.clientX - rect.left;
-    const y = ev.clientY - rect.top;
-    return map.containerPointToLatLng([x, y]);
-  }
-
-  function ensureCapture() {
-    if (captureHandler) return;
-    captureHandler = (ev) => {
-      if (!mode) return;
-
-      // ignore clicks starting on the UI panel
-      if (panel && panel.contains(ev.target)) return;
-
-      // stop other handlers
-      ev.stopPropagation();
-      ev.preventDefault();
-
-      const ll = toLatLng(ev);
-      pts.push(ll);
-
-      if (mode === 'dist') {
-        // draw polyline + running total
-        if (pts.length === 1) {
-          addTemp(L.circleMarker(ll, { radius:4 }));
-        } else {
-          addTemp(L.polyline([pts[pts.length-2], ll], { weight: 3 }));
-          const meters = pts.slice(1).reduce((sum, p, i)=> sum + haversine(pts[i], p), 0);
-          setStatus(`distance: ${fmtMeters(meters)}  (click to add, Clear to finish)`);
-        }
-      } else if (mode === 'area') {
-        if (pts.length >= 3) {
-          // remove last polygon before re-draw
-          const lastPoly = tempLayers.find(l => l instanceof L.Polygon);
-          if (lastPoly) { map.removeLayer(lastPoly); tempLayers.splice(tempLayers.indexOf(lastPoly),1); }
-          addTemp(L.polygon(pts, { weight:2, fillOpacity:0.1 }));
-          const area = sphericalArea(pts);
-          setStatus(`area: ${fmtSqMeters(area)}  (click to add, Clear to finish)`);
-        } else {
-          addTemp(L.circleMarker(ll, { radius:4 }));
-          setStatus('area: add at least 3 points…');
-        }
-      }
-    };
-    // true = capture phase
-    map.getContainer().addEventListener('click', captureHandler, true);
-  }
-
-  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add points…'); }
-  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add points…'); }
-  function stop(){ mode = null; clearTemp(); setStatus('measurements cleared'); }
-
-  return { startDist, startArea, stop };
-})();
-
-
-// Haversine distance in meters between two [lat, lng]
-function haversine(a, b) {
-  const R = 6371008.8;
-  const toRad = d => d * Math.PI/180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const s1 = Math.sin(dLat/2), s2 = Math.sin(dLng/2);
-  const aa = s1*s1 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * s2*s2;
-  return 2 * R * Math.asin(Math.sqrt(aa));
-}
-
-// Spherical polygon area (m²) from array of LatLngs
-function sphericalArea(latlngs) {
-  const R = 6371008.8;
-  const toRad = d => d * Math.PI/180;
-  let total = 0;
-  for (let i=0; i<latlngs.length; i++) {
-    const p1 = latlngs[i];
-    const p2 = latlngs[(i+1) % latlngs.length];
-    total += toRad(p2.lng - p1.lng) * (2 + Math.sin(toRad(p1.lat)) + Math.sin(toRad(p2.lat)));
-  }
-  return Math.abs(total) * R * R / 2;
-}
-
-function fmtMeters(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
-function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} m²` : `${(m2/1e6).toFixed(2)} km²`; }
-
-
-
-  function ensureGpsLayers() {
-    if (!state.gps.marker) {
-      const useRot = typeof L.rotatedMarker === 'function';
-      state.gps.marker = (useRot ? L.rotatedMarker([0,0], {icon:gpsIcon, rotationAngle:0})
-                                 : L.marker([0,0], {icon:gpsIcon})).addTo(map);
-    }
-    if (!state.gps.accuracy) state.gps.accuracy = L.circle([0,0], {radius:1, color:'#1e90ff', fillOpacity:0.15}).addTo(map);
-    if (!state.gps.bearingLine) state.gps.bearingLine = L.polyline([[0,0],[0,0]], {dashArray:'6,6'}).addTo(map);
-  }
-  function updateGps(lat, lng, acc, heading) {
-    ensureGpsLayers();
-    state.gps.marker.setLatLng([lat,lng]);
-    state.gps.accuracy.setLatLng([lat,lng]).setRadius(acc||1);
-    if (state.gps.marker.setRotationAngle && typeof heading === 'number' && !Number.isNaN(heading)) {
-      state.gps.marker.setRotationAngle(heading);
-    }
-    // Short bearing line
-    const dist = 25; // meters
-    let dest;
-    if (L.GeometryUtil?.destination) dest = L.GeometryUtil.destination(L.latLng(lat, lng), heading||0, dist);
-    else {
-      const rad = (heading||0)*Math.PI/180;
-      dest = L.latLng(lat + 0.0002*Math.cos(rad), lng + 0.0002*Math.sin(rad));
-    }
-    state.gps.bearingLine.setLatLngs([[lat,lng], dest]);
-  }
-  function onFix(p, recenter=false) {
-    const c = p.coords;
-    const fix = { time:p.timestamp, lat:c.latitude, lng:c.longitude, accuracy:c.accuracy, speed:c.speed, heading:c.heading, alt:c.altitude };
-    state.lastFix = fix; state.track.push(fix);
-    updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
-    if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
-    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} ±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}°`);
-  }
-  function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message + '\nUse HTTPS or localhost and grant browser permission.'); }
-
-  // ======= Pins (shared) =======
-async function loadPins() {
-  try {
-    const url = `${BACKEND.pinsGet}?t=${Date.now()}`;
-    const r = await fetch(url, { cache: 'no-store' });
-    const fc = await r.json();
-    // ... render as you already do ...
-  } catch (e) {
-    console.warn('Falling back to local pins:', e.message);
-    // ... your localStorage fallback ...
-  }
-}
-function addPinFeature(feat) {
-  if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
-  const [lng, lat] = normLngLat(feat.geometry.coordinates);
-  const { title = '', description = '' } = feat.properties || {};
-  const m = L.marker([lat, lng], { icon: pinIcon, draggable: false }).addTo(state.pinsLayer);
-  m.bindPopup(`<b>${title || 'Pin'}</b><br>${description || ''}`);
-}
-async function placePinAt(latlng) {
-  const { lat, lng } = latlng;
-  const title = prompt('Pin title:', 'Pin') || 'Pin';
-  const description = prompt('Pin description (optional):', '') || '';
-  await savePin(lng, lat, title, description);
-  setStatus('pin saved');
-}
-
-  async function savePin(lng, lat, title, description) {
-    const feature = { type:'Feature', geometry:{ type:'Point', coordinates:[lng,lat] }, properties:{ title, description, ts: Date.now() } };
-    try {
-      if (BACKEND.pinsPost) {
-        const r = await fetch(BACKEND.pinsPost, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(feature) });
-        if (!r.ok) throw new Error('pins post failed');
-        addPinFeature(await r.json() || feature); return;
-      }
-    } catch (e) { console.warn('Remote pin save failed, using localStorage:', e.message); }
-    const curr = await loadPins(); curr.features.push(feature);
-    localStorage.setItem('gps_pins_v1', JSON.stringify(curr)); addPinFeature(feature);
-  }
-
-  // ======= Photos (shared) =======
-async function loadPhotos() {
-  try {
-    const url = `${BACKEND.photosGet}?t=${Date.now()}`;
-    const r = await fetch(url, { cache: 'no-store' });
-    const fc = await r.json();
-    // ... render as you already do ...
-  } catch (e) {
-    console.warn('Falling back to local photos:', e.message);
-    // ... your localStorage fallback ...
-  }
-}
-function addPhotoFeature(feat) {
-  if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
-  const [lng, lat] = normLngLat(feat.geometry.coordinates);
-  const { title = 'Photo', description = '', imageUrl } = feat.properties || {};
-  const html = `
-    <div style="max-width:220px">
-      <div><b>${title}</b></div>
-      ${description ? `<div>${description}</div>` : ''}
-      ${imageUrl ? `<div style="margin-top:6px"><img src="${imageUrl}" alt="" style="max-width:100%;border-radius:4px"></div>` : ''}
-    </div>`;
-  const m = L.marker([lat, lng], { icon: photoIcon, draggable: false }).addTo(state.photosLayer);
-  m.bindPopup(html);
-}
-async function uploadPhoto(blob, filename, lat, lng, title, description) {
-  try {
-    if (BACKEND.photoUpload) {
-      const fd = new FormData();
-      // use the blob's own type (image/jpeg after compression)
-      const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
-      fd.append('file', file);
-      fd.append('lat', String(lat));
-      fd.append('lng', String(lng));
-      fd.append('title', title || '');
-      fd.append('description', description || '');
-      const r = await fetch(BACKEND.photoUpload, { method: 'POST', body: fd });
-      if (!r.ok) throw new Error('upload failed');
-      const { imageUrl, feature } = await r.json();
-      addPhotoFeature(feature || {
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [lng, lat] },
-        properties: { title, description, imageUrl }
-      });
-      return;
-    }
-  } catch (e) {
-    console.warn('Remote photo upload failed, using localStorage:', e.message);
-  }
-
-  // Dev fallback: store data URL in localStorage (large; not for production)
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataUrl = reader.result;
-    const feature = {
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [lng, lat] },
-      properties: { title, description, imageUrl: dataUrl, ts: Date.now() }
-    };
-    const curr = JSON.parse(localStorage.getItem('gps_photos_v1') || '{"type":"FeatureCollection","features":[]}');
-    curr.features.push(feature);
-    localStorage.setItem('gps_photos_v1', JSON.stringify(curr));
-    addPhotoFeature(feature);
-  };
-  reader.readAsDataURL(blob);
-}
-
-// === Image resize/compress helper ===
-// Scales the image to fit within maxDim x maxDim and returns a JPEG Blob.
-// Typical result: 1–2 MB for phone photos, depending on scene/quality.
-async function resizeImageBlob(srcBlob, maxDim = 1600, quality = 0.8) {
-  // read blob into an Image
-  const dataUrl = await new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(srcBlob);
-  });
-  const img = await new Promise((resolve, reject) => {
-    const i = new Image();
-    i.onload = () => resolve(i);
-    i.onerror = reject;
-    i.src = dataUrl;
-  });
-
-  // compute target size (keep aspect)
-  const { naturalWidth: w0, naturalHeight: h0 } = img;
-  const scale = Math.min(1, maxDim / Math.max(w0, h0));
-  const w = Math.max(1, Math.round(w0 * scale));
-  const h = Math.max(1, Math.round(h0 * scale));
-
-  // draw to offscreen canvas
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(img, 0, 0, w, h);
-
-  // export as JPEG
-  const outBlob = await new Promise(res => c.toBlob(res, 'image/jpeg', quality));
-  if (!outBlob) throw new Error('JPEG encode failed');
-  return outBlob;
-}
-
-  // ======= Camera =======
-async function camOn() {
-  try {
-    // Prefer rear camera; fall back gracefully
-    const choices = [
-      { video: { facingMode: { ideal: 'environment' } }, audio: false },
-      { video: true, audio: false }
-    ];
-    let stream = null, lastErr = null;
-    for (const c of choices) {
-      try { stream = await navigator.mediaDevices.getUserMedia(c); if (stream) break; }
-      catch (e) { lastErr = e; }
-    }
-    if (!stream) throw lastErr || new Error('No camera available');
-
-    state.cam.stream = stream;
-
-    // iOS Safari requirements
-    ui.video.setAttribute('playsinline', '');
-    ui.video.setAttribute('autoplay', '');
-    ui.video.muted = true;
-
-    ui.video.srcObject = stream;
-
-    // Explicitly start playback (needed on some mobiles)
-    try { await ui.video.play(); } catch {}
-
-    // Wait until the video really has dimensions
-    await new Promise((resolve) => {
-      const ready = () => (ui.video.videoWidth && ui.video.videoHeight) ? resolve() : null;
-      if (ui.video.readyState >= 2 && ui.video.videoWidth && ui.video.videoHeight) resolve();
-      else {
-        ui.video.addEventListener('loadedmetadata', ready, { once: true });
-        ui.video.addEventListener('canplay', ready, { once: true });
-      }
-    });
-
-    // Show the preview container
-    ui.camWrap.classList.add('show');
-
-    ui.btnCamShot.disabled = false;
-    ui.btnCamOff.disabled = false;
-    setStatus('camera on');
-  } catch (e) {
-    alert('Camera error: ' + e.message + '\nTip: open the site over HTTPS (Netlify) or http://localhost.');
-    setStatus('camera error');
-  }
-}
-
-ui.btnCamOn.onclick = camOn;
-
-ui.btnCamOff.onclick = () => {
-  try {
-    if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop());
-  } catch {}
-  state.cam.stream = null;
-  ui.video.srcObject = null;
-  ui.camWrap.classList.remove('show');
-  ui.btnCamShot.disabled = true;
-  ui.btnCamOff.disabled = true;
-  setStatus('camera off');
-};
-
-
-
-
-  // ======= Measurement tools (distance & area) =======
-  function prettyLen(meters) {
-    if (meters < 1000) return meters.toFixed(1) + ' m';
-    return (meters/1000).toFixed(2) + ' km';
-  }
-  function prettyArea(m2) {
-    if (m2 < 1e6) return m2.toFixed(1) + ' m²';
-    return (m2/1e6).toFixed(3) + ' km²';
-  }
-  function measureUpdate() {
-    const pts = state.measure.tempPoints;
-    state.measure.tempLayer.clearLayers();
-
-    if (state.measure.mode === 'dist' && pts.length >= 2) {
-      const line = L.polyline(pts, { dashArray:'4,4' }).addTo(state.measure.tempLayer);
-      // cumulative length using Leaflet’s haversine distance
-      let total = 0;
-      for (let i=1;i<pts.length;i++) total += map.distance(pts[i-1], pts[i]);
-      addMeasureTooltip(pts[pts.length-1], 'Distance: ' + prettyLen(total));
-    }
-    if (state.measure.mode === 'area' && pts.length >= 3) {
-      const poly = L.polygon(pts, { fillOpacity:0.1 }).addTo(state.measure.tempLayer);
-      // area on projected plane (Web Mercator) for a good approximation
-      const projected = pts.map(ll => map.options.crs.project(ll)); // {x,y} meters
-      let area = 0;
-      for (let i=0, j=projected.length-1; i<projected.length; j=i++) {
-        area += (projected[j].x*projected[i].y - projected[i].x*projected[j].y);
-      }
-      area = Math.abs(area/2);
-      // show tooltip at centroid
-      const centroid = poly.getBounds().getCenter();
-      addMeasureTooltip(centroid, 'Area: ' + prettyArea(area));
-    }
-  }
-  function addMeasureTooltip(latlng, text) {
-    if (state.measure.tooltip) map.removeLayer(state.measure.tooltip);
-    state.measure.tooltip = L.marker(latlng, {
-      interactive:false, icon: L.divIcon({
-        className:'measure-tip',
-        html:`<div style="background:#333;color:#fff;padding:3px 6px;border-radius:4px;font-size:12px;">${text}</div>`
-      })
-    }).addTo(state.measure.tempLayer);
-  }
-  function measureSetMode(mode) {
-    state.measure.mode = mode; state.measure.tempPoints = [];
-    state.measure.tempLayer.clearLayers();
-    setStatus(mode ? (mode==='dist'?'distance mode: click to add points, double-click to finish':'area mode: click to add vertices, double-click to finish') : 'measure off');
-  }
-  map.on('click', (e) => {
-    if (!state.measure.mode) return;
-    state.measure.tempPoints.push(e.latlng);
-    measureUpdate();
-  });
-  map.on('dblclick', () => {
-    if (!state.measure.mode) return;
-    // leave the drawn layer on tempLayer; start a new measurement
-    state.measure.tempPoints = [];
-    setStatus('measurement finished — you can start another or Clear');
-  });
-
-  // ======= UI wiring =======
-  // zoom +/−
-  ui.btnZoomIn.onclick  = () => map.setZoom(map.getZoom()+1);
-  ui.btnZoomOut.onclick = () => map.setZoom(map.getZoom()-1);
-ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true });
-
-  // locate once
-  ui.btnLocateOnce.onclick = () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported.');
-    navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
-  };
-
-  // tracking
-  ui.btnTrackToggle.onclick = () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported.');
-    if (state.watchId != null) {
-      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = '▶️ Track'; setStatus('tracking stopped');
-    } else {
-      state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
-      ui.btnTrackToggle.textContent = '⏸️ Stop'; setStatus('tracking…');
-    }
-  };
-// --- Drop pin (works even if layers intercept clicks) ---
-
-// helper to save a pin at a given latlng
-async function placePinAt(latlng) {
-  const { lat, lng } = latlng;
-  const title = prompt('Pin title:', 'Pin') || 'Pin';
-  const description = prompt('Pin description (optional):', '') || '';
-  await savePin(lng, lat, title, description);
-  setStatus('pin saved');
-}
-
-let dropPinCaptureHandler = null;
-
-// Arm a one-shot pin placement on next map click
-ui.btnDropPin.onclick = () => {
-  state.dropPinArmed = true;
-  setStatus('Click the map to place a pin…');
-
-  // Install capture-phase handler once
-  if (!dropPinCaptureHandler) {
-    dropPinCaptureHandler = async (ev) => {
-      if (!state.dropPinArmed) return;
-
-      // Ignore clicks on the floating UI panel
-      const panel = document.getElementById('gpscam-ui');
-      if (panel && panel.contains(ev.target)) return;
-
-      // Convert screen point → map lat/lng
-      const rect = map.getContainer().getBoundingClientRect();
-      const x = ev.clientX - rect.left;
-      const y = ev.clientY - rect.top;
-      const latlng = map.containerPointToLatLng([x, y]);
-
-      // Stop other handlers from hijacking this click
-      ev.stopPropagation();
-      ev.preventDefault();
-
-      state.dropPinArmed = false;
-      await placePinAt(latlng);
-    };
-
-    // true = capture phase (runs before layer handlers)
-    map.getContainer().addEventListener('click', dropPinCaptureHandler, true);
-  }
-};
-
-
-
-  // in-panel toggles control layer visibility
-  ui.chkPins.onchange   = () => ui.chkPins.checked   ? map.addLayer(state.pinsLayer)   : map.removeLayer(state.pinsLayer);
-  ui.chkPhotos.onchange = () => ui.chkPhotos.checked ? map.addLayer(state.photosLayer) : map.removeLayer(state.photosLayer);
-
-  // measurement
-ui.btnMeasureDist.onclick  = () => Measure.startDist();
-ui.btnMeasureArea.onclick  = () => Measure.startArea();
-ui.btnMeasureClear.onclick = () => Measure.stop();
-
-
-  // export
-  ui.btnGeoJSON.onclick = () => {
-    if (!state.track.length) return alert('No positions logged yet.');
-    const fc = { type:'FeatureCollection', features: state.track.map(f => ({ type:'Feature', geometry:{ type:'Point', coordinates:[f.lng, f.lat] }, properties:{ time:new Date(f.time).toISOString(), accuracy:f.accuracy, speed:f.speed, heading:f.heading } })) };
-    download('qgis2web_track.geojson', JSON.stringify(fc, null, 2), 'application/geo+json');
-  };
-
-  // camera
-ui.btnCamOn.onclick = camOn;
-
-  ui.btnCamOff.onclick = () => {
-    if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop());
-    state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.style.display = 'none'; ui.btnCamShot.disabled = true; ui.btnCamOff.disabled = true; setStatus('camera off');
-  };
-ui.btnCamShot.onclick = async () => {
-  if (!state.cam.stream) return;
-
-  // Ensure we have non-zero dimensions
-  let w = ui.video.videoWidth || 0;
-  let h = ui.video.videoHeight || 0;
-  if (!w || !h) {
-    await new Promise((resolve) => {
-      const ready = () => resolve();
-      ui.video.addEventListener('loadedmetadata', ready, { once: true });
-      ui.video.addEventListener('canplay', ready, { once: true });
-    });
-    w = ui.video.videoWidth || 1280;
-    h = ui.video.videoHeight || 720;
-  }
-
-  // Draw current frame
-  ui.canvas.width = w;
-  ui.canvas.height = h;
-  ui.canvas.getContext('2d').drawImage(ui.video, 0, 0, w, h);
-
-  // PNG source → resize/compress to JPEG (~1–2 MB)
-  const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
-  const jpegBlob = await resizeImageBlob(rawBlob, 1600, 0.8);
-
-  // Use last GPS fix or map center
-  const fix = state.lastFix;
-  const lat = fix ? fix.lat : map.getCenter().lat;
-  const lng = fix ? fix.lng : map.getCenter().lng;
-
-  const title = prompt('Photo title (optional):', '') || 'Photo';
-  const description = prompt('Photo description (optional):', '') || '';
-  const stamp = new Date().toISOString().replace(/[:.]/g, '');
-  const filename = `photo_${stamp}.jpg`;
-
-  await uploadPhoto(jpegBlob, filename, lat, lng, title, description);
-  setStatus('photo saved');
-};
-
-
-  // ======= initial load =======
-  (async () => {
-    try { const pins = await loadPins(); (pins.features||[]).forEach(addPinFeature); } catch(e){ console.warn('Pins load error', e); }
-    try { const photos = await loadPhotos(); (photos.features||[]).forEach(addPhotoFeature); } catch(e){ console.warn('Photos load error', e); }
-    setStatus('ready');
-  })();
-})();
-</script>
-
-
-
-
-    
-<!-- CAMERA AND PHOTO UPLOAD -->
-<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
-<button id="cameraBtn" style="position: absolute; top: 10px; right: 10px; z-index: 999;">📸 Snap</button>
-
-<script>
-let lastPhotoKey = null;
-
-document.getElementById('cameraBtn').addEventListener('click', () => {
-  document.getElementById('photoInput').click();
-});
-
-document.getElementById('photoInput').addEventListener('change', async (event) => {
-const file = event.target.files[0];
-if (!file) return;
-const arrayBuffer = await file.arrayBuffer();
-
-const res = await fetch('/api/uploadPhoto', {
-  method: 'POST',
-  headers: {
-    'content-type': file.type
-  },
-  body: arrayBuffer
-});
-
-
-  const { key } = await res.json();
-  lastPhotoKey = key;
-  alert("Photo uploaded! Now click the map to place your pin.");
-});
-
-const file = event.target.files[0];
-const arrayBuffer = await file.arrayBuffer();
-
-const res = await fetch('/api/uploadPhoto', {
-  method: 'POST',
-  headers: {
-    'content-type': file.type
-  },
-  body: arrayBuffer
-});
-
-
-
-map.on('click', async (e) => {
-  if (!lastPhotoKey) {
-    alert("Snap a photo first!");
-    return;
-  }
-
-  const latlng = e.latlng;
-  const marker = L.marker(latlng).addTo(map);
-
-  marker.bindPopup(`<img src="/api/photo/${lastPhotoKey}" width="200"><br><small>${new Date().toLocaleString()}</small>`).openPopup();
-
-  await fetch('/api/pins', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      lat: latlng.lat,
-      lng: latlng.lng,
-      photoKey: lastPhotoKey,
-      timestamp: new Date().toISOString()
-    })
-  });
-
-  lastPhotoKey = null;
-});
-
-async function loadPins() {
-  const res = await fetch('/api/pins');
-  const pins = await res.json();
-  pins.forEach(pin => {
-    const marker = L.marker([pin.lat, pin.lng]).addTo(map);
-    marker.bindPopup(`<img src="/api/photo/${pin.photoKey}" width="200"><br><small>${new Date(pin.timestamp).toLocaleString()}</small>`);
-  });
-}
-
-window.onload = () => {
-  loadPins();
-};
-</script>
-<script>
-window.onload = () => {
-  // Wait for Leaflet to fully initialize `map`
-  if (typeof map === 'undefined') {
-    console.error("Map is not defined. Check your qgis2web output.");
-    return;
-  }
-
-  // Hook up buttons and file input
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.capture = 'environment';
-  fileInput.style.display = 'none';
-  document.body.appendChild(fileInput);
-
-  const cameraBtn = document.createElement('button');
-  cameraBtn.textContent = '📸 Snap';
-  cameraBtn.style.position = 'absolute';
-  cameraBtn.style.top = '10px';
-  cameraBtn.style.right = '10px';
-  cameraBtn.style.zIndex = '9999';
-  document.body.appendChild(cameraBtn);
-
-  let lastPhotoKey = null;
-
-  cameraBtn.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const res = await fetch('/api/uploadPhoto', {
-      method: 'POST',
-      headers: {
-        'content-type': file.type
-      },
-      body: arrayBuffer
-    });
-
-    const { key } = await res.json();
-    lastPhotoKey = key;
-    alert("Photo uploaded! Now click the map to drop a pin.");
-  });
-
-  map.on('click', async (e) => {
-    if (!lastPhotoKey) {
-      alert("Snap a photo first!");
-      return;
-    }
-
-    const latlng = e.latlng;
-    const marker = L.marker(latlng).addTo(map);
-
-    marker.bindPopup(`<img src="/api/photo/${lastPhotoKey}" width="200"><br><small>${new Date().toLocaleString()}</small>`).openPopup();
-
-    await fetch('/api/pins', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lat: latlng.lat,
-        lng: latlng.lng,
-        photoKey: lastPhotoKey,
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    lastPhotoKey = null;
-  });
-
-  // Load all pins on map init
-  fetch('/api/pins')
-    .then(res => res.json())
-    .then(pins => {
-      pins.forEach(pin => {
-        const marker = L.marker([pin.lat, pin.lng]).addTo(map);
-        marker.bindPopup(`<img src="/api/photo/${pin.photoKey}" width="200"><br><small>${new Date(pin.timestamp).toLocaleString()}</small>`);
-      });
-    });
-};
-</script>
-<script>
-(function () {
-  function whenMapReady(cb, tries = 0) {
-    const candidate = window.map || window.qgis2web_leafletmap || window.LEAFLET_MAP;
-    if (candidate && typeof candidate.on === 'function') return cb(candidate);
-    if (tries > 150) { console.error('Map object not found. Check script errors earlier on the page.'); return; }
-    setTimeout(() => whenMapReady(cb, tries + 1), 100);
-  }
-
-  window.addEventListener('load', function () {
-    whenMapReady(function (map) {
-      // UI elements
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.capture = 'environment';
-      input.style.display = 'none';
-      document.body.appendChild(input);
-
-      const btn = document.createElement('button');
-      btn.textContent = '📸 Snap';
-      btn.style.position = 'absolute';
-      btn.style.top = '10px';
-      btn.style.right = '10px';
-      btn.style.zIndex = '99999';
-      btn.style.padding = '8px 12px';
-      document.body.appendChild(btn);
-
-      let lastPhotoKey = null;
-
-      btn.addEventListener('click', () => input.click());
-
-      input.addEventListener('change', async (e) => {
-        try {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const buf = await file.arrayBuffer();
-
-          const res = await fetch('/api/uploadPhoto', {
-            method: 'POST',
-            headers: { 'content-type': file.type },
-            body: buf
-          });
-
-          if (!res.ok) {
-            const t = await res.text();
-            console.error('uploadPhoto failed:', t);
-            alert('Photo upload failed – check console.');
-            return;
-          }
-          const { key } = await res.json();
-          lastPhotoKey = key;
-          alert('Photo uploaded. Click the map to drop a pin.');
-        } catch (err) {
-          console.error('upload error', err);
-          alert('Photo upload error – check console.');
-        }
-      });
-
-      // Place pin after photo
-      map.on('click', async (e) => {
-        try {
-          if (!lastPhotoKey) { alert('Snap a photo first.'); return; }
-          const latlng = e.latlng;
-          const marker = L.marker(latlng).addTo(map);
-          marker.bindPopup(
-            `<img src="/api/photo/${lastPhotoKey}" width="220" loading="lazy"><br><small>${new Date().toLocaleString()}</small>`
-          ).openPopup();
-
-          const res = await fetch('/api/pins', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              lat: latlng.lat,
-              lng: latlng.lng,
-              photoKey: lastPhotoKey,
-              timestamp: new Date().toISOString()
-            })
-          });
-          if (!res.ok) {
-            const t = await res.text();
-            console.error('save pin failed:', t);
-            alert('Saving pin failed – check console.');
-            return;
-          }
-          lastPhotoKey = null;
-        } catch (err) {
-          console.error('pin save error', err);
-          alert('Pin save error – check console.');
-        }
-      });
-
-      // Load pins on init
-      (async function loadPins() {
-        try {
-          const res = await fetch('/api/pins');
-          if (!res.ok) { console.warn('pins GET not OK'); return; }
-          const pins = await res.json();
-          (pins || []).forEach((p) => {
-            if (typeof p.lat !== 'number' || typeof p.lng !== 'number' || !p.photoKey) return;
-            const m = L.marker([p.lat, p.lng]).addTo(map);
-            m.bindPopup(
-              `<img src="/api/photo/${p.photoKey}" width="220" loading="lazy"><br><small>${new Date(p.timestamp || Date.now()).toLocaleString()}</small>`
-            );
-          });
-        } catch (err) {
-          console.error('loadPins error', err);
-        }
-      })();
-    });
-  });
-})();
-</script>
+        // This single script replaces all the previous custom script blocks.
+        (() => {
+            // Wait for the 'map' object from qgis2web to be ready
+            if (typeof map === 'undefined') {
+                console.error("Leaflet 'map' object not found. Check qgis2web export.");
+                return;
+            }
+
+            // ======= CONFIG & STATE =======
+            const API = {
+                getFeatures: '/api/pins',       // Unified endpoint for all pins
+                addFeature: '/api/pins',        // POST to the same endpoint
+                uploadPhoto: '/api/uploadPhoto',
+                getPhoto: (key) => `/api/photo/${key}`
+            };
+
+            const state = {
+                isPinDropArmed: false,
+                photoKeyForNextPin: null,
+            };
+
+            // ======= UI ELEMENTS =======
+            // Get references to buttons from your existing HTML panel
+            const ui = {
+                status: document.getElementById('gps-status'),
+                btnDropPin: document.getElementById('btn-drop-pin'),
+                btnCamera: document.getElementById('btn-camera-on'),
+                chkPins: document.getElementById('chk-pins'),
+                chkPhotos: document.getElementById('chk-photos'),
+            };
+            
+            // Create a hidden file input for photo uploads
+            const photoInput = document.createElement('input');
+            photoInput.type = 'file';
+            photoInput.accept = 'image/*';
+            photoInput.capture = 'environment'; // Hint for mobile to use the camera
+            photoInput.style.display = 'none';
+            document.body.appendChild(photoInput);
+
+            // ======= LEAFLET LAYERS & ICONS =======
+            // Create layers to hold the dynamic data
+            const pinsLayer = L.featureGroup().addTo(map);
+            const photosLayer = L.featureGroup().addTo(map);
+
+            // Define icons to distinguish feature types
+            const simplePinIcon = L.icon({
+                iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>'),
+                iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32]
+            });
+            const photoPinIcon = L.icon({
+                iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/><circle cx="20" cy="22" r="6.5" fill="#fff"/><circle cx="20" cy="22" r="3.5" fill="#7e57c2"/></svg>'),
+                iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -30]
+            });
+
+            // ======= HELPER FUNCTIONS =======
+            const setStatus = (msg) => {
+                if (ui.status) ui.status.textContent = `status: ${msg}`;
+            };
+
+            const resetUiState = () => {
+                state.isPinDropArmed = false;
+                state.photoKeyForNextPin = null;
+                map.getContainer().style.cursor = '';
+                ui.btnDropPin.disabled = false;
+                ui.btnCamera.disabled = false;
+                setStatus('ready');
+            };
+            
+            // Function to add a single feature (pin or photo) to the map
+            const addFeatureToMap = (feature) => {
+                const props = feature.properties;
+                const coords = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]]; // Leaflet needs [lat, lng]
+                
+                let marker;
+                let popupContent = `<b>${props.title || ''}</b><br>${props.description || ''}`;
+
+                if (props.photoKey) {
+                    // It's a pin with a photo
+                    popupContent = `<div style="max-width:240px">${popupContent}<br><img src="${API.getPhoto(props.photoKey)}" alt="User photo" style="width:100%; border-radius:4px; margin-top:5px;" loading="lazy"></div>`;
+                    marker = L.marker(coords, { icon: photoPinIcon }).addTo(photosLayer);
+                } else {
+                    // It's a simple pin
+                    marker = L.marker(coords, { icon: simplePinIcon }).addTo(pinsLayer);
+                }
+                marker.bindPopup(popupContent);
+            };
+
+            // ======= CORE LOGIC =======
+
+            // 1. Load all existing features when the map loads
+            const loadFeatures = async () => {
+                try {
+                    setStatus('loading features...');
+                    const response = await fetch(API.getFeatures);
+                    if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                    
+                    const geojson = await response.json();
+                    pinsLayer.clearLayers();
+                    photosLayer.clearLayers();
+                    
+                    geojson.features.forEach(addFeatureToMap);
+                    setStatus('ready');
+                } catch (error) {
+                    console.error('Failed to load features:', error);
+                    setStatus('Error loading features.');
+                    alert('Could not load existing map data. Please check the browser console for errors.');
+                }
+            };
+
+            // 2. Handle adding a new feature to the map after a click
+            const handleMapClick = async (e) => {
+                if (!state.isPinDropArmed && !state.photoKeyForNextPin) return;
+
+                const latlng = e.latlng;
+                const title = prompt('Enter a title for this location:', '');
+                const description = prompt('Enter a description (optional):', '');
+
+                const newFeatureData = {
+                    lat: latlng.lat,
+                    lng: latlng.lng,
+                    title: title || (state.photoKeyForNextPin ? 'Photo' : 'Pin'),
+                    description: description || '',
+                    photoKey: state.photoKeyForNextPin, // Will be null for simple pins
+                };
+
+                try {
+                    setStatus('saving...');
+                    const response = await fetch(API.addFeature, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newFeatureData),
+                    });
+
+                    if (!response.ok) throw new Error(`Save failed with status ${response.status}`);
+
+                    // Manually create the feature to display it immediately without a full reload
+                    const newFeature = {
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [latlng.lng, latlng.lat] },
+                        properties: { ...newFeatureData }
+                    };
+                    addFeatureToMap(newFeature);
+                    setStatus('saved successfully!');
+
+                } catch (error) {
+                    console.error('Failed to save feature:', error);
+                    setStatus('Save failed.');
+                    alert(`Could not save the new location. Error: ${error.message}`);
+                } finally {
+                    resetUiState(); // Reset state whether it succeeded or failed
+                }
+            };
+            
+            // 3. Handle the photo upload process
+            const handlePhotoUpload = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                try {
+                    setStatus('uploading photo...');
+                    ui.btnCamera.disabled = true;
+                    
+                    const response = await fetch(API.uploadPhoto, {
+                        method: 'POST',
+                        headers: { 'Content-Type': file.type },
+                        body: file,
+                    });
+
+                    if (!response.ok) throw new Error(`Upload failed with status ${response.status}`);
+
+                    const result = await response.json();
+                    state.photoKeyForNextPin = result.key;
+                    
+                    setStatus('Photo uploaded! Click the map to place it.');
+                    map.getContainer().style.cursor = 'crosshair';
+                } catch (error) {
+                    console.error('Photo upload failed:', error);
+                    alert(`Photo upload failed: ${error.message}`);
+                    resetUiState();
+                }
+            };
+
+            // ======= EVENT LISTENERS =======
+            map.on('click', handleMapClick);
+
+            // Wire up the "Drop Pin" button
+            ui.btnDropPin.addEventListener('click', () => {
+                state.isPinDropArmed = true;
+                setStatus('Click on the map to place a pin.');
+                map.getContainer().style.cursor = 'crosshair';
+                ui.btnCamera.disabled = true; // Disable other actions
+            });
+
+            // Wire up the "Take Photo" button to the hidden file input
+            ui.btnCamera.addEventListener('click', () => {
+                photoInput.click();
+            });
+            photoInput.addEventListener('change', handlePhotoUpload);
+
+            // Wire up the layer visibility toggles
+            ui.chkPins.addEventListener('change', (e) => {
+                e.target.checked ? map.addLayer(pinsLayer) : map.removeLayer(pinsLayer);
+            });
+             ui.chkPhotos.addEventListener('change', (e) => {
+                e.target.checked ? map.addLayer(photosLayer) : map.removeLayer(photosLayer);
+            });
+
+
+            // Initial load of all data
+            loadFeatures();
+
+        })();
+        </script>
+    </body>
+</html>
 
 </body>
 </html>

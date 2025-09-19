@@ -1,42 +1,75 @@
 // netlify/functions/pins.mjs
-import { store } from './_store.js';
+import { pinsStore } from './_store.js';
 
 export const config = { path: "/api/pins" };
 
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
 export async function handler(event) {
-  const pins = store('pins'); // reads/writes under assets/pins
+  const pins = pinsStore();
 
   try {
+    // GET request: Fetch all pins and return as a GeoJSON FeatureCollection
     if (event.httpMethod === 'GET') {
-      const body = await pins.list(); // returns JSON string "[]"/"[{...}]"
+      const pinObjects = await pins.list(); // Returns an array of pin data
+
+      const features = pinObjects.map(pin => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [pin.lng, pin.lat]
+        },
+        properties: {
+          title: pin.title || 'Pin',
+          description: pin.description || '',
+          timestamp: pin.timestamp,
+          photoKey: pin.photoKey || null
+        }
+      }));
+
+      const featureCollection = {
+        type: 'FeatureCollection',
+        features: features
+      };
+
       return {
         statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body
+        headers: JSON_HEADERS,
+        body: JSON.stringify(featureCollection)
       };
     }
 
+    // POST request: Save a new pin
     if (event.httpMethod === 'POST') {
       const data = JSON.parse(event.body || '{}');
-      if (typeof data.lat !== 'number' || typeof data.lng !== 'number' || !data.photoKey) {
-        return { statusCode: 400, body: 'invalid pin payload' };
+
+      // Validate required fields
+      const lat = parseFloat(data.lat);
+      const lng = parseFloat(data.lng);
+      if (!isFinite(lat) || !isFinite(lng)) {
+        return { statusCode: 400, body: JSON.stringify({ error: 'Invalid lat/lng' }) };
       }
-      const id = `${Date.now()}.json`;
-      await pins.put(id, JSON.stringify({
-        lat: data.lat,
-        lng: data.lng,
-        photoKey: data.photoKey,
-        timestamp: data.timestamp || new Date().toISOString()
-      }));
-      return {
-        statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ok: true, id })
+
+      const pinData = {
+        lat,
+        lng,
+        title: data.title || 'Pin',
+        description: data.description || '',
+        photoKey: data.photoKey || null, // photoKey is now optional
+        timestamp: new Date().toISOString()
       };
+
+      const id = `${Date.now()}.json`;
+      await pins.put(id, JSON.stringify(pinData));
+
+      return { statusCode: 201, headers: JSON_HEADERS, body: JSON.stringify({ success: true, id }) };
     }
 
-    return { statusCode: 405, body: "Method Not Allowed" };
+    // Handle other methods
+    return { statusCode: 405, body: 'Method Not Allowed' };
+
   } catch (e) {
-    return { statusCode: 500, body: `pins error: ${e.message}` };
+    console.error('Pins function error:', e);
+    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
   }
 }

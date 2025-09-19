@@ -1,42 +1,35 @@
-// netlify/functions/_store.js
-import { join } from 'path';
-import { mkdir, writeFile, readFile, readdir } from 'fs/promises';
+import { getStore } from '@netlify/blobs';
 
-const root = join(process.cwd(), 'assets');
+const siteID = process.env.NETLIFY_SITE_ID || '';
+const token  = process.env.NETLIFY_AUTH_TOKEN || '';
 
-export function store(name) {
-  const dir = join(root, name); // assets/photos or assets/pins
+function makeStore(name) {
+  const opts = { name };
+  if (siteID && token) { opts.siteID = siteID; opts.token = token; } // helps in `netlify dev`
+  return getStore(opts);
+}
 
+export function pinsStore() {
+  const s = makeStore('pins');
   return {
-    async put(key, value) {
-      await mkdir(dir, { recursive: true });
-      const filePath = join(dir, key);
-      // value can be Buffer or string
-      await writeFile(filePath, value);
-    },
-    async get(key) {
-      try {
-        const buf = await readFile(join(dir, key));
-        return buf;
-      } catch {
-        return null;
-      }
-    },
+    async put(key, jsonText) { await s.set(key, jsonText, { contentType:'application/json' }); },
     async list() {
-      try {
-        const files = await readdir(dir);
-        const entries = await Promise.all(
-          files
-            .filter(f => f.toLowerCase().endsWith('.json'))
-            .map(async (f) => {
-              const v = await readFile(join(dir, f), 'utf8');
-              return JSON.parse(v);
-            })
-        );
-        return JSON.stringify(entries);
-      } catch {
-        return '[]';
-      }
+      const { blobs } = await s.list();
+      const arr = await Promise.all(blobs.map(async ({key}) => {
+        const txt = await s.get(key, { type:'text' });
+        try { return JSON.parse(txt); } catch { return null; }
+      }));
+      return arr.filter(Boolean);
     }
+  };
+}
+
+export function photosStore() {
+  const s = makeStore('photos');
+  return {
+    async put(key, buffer, contentType='application/octet-stream') {
+      await s.set(key, buffer, { contentType });
+    },
+    async get(key) { return await s.get(key, { type:'buffer' }); }
   };
 }
