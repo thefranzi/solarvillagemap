@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Map Data Admin</title>
+<style>
+  :root { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+  body { margin: 24px; }
+  h1 { margin: 0 0 16px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:12px 0; }
+  button, .btn { padding:8px 12px; border-radius:8px; border:1px solid #ccc; background:#fafafa; cursor:pointer; }
+  button:hover { background:#f0f0f0; }
+  .pill { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #ddd; background:#fff; }
+  .card { border:1px solid #e5e5e5; border-radius:12px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,0.04); background:#fff; }
+  table { border-collapse:collapse; width:100%; }
+  th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align:top; }
+  th { background:#fafafa; position:sticky; top:0; }
+  .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); }
+  .img { width:100%; height:160px; background:#000; display:block; border-radius:10px; object-fit:cover; }
+  .muted { color:#666; font-size:12px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
+  .wrap { word-break:break-word; }
+</style>
+</head>
+<body>
+  <h1>Map Data Admin</h1>
+
+  <div class="row">
+    <a class="btn" href="./index.html">← Back to Map</a>
+    <button id="btn-refresh">Refresh</button>
+    <span id="status" class="pill">idle</span>
+  </div>
+
+  <div class="card" id="pins-card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <h2 style="margin:6px 0;">Pins</h2>
+      <div class="row">
+        <button id="btn-dl-pins">Download Pins (GeoJSON)</button>
+      </div>
+    </div>
+    <div class="muted" id="pins-count">0 items</div>
+    <div style="overflow:auto; max-height: 40vh; margin-top:8px;">
+      <table id="pins-table">
+        <thead><tr>
+          <th>#</th><th>Title</th><th>Description</th><th>Lon, Lat</th><th>Raw</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="height:16px;"></div>
+
+  <div class="card" id="photos-card">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <h2 style="margin:6px 0;">Photos</h2>
+      <div class="row">
+        <button id="btn-dl-photos">Download Photo Features (GeoJSON)</button>
+      </div>
+    </div>
+    <div class="muted" id="photos-count">0 items</div>
+    <div class="grid" id="photos-grid" style="margin-top:8px;"></div>
+  </div>
+
+<script>
+// If this page is opened as file://, call the live site; otherwise same-origin
+const API_BASE = (location.protocol === 'file:') ? 'https://solarvillagemap.netlify.app' : '';
+const S = {
+  pinsUrl:   `${API_BASE}/api/pins`,
+  photosUrl: `${API_BASE}/api/photos`,
+  bloblist:  `${API_BASE}/api/bloblist?store=photos`
+};
+
+const el = {
+  status: document.getElementById('status'),
+  btnRefresh: document.getElementById('btn-refresh'),
+  pinsCount: document.getElementById('pins-count'),
+  pinsTbody: document.querySelector('#pins-table tbody'),
+  btnDlPins: document.getElementById('btn-dl-pins'),
+  photosCount: document.getElementById('photos-count'),
+  photosGrid: document.getElementById('photos-grid'),
+  btnDlPhotos: document.getElementById('btn-dl-photos')
+};
+
+
+
+
+function setStatus(t){ el.status.textContent = t; }
+function fmtSize(bytes){ if(!(bytes>0)) return '—'; const u=['B','KB','MB','GB']; let i=0,s=bytes; while(s>=1024&&i<u.length-1){s/=1024;i++;} return `${s.toFixed(i?1:0)} ${u[i]}`; }
+function fmtDate(iso){ if(!iso) return '—'; try{ const d=new Date(iso); return d.toLocaleString(); }catch{ return iso; } }
+function toFixed6(n){ return (Math.round(n*1e6)/1e6).toFixed(6); }
+async function fetchJSON(url){ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error(`${url} → ${r.status}`); return r.json(); }
+
+function imageKeyFromUrl(u){ const i=u.indexOf('/api/photo/'); return i===-1?null:u.slice(i+11); }
+
+
+
+
+function renderPins(fc){
+  const feats = Array.isArray(fc?.features)? fc.features : [];
+  el.pinsCount.textContent = `${feats.length} items`;
+  el.pinsTbody.innerHTML = '';
+  feats.forEach((f,i)=>{
+    const p=f.properties||{};
+    const c=f.geometry?.coordinates||[null,null];
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td class="wrap">${p.title??'Pin'}</td>
+      <td class="wrap">${p.description??''}</td>
+      <td class="mono">${toFixed6(+c[0])}, ${toFixed6(+c[1])}</td>
+      <td><button class="btn" data-json='${JSON.stringify(f)}'>Copy JSON</button></td>`;
+    tr.querySelector('button').onclick = e=>{
+      navigator.clipboard?.writeText(e.currentTarget.getAttribute('data-json'));
+      setStatus('Pin JSON copied');
+    };
+    el.pinsTbody.appendChild(tr);
+  });
+}
+
+function renderPhotos(feats, metaByKey){
+  el.photosGrid.innerHTML = '';
+  el.photosCount.textContent = `${feats.length} items`;
+  feats.forEach((f)=>{
+    const p=f.properties||{};
+    const imgUrl=p.imageUrl||'';
+    const key=imageKeyFromUrl(imgUrl)||'';
+    const meta=metaByKey.get(key);
+    const size=meta? fmtSize(meta.size) : '—';
+    const created=meta? fmtDate(meta.createdAt) : '—';
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML = `
+      <img class="img" src="${imgUrl}" alt="">
+      <div style="margin-top:8px;">
+        <div><b>${p.title||'Photo'}</b></div>
+        ${p.description? `<div class="muted">${p.description}</div>`:''}
+        <div class="muted mono wrap" style="margin-top:6px;">${key}</div>
+        <div class="muted" style="margin-top:4px;">Size: ${size} · Created: ${created}</div>
+        <div class="row" style="margin-top:6px;">
+          <a class="btn" href="${imgUrl}" target="_blank" rel="noopener">Open</a>
+          <button class="btn" data-url="${imgUrl}">Copy URL</button>
+        </div>
+      </div>`;
+    card.querySelector('button[data-url]').onclick = e=>{
+      navigator.clipboard?.writeText(e.currentTarget.getAttribute('data-url'));
+      setStatus('Photo URL copied');
+    };
+    el.photosGrid.appendChild(card);
+  });
+}
+
+async function refresh(){
+  try {
+    setStatus('loading…');
+    const [pinsFC, photosFC, blobList] = await Promise.all([
+      fetchJSON(S.pinsUrl),
+      fetchJSON(S.photosUrl),
+      fetchJSON(S.bloblist)
+    ]);
+    renderPins(pinsFC);
+    const feats = Array.isArray(photosFC?.features)? photosFC.features : [];
+    const metaByKey = new Map();
+    (blobList?.blobs||[]).forEach(b=> metaByKey.set(b.key, b));
+    renderPhotos(feats, metaByKey);
+    setStatus('done');
+  } catch (e) {
+    console.error(e); setStatus('error');
+    alert('Failed to load data. Make sure your Functions are deployed.');
+  }
+}
+el.btnRefresh.onclick = refresh;
+el.btnDlPins.onclick = async ()=> download('pins.geojson', JSON.stringify(await fetchJSON(S.pinsUrl), null, 2));
+el.btnDlPhotos.onclick = async ()=> download('photos.geojson', JSON.stringify(await fetchJSON(S.photosUrl), null, 2));
+function download(name, text, type='application/json'){ const blob=new Blob([text],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+refresh();
+</script>
+</body>
+</html>
