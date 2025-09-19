@@ -2298,6 +2298,119 @@ window.onload = () => {
     });
 };
 </script>
+<script>
+(function () {
+  function whenMapReady(cb, tries = 0) {
+    const candidate = window.map || window.qgis2web_leafletmap || window.LEAFLET_MAP;
+    if (candidate && typeof candidate.on === 'function') return cb(candidate);
+    if (tries > 150) { console.error('Map object not found. Check script errors earlier on the page.'); return; }
+    setTimeout(() => whenMapReady(cb, tries + 1), 100);
+  }
+
+  window.addEventListener('load', function () {
+    whenMapReady(function (map) {
+      // UI elements
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+
+      const btn = document.createElement('button');
+      btn.textContent = '📸 Snap';
+      btn.style.position = 'absolute';
+      btn.style.top = '10px';
+      btn.style.right = '10px';
+      btn.style.zIndex = '99999';
+      btn.style.padding = '8px 12px';
+      document.body.appendChild(btn);
+
+      let lastPhotoKey = null;
+
+      btn.addEventListener('click', () => input.click());
+
+      input.addEventListener('change', async (e) => {
+        try {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const buf = await file.arrayBuffer();
+
+          const res = await fetch('/api/uploadPhoto', {
+            method: 'POST',
+            headers: { 'content-type': file.type },
+            body: buf
+          });
+
+          if (!res.ok) {
+            const t = await res.text();
+            console.error('uploadPhoto failed:', t);
+            alert('Photo upload failed – check console.');
+            return;
+          }
+          const { key } = await res.json();
+          lastPhotoKey = key;
+          alert('Photo uploaded. Click the map to drop a pin.');
+        } catch (err) {
+          console.error('upload error', err);
+          alert('Photo upload error – check console.');
+        }
+      });
+
+      // Place pin after photo
+      map.on('click', async (e) => {
+        try {
+          if (!lastPhotoKey) { alert('Snap a photo first.'); return; }
+          const latlng = e.latlng;
+          const marker = L.marker(latlng).addTo(map);
+          marker.bindPopup(
+            `<img src="/api/photo/${lastPhotoKey}" width="220" loading="lazy"><br><small>${new Date().toLocaleString()}</small>`
+          ).openPopup();
+
+          const res = await fetch('/api/pins', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              lat: latlng.lat,
+              lng: latlng.lng,
+              photoKey: lastPhotoKey,
+              timestamp: new Date().toISOString()
+            })
+          });
+          if (!res.ok) {
+            const t = await res.text();
+            console.error('save pin failed:', t);
+            alert('Saving pin failed – check console.');
+            return;
+          }
+          lastPhotoKey = null;
+        } catch (err) {
+          console.error('pin save error', err);
+          alert('Pin save error – check console.');
+        }
+      });
+
+      // Load pins on init
+      (async function loadPins() {
+        try {
+          const res = await fetch('/api/pins');
+          if (!res.ok) { console.warn('pins GET not OK'); return; }
+          const pins = await res.json();
+          (pins || []).forEach((p) => {
+            if (typeof p.lat !== 'number' || typeof p.lng !== 'number' || !p.photoKey) return;
+            const m = L.marker([p.lat, p.lng]).addTo(map);
+            m.bindPopup(
+              `<img src="/api/photo/${p.photoKey}" width="220" loading="lazy"><br><small>${new Date(p.timestamp || Date.now()).toLocaleString()}</small>`
+            );
+          });
+        } catch (err) {
+          console.error('loadPins error', err);
+        }
+      })();
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

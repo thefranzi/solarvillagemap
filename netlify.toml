@@ -1,8 +1,13 @@
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
 [functions]
-  directory = "netlify/functions"
   node_bundler = "esbuild"
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to   = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/:splat"
   status = 200
