@@ -4,7 +4,7 @@ export const config = { path: "photo/*" };
 export async function handler(event) {
   try {
     // key is everything after /api/photo/
-    const key = event.path.replace(/^\/?api\/photo\/?/, "");
+const key = event.path.replace(/^\/?photo\/?/, "");
     if (!key) return { statusCode: 400, body: "missing key" };
 
 const store = getStore('photos');

@@ -53,7 +53,7 @@ export async function handler(event) {
     await photos.set(key, buf, { contentType: contentTypeFile });
 
     // Serve images via our function route
-    const imageUrl = `/api/photo/${key}`;
+const imageUrl = `/photo/${key}`;
 
     // Write a GeoJSON Feature to "photo-features"
     const feature = {
