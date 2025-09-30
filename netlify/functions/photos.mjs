@@ -1,5 +1,5 @@
 import { getStore } from '@netlify/blobs';
-export const config = { path: "/api/photos" };
+export const config = { path: "photos" };
 
 export async function handler() {
   try {

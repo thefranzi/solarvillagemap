@@ -1,5 +1,5 @@
 import { getStore } from '@netlify/blobs';
-export const config = { path: "/api/pins" };
+export const config = { path: "pins" };
 
 const STORE = 'pins';
 

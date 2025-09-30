@@ -1,6 +1,6 @@
 // netlify/functions/uploadPhoto.mjs
 import { getStore } from '@netlify/blobs';
-export const config = { path: "/api/uploadPhoto" };
+export const config = { path: "uploadPhoto" };
 
 // Accepts multipart/form-data with fields:
 //   file (image/jpeg or image/png), lat, lng, title (optional), description (optional)

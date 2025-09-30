@@ -1,6 +1,6 @@
 // netlify/functions/bloblist.mjs
 import { getStore } from '@netlify/blobs';
-export const config = { path: "/api/bloblist" };
+export const config = { path: "bloblist" };
 
 // GET /api/bloblist?store=photos  (or pins, photo-features)
 export async function handler(event) {
