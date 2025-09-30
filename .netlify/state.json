@@ -1,0 +1,21 @@
+{
+	"siteId": "153f9bf5-5e43-4bb1-bbfd-a0f394d018d5",
+	"geolocation": {
+		"data": {
+			"city": "Kelowna",
+			"country": {
+				"code": "CA",
+				"name": "Canada"
+			},
+			"subdivision": {
+				"code": "BC",
+				"name": "British Columbia"
+			},
+			"timezone": "America/Vancouver",
+			"latitude": 49.812,
+			"longitude": -119.5076,
+			"postalCode": "V1W"
+		},
+		"timestamp": 1758286890357
+	}
+}
