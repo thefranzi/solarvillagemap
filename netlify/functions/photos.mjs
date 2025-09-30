@@ -1,3 +1,4 @@
+// Forcing an update - v2
 import { getStore } from '@netlify/blobs';
 export const config = { path: "photos" };
 
