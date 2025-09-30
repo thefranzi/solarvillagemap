@@ -1,13 +1,17 @@
+# This is the ONLY netlify.toml file in your project.
+# It should be in the root directory.
+
 [build]
+  # This tells Netlify what command to run to build your site. 
+  # If you don't have a build step (just HTML/CSS/JS), this is fine.
+  command = "echo 'No build step'"
+  
+  # This is the directory that contains your deployed site files (e.g., index.html).
+  # If your index.html is in the root, this should be "."
   publish = "."
-  functions = "netlify/functions"
+
+# This section is the most important part.
 [functions]
-  node_bundler = "esbuild"
+  # This tells Netlify to look for all your function source code
+  # inside the 'netlify/functions' directory.
   directory = "netlify/functions"
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-[dev]
-  publish = "."
-  functions = "netlify/functions"
