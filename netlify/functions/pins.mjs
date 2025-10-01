@@ -42,7 +42,12 @@ export async function handler(event, context) {
     }
 
     return { statusCode: 405, body: 'Method Not Allowed' };
-  } catch (e) {
-    return { statusCode: 500, body: 'pins error: ' + e.message };
-  }
+} catch (e) {
+  return {
+    statusCode: 500,
+    headers: { 'content-type': 'text/plain' },
+    body: (e && (e.stack || e.message)) || 'unknown error'
+  };
+}
+
 }
