@@ -1,15 +1,16 @@
-import { BlobsClient } from '@netlify/blobs';
+import { createClient } from '@netlify/blobs';
 const PHOTO_BUCKET = 'photos';
 
 function store() {
   const siteID = process.env.NETLIFY_SITE_ID;
   const token  = process.env.NETLIFY_BLOBS_TOKEN;
   if (!siteID || !token) throw new Error('Missing env NETLIFY_SITE_ID or NETLIFY_BLOBS_TOKEN');
-  return new BlobsClient({ siteID, token }).store(PHOTO_BUCKET);
+  return createClient({ siteID, token }).store(PHOTO_BUCKET);
 }
 
 export async function handler(event) {
   try {
+    // Path: /.netlify/functions/photo/<key>
     const parts = (event.path || '').split('/');
     const idx = parts.indexOf('photo');
     const key = idx >= 0 ? parts.slice(idx + 1).join('/') : '';

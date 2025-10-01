@@ -1,4 +1,4 @@
-import { BlobsClient } from '@netlify/blobs';
+import { createClient } from '@netlify/blobs';
 const PHOTO_BUCKET = 'photos';
 const META_BUCKET  = 'photo-features';
 
@@ -6,7 +6,7 @@ function client() {
   const siteID = process.env.NETLIFY_SITE_ID;
   const token  = process.env.NETLIFY_BLOBS_TOKEN;
   if (!siteID || !token) throw new Error('Missing env NETLIFY_SITE_ID or NETLIFY_BLOBS_TOKEN');
-  return new BlobsClient({ siteID, token });
+  return createClient({ siteID, token });
 }
 const photoStore = () => client().store(PHOTO_BUCKET);
 const metaStore  = () => client().store(META_BUCKET);

@@ -1,5 +1,4 @@
-// netlify/functions/pins.mjs
-import { BlobsClient } from '@netlify/blobs';
+import { createClient } from '@netlify/blobs';
 
 const BUCKET = 'pins';
 
@@ -7,11 +6,12 @@ function store() {
   const siteID = process.env.NETLIFY_SITE_ID;
   const token  = process.env.NETLIFY_BLOBS_TOKEN;
   if (!siteID || !token) throw new Error('Missing env NETLIFY_SITE_ID or NETLIFY_BLOBS_TOKEN');
-  return new BlobsClient({ siteID, token }).store(BUCKET);
+  const client = createClient({ siteID, token });
+  return client.store(BUCKET); // has list/get/set/delete/getWithMetadata
 }
 
 async function readAll(s) {
-  const list = await s.list();           // { blobs: [...] }
+  const list = await s.list(); // { blobs: [...] }
   const features = [];
   for (const b of list.blobs) {
     const txt = await s.get(b.key, { type: 'text' });
@@ -66,4 +66,4 @@ export async function handler(event) {
     }, body: e.stack || e.message || 'unknown error' };
   }
 }
-
+ 
