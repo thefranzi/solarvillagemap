@@ -32,7 +32,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,.2); font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
   /* keep toolbox from widening; wrap long text */
-  #gpscam-ui { max-width: 300px; }
+  #gpscam-ui { width: 300px; max-height: 60vh; overflow-y: auto; }
   #gpscam-ui .row { flex-wrap: wrap; }
   #gps-status { white-space: normal; overflow-wrap: anywhere; }
 
@@ -59,12 +59,14 @@
 #layer-toggles { display:none; margin: 6px 0 2px; font-size: 12px; }
 #layer-toggles label { display:block; }
 </style>
+
+<style>
 /* --- Added: fixed width/wrap for toolbox --- */
 #gpscam-ui { width: 300px; max-height: 60vh; overflow-y: auto; }
 #gpscam-ui .row { flex-wrap: wrap; }
 #gps-status { white-space: normal; word-break: break-word; }
 
-
+</style>
         <title></title>
     </head>
     <body>
@@ -173,7 +175,8 @@
         var hash = new L.Hash(map);
 
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
-        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        var autolinker = new Autoty
+		jtlinker({truncate: {length: 30, location: 'smart'}});
         // remove popup's row if "visible-with-data"
         function removeEmptyRowsFromPopupContent(content, feature) {
            var tempDiv = document.createElement('div');
@@ -945,6 +948,41 @@
         });
         lay.addTo(map);
 		
+		
+		<script>
+  // Turn on every overlay layer safely
+  try {
+    if (Array.isArray(overlaysTree)) {
+      overlaysTree.forEach(g => (g.children || []).forEach(n => {
+        if (n.layer && !map.hasLayer(n.layer)) map.addLayer(n.layer);
+      }));
+    }
+  } catch (e) {
+    console.warn('Overlay autoon error', e);
+  }
+</script>
+
+
+
+<script>
+  // Small control that mirrors Layers button size
+  const LogoCtl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      const div = L.DomUtil.create('div', 'sv-logo-control');
+      div.innerHTML = '<img src="/solarvilla.png" alt="Solar Village" style="width:28px;height:28px;display:block;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.25)">';
+
+      // Don’t let clicks on logo pan the map
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+      return div;
+    }
+  });
+  map.addControl(new LogoCtl());
+</script>
+
+
+
 // --- Logo control under Layers ---
 (function(){
   const Logo = L.Control.extend({
@@ -1000,6 +1038,17 @@
 })();
 </script>
 
+<script>
+try {
+  (overlaysTree||[]).forEach(n=>{
+    (n.children||[]).forEach(c=>{
+      if (c.layer && !map.hasLayer(c.layer)) map.addLayer(c.layer);
+    });
+  });
+} catch(e){ console.warn('Auto-on overlays skipped', e); }
+</script>
+
+
 
         setBounds();
         var i = 0;
@@ -1047,6 +1096,8 @@ const BACKEND = {
     photosLayer: L.featureGroup().addTo(map),
     dropPinArmed: false,
     cam: { stream:null },
+	  track: [],
+  trackLine: L.polyline([], { color: '#1e90ff', weight: 3, opacity: 0.9 }).addTo(map),
     // measurement
     measure: {
       mode: null,           // 'dist' | 'area' | null
@@ -1273,6 +1324,7 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} m²` : `${(m2/1e6)
     const fix = { time:p.timestamp, lat:c.latitude, lng:c.longitude, accuracy:c.accuracy, speed:c.speed, heading:c.heading, alt:c.altitude };
     state.lastFix = fix; state.track.push(fix);
     updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
+	  state.trackLine.addLatLng([fix.lat, fix.lng]);
     if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
 setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} ±${Math.round(fix.accuracy||0)}m  spd:${fmt(fix.speed)}m/s  brg:${fmt(fix.heading)}`);
   }
@@ -1372,6 +1424,40 @@ async function uploadPhoto(blob, filename, lat, lng, title, description) {
   addPhotoFeature(feature);
 }
 
+
+
+
+
+<script>
+  // Minimal lightbox for images inside popups
+  map.on('popupopen', (e) => {
+    const img = e.popup.getElement()?.querySelector('img');
+    if (!img) return;
+
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', () => {
+      const url = img.getAttribute('src');
+      if (!url) return;
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position:fixed; inset:0; background:rgba(0,0,0,.9);
+        display:flex; align-items:center; justify-content:center; z-index:99999;
+      `;
+      overlay.innerHTML = `
+        <img src="${url}" alt="" style="max-width:95vw; max-height:95vh; border-radius:6px">
+      `;
+
+      // close on click or Esc
+      overlay.addEventListener('click', () => document.body.removeChild(overlay));
+      document.addEventListener('keydown', function esc(e2) {
+        if (e2.key === 'Escape') { document.body.removeChild(overlay); document.removeEventListener('keydown', esc); }
+      });
+
+      document.body.appendChild(overlay);
+    }, { once: true });
+  });
+</script>
 
 // === Image resize/compress helper ===
 // Scales the image to fit within maxDim x maxDim and returns a JPEG Blob.
