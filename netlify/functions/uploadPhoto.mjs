@@ -32,10 +32,12 @@ async function gh(path, method = 'GET', body) {
 
 // Parse multipart/form-data from Lambda event (base64-safe)
 function parseMultipartFromEvent(event) {
-  const ct = event.headers['content-type'] || event.headers['Content-Type'] || '';
-  const m = /multipart\/form-data;\s*boundary=(.+)/i.exec(ct);
+  const ctRaw = event.headers['content-type'] || event.headers['Content-Type'] || '';
+  const m = /multipart\/form-data;\s*boundary=([^;]+)/i.exec(ctRaw);
   if (!m) throw new Error('multipart/form-data required');
-  const boundary = `--${m[1]}`;
+  const boundaryToken = m[1].trim().replace(/^"|"$/g, '');  // <-- handle quoted boundary
+  const boundary = `--${boundaryToken}`;
+
 
   const raw = event.isBase64Encoded
     ? Buffer.from(event.body || '', 'base64')
@@ -119,7 +121,9 @@ export async function handler(event) {
     });
 
     // 2) Write GeoJSON metadata
-    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imgDir}/${encodeURIComponent(key)}`;
+// replace the raw URL line with:
+const imageUrl = `/.netlify/functions/photo/${encodeURIComponent(key)}`;
+
     const feature = {
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [lng, lat] },
