@@ -46,13 +46,12 @@
         max-height: 70vh;
         overflow-y: auto; /* scrolls down instead of widening */
         overflow-x: hidden;
-		max-width: 310px; overflow: hidden;
         border: 1px solid rgba(0, 0, 0, 0.12);
       }
       #gpscam-ui .row {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
+        grid-template-columns: repeat(4, 48px);
+        gap: 8px;
         align-items: center;
         margin-bottom: 8px;
       }
@@ -68,7 +67,6 @@
         border-radius: 8px;
         cursor: pointer;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-		white-space: nowrap; 
       }
       #gpscam-ui button:hover {
         background: #f6f6f6;
@@ -272,34 +270,6 @@
         [49.954011553509815, -119.33922884315004],
         [49.961783579330934, -119.32957344118267],
       ]);
-	  
-	  <script>
-  const Logo = L.Control.extend({
-    options: { position: 'topright' },
-    onAdd: function () {
-      const c = L.DomUtil.create('div', 'leaflet-bar');
-      c.style.background = 'white';
-      c.style.padding = '2px';
-      c.style.display = 'flex';
-      c.style.alignItems = 'center';
-      c.style.justifyContent = 'center';
-      c.style.width = '34px';
-      c.style.height = '34px';
-      const img = document.createElement('img');
-      img.src = 'solarvilla.png';   // <- EXACT file name in repo root
-      img.alt = 'Logo';
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-      img.style.display = 'block';
-      c.appendChild(img);
-      L.DomEvent.disableClickPropagation(c);
-      return c;
-    }
-  });
-  map.addControl(new Logo());
-</script>
-
-
       const INITIAL_BOUNDS = map.getBounds();
 
       // Stop toolbox clicks from touching the map
@@ -497,7 +467,7 @@
           ],
         },
       ];
-      var lay = L.control.layers.tree(null, overlaysTree, { collapsed: false });
+      var lay = L.control.layers.tree(null, overlaysTree, { collapsed: true });
       lay.addTo(map);
 
       // Labels (unchanged)
