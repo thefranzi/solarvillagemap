@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.49,
+      49.88
+    ]
+  },
+  "properties": {
+    "title": "Test upload",
+    "description": "via GitHub backend",
+    "imageUrl": "https://raw.githubusercontent.com/thefranzi/solarvillagemap/main/data/photos/photo_1759378504618.jpg",
+    "ts": 1759378504618
+  }
+}
