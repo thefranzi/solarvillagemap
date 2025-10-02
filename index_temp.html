@@ -59,11 +59,6 @@
 #layer-toggles { display:none; margin: 6px 0 2px; font-size: 12px; }
 #layer-toggles label { display:block; }
 </style>
-/* --- Added: fixed width/wrap for toolbox --- */
-#gpscam-ui { width: 300px; max-height: 60vh; overflow-y: auto; }
-#gpscam-ui .row { flex-wrap: wrap; }
-#gps-status { white-space: normal; word-break: break-word; }
-
 
         <title></title>
     </head>
@@ -108,12 +103,6 @@
     <video id="cam-video" autoplay playsinline muted></video>
     <canvas id="cam-canvas"></canvas>
   </div>
-  <div class="row" style="margin-top:4px">
-    <input id="track-id" placeholder="session id" style="flex:1;min-width:140px;padding:4px 6px;border:1px solid #ccc;border-radius:6px">
-    <button id="btn-load-track" title="Load saved track by ID">Load</button>
-  </div>
-
-  
 
   <div id="gps-status">status: ready</div>
 </div>
@@ -944,38 +933,7 @@
             collapsed: true,
         });
         lay.addTo(map);
-		
-// --- Logo control under Layers ---
-(function(){
-  const Logo = L.Control.extend({
-    options: { position: 'topright' },
-    onAdd: function() {
-      const d = L.DomUtil.create('div', 'leaflet-control-layers');
-      const a = L.DomUtil.create('a', '', d);
-      a.href = '/';
-      a.title = 'Solar Village';
-      a.style.display = 'inline-flex';
-      a.style.width = '34px';
-      a.style.height = '34px';
-      a.style.borderRadius = '6px';
-      a.style.overflow = 'hidden';
-      a.style.alignItems = 'center';
-      a.style.justifyContent = 'center';
-      a.style.background = '#fff';
-      a.style.boxShadow = '0 1px 4px rgba(0,0,0,.2)';
-      const img = new Image();
-      img.src = '/solarvilla.png';
-      img.alt = 'logo';
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-      a.appendChild(img);
-      L.DomEvent.disableClickPropagation(d);
-      return d;
-    }
-  });
-  map.addControl(new Logo());
-})();
-<script>
+		<script>
 // Add logo under the Layers control (same visual footprint)
 (function(){
   const ctl = document.querySelector('.leaflet-control-layers');
