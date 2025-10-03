@@ -120,38 +120,37 @@
 </div>
 
         </div>
-        <script src="js/qgis2web_expressions.js"></script>
-        <script src="js/leaflet.js"></script>
-        <script src="js/L.Control.Layers.Tree.min.js"></script>
-        <script src="js/L.Control.Locate.min.js"></script>
-        <script src="js/multi-style-layer.js"></script>
-        <script src="js/leaflet.rotatedMarker.js"></script>
-        <script src="js/leaflet.pattern.js"></script>
-        <script src="js/leaflet-hash.js"></script>
-        <script src="js/Autolinker.min.js"></script>
-        <script src="js/rbush.min.js"></script>
-        <script src="js/labelgun.min.js"></script>
-        <script src="js/labels.js"></script>
-        <script src="js/leaflet.photon.js"></script>
-        <script src="js/leaflet-measure.js"></script>
-        <script src="data/BNDRY_4.js"></script>
-        <script src="data/LOTS_5.js"></script>
-        <script src="data/CONT_6.js"></script>
-        <script src="data/ESA_7.js"></script>
-        <script src="data/DW_8.js"></script>
-        <script src="data/SBE_9.js"></script>
-        <script src="data/EX_BLD_10.js"></script>
-        <script src="data/CRK_COV_11.js"></script>
-        <script src="data/ENV_RST_12.js"></script>
-        <script src="data/SRW_MOTI_13.js"></script>
-        <script src="data/CE_14.js"></script>
-        <script src="data/BA_15.js"></script>
-        <script src="data/ALR_16.js"></script>
-        <script src="data/AOI_17.js"></script>
-        <script src="data/SEPTIC_18.js"></script>
-        <script src="data/WELLS_19.js"></script>
-        <script src="data/FENCE_20.js"></script>
-        <script src="data/EX_FENCE_21.js"></script>
+        <script defer src="js/qgis2web_expressions.js"></script>
+        <script defer src="js/leaflet.js"></script>
+        <script defer src="js/L.Control.Layers.Tree.min.js"></script>
+        <script defer src="js/L.Control.Locate.min.js"></script>
+        <script defer src="js/multi-style-layer.js"></script>
+        <script defer src="js/leaflet.rotatedMarker.js"></script>
+        <script defer src="js/leaflet.pattern.js"></script>
+        <script defer src="js/leaflet-hash.js"></script>
+        <script defer src="js/Autolinker.min.js"></script>
+        <script defer src="js/rbush.min.js"></script>
+        <script defer src="js/labelgun.min.js"></script>
+        <script defer src="js/labels.js"></script>
+        <script defer src="js/leaflet.photon.js"></script>
+        <script defer src="js/leaflet-measure.js"></script>
+        <script defer src="data/BNDRY_4.js"></script>
+        <script defer src="data/LOTS_5.js"></script>
+<script defer src="data/ESA_7.js"></script>
+        <script defer src="data/DW_8.js"></script>
+        <script defer src="data/SBE_9.js"></script>
+        <script defer src="data/EX_BLD_10.js"></script>
+        <script defer src="data/CRK_COV_11.js"></script>
+        <script defer src="data/ENV_RST_12.js"></script>
+        <script defer src="data/SRW_MOTI_13.js"></script>
+        <script defer src="data/CE_14.js"></script>
+        <script defer src="data/BA_15.js"></script>
+        <script defer src="data/ALR_16.js"></script>
+        <script defer src="data/AOI_17.js"></script>
+        <script defer src="data/SEPTIC_18.js"></script>
+        <script defer src="data/WELLS_19.js"></script>
+        <script defer src="data/FENCE_20.js"></script>
+        <script defer src="data/EX_FENCE_21.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:false, maxZoom:21, minZoom:15
@@ -342,17 +341,9 @@
         map.createPane('pane_CONT_6');
         map.getPane('pane_CONT_6').style.zIndex = 406;
         map.getPane('pane_CONT_6').style['mix-blend-mode'] = 'normal';
-        var layer_CONT_6 = new L.geoJson(json_CONT_6, {
-            attribution: '',
-            interactive: true,
-            dataVar: 'json_CONT_6',
-            layerName: 'layer_CONT_6',
-            pane: 'pane_CONT_6',
-            onEachFeature: pop_CONT_6,
-            style: style_CONT_6_0,
-        });
-        bounds_group.addLayer(layer_CONT_6);
-        function pop_ESA_7(feature, layer) {
+        var layer_CONT_6 = L.layerGroup();
+layer_CONT_6.__loaded = false;
+function pop_ESA_7(feature, layer) {
         }
 
         function style_ESA_7_0(feature) {
@@ -945,6 +936,45 @@
             collapsed: true,
         });
         lay.addTo(map);
+
+// --- Dynamic lazy-load for Contours (CONT_6) ---
+function loadScriptOnce(url) {
+  return new Promise(function(resolve, reject) {
+    if (document.querySelector('script[data-dyn="' + url + '"]')) return resolve();
+    var s = document.createElement('script');
+    s.src = url;
+    s.defer = true;
+    s.setAttribute('data-dyn', url);
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureContoursLoaded() {
+  if (layer_CONT_6.__loaded) return;
+  await loadScriptOnce('data/CONT_6.js');
+  if (typeof json_CONT_6 === 'undefined') return console.error('Contours data failed to load');
+  var newLayer = new L.geoJson(json_CONT_6, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_CONT_6',
+    layerName: 'layer_CONT_6',
+    pane: 'pane_CONT_6',
+    onEachFeature: pop_CONT_6,
+    style: style_CONT_6_0,
+  });
+  newLayer.eachLayer(function (lyr) { layer_CONT_6.addLayer(lyr); });
+  layer_CONT_6.__loaded = true;
+}
+
+// When the overlay is toggled on, lazy-load the data if needed
+map.on('overlayadd', function(e) {
+  if (e.layer === layer_CONT_6) {
+    ensureContoursLoaded();
+  }
+});
+
         setBounds();
         var i = 0;
         layer_LOTS_5.eachLayer(function(layer) {
