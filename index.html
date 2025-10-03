@@ -37,8 +37,22 @@
   gap: 6px;
   margin-bottom: 4px;
 }
-#gpscam-ui button, #gpscam-ui label { font-size: 13px; }
-#gpscam-ui button { padding: 6px 8px; }
+
+
+#gpscam-ui button,
+#gpscam-ui label {
+  font-size: 20px;            /* Ensures all icons (and text) are a consistent size */
+  padding: 10px 0;            /* Vertically centers content and gives a larger touch zone */
+  height: 36px;               /* All buttons/labels are the same height */
+  width: 100%;                /* Fills out each grid cell, ensuring column alignment */
+  box-sizing: border-box;     /* Prevents overflow issues */
+  background: transparent;    /* (Optional) Remove background for icon-only buttons */
+  border: none;               /* (Optional) Removes borders, unless you want them */
+  display: flex;
+  align-items: center;
+  justify-content: center;    /* Vertically/horizontally centers icons/text */
+}
+
 #gps-status { margin-top: 4px; font-size: 12px; opacity: .8; }
  #camera-wrap { display:none; margin-top:6px; z-index: 1000; }
   #camera-wrap.show { display:block; }
@@ -1094,6 +1108,13 @@ const Measure = (() => {
     return map.containerPointToLatLng([x, y]);
   }
 
+function openPhotoModal(src) {
+  document.getElementById('photo-modal-img').src = src;
+  document.getElementById('photo-modal').style.display = 'flex';
+}
+
+
+
   function ensureCapture() {
     if (captureHandler) return;
     captureHandler = (ev) => {
@@ -1273,12 +1294,14 @@ const html = `
   <div style="max-width:220px">
     <div><b>${title}</b></div>
     ${description ? `<div>${description}</div>` : ''}
-    ${imageUrl ? `
-      <div style="margin-top:6px">
-        <img src="${imageUrl}" alt style="max-width:100px;border-radius:4px;cursor:pointer"
-        onclick="document.getElementById('photo-modal-img').src='${imageUrl}'; document.getElementById('photo-modal').style.display='flex';">
-      </div>
-    ` : ''}
+${imageUrl ? `
+  <div style="margin-top:6px">
+    <img src="${imageUrl}" alt
+      style="width:100px;max-width:100%;max-height:80px;border-radius:4px;object-fit:cover;cursor:pointer"
+      onclick="openPhotoModal('${imageUrl}')">
+  </div>
+` : ''}
+
   </div>
 `;
 
@@ -1563,8 +1586,10 @@ photoModal.onclick = () => {
 
 <!-- Large image modal (hidden by default) -->
 <div id="photo-modal" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+  <span style="position:absolute; top:20px; right:40px; font-size:40px; color:#fff; cursor:pointer;" onclick="closePhotoModal()">&#10005;</span>
   <img id="photo-modal-img" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 2px 20px #000;">
 </div>
+
 
 
 
