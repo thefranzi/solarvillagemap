@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3353682756424,
+      49.95849894911223
+    ]
+  },
+  "properties": {
+    "title": "a",
+    "description": "",
+    "ts": 1759534760722
+  }
+}
