@@ -31,7 +31,12 @@
   background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 8px 6px 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,.2); font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
-#gpscam-ui .row { display: flex; gap: 6px; margin-bottom: 4px; }
+.gpscam-ui .row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
 #gpscam-ui button, #gpscam-ui label { font-size: 13px; }
 #gpscam-ui button { padding: 6px 8px; }
 #gps-status { margin-top: 4px; font-size: 12px; opacity: .8; }
@@ -1264,12 +1269,19 @@ function addPhotoFeature(feat) {
   if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
   const [lng, lat] = normLngLat(feat.geometry.coordinates);
   const { title = 'Photo', description = '', imageUrl } = feat.properties || {};
-  const html = `
-    <div style="max-width:220px">
-      <div><b>${title}</b></div>
-      ${description ? `<div>${description}</div>` : ''}
-      ${imageUrl ? `<div style="margin-top:6px"><img src="${imageUrl}" alt="" style="max-width:100%;border-radius:4px"></div>` : ''}
-    </div>`;
+const html = `
+  <div style="max-width:220px">
+    <div><b>${title}</b></div>
+    ${description ? `<div>${description}</div>` : ''}
+    ${imageUrl ? `
+      <div style="margin-top:6px">
+        <img src="${imageUrl}" alt style="max-width:100px;border-radius:4px;cursor:pointer"
+        onclick="document.getElementById('photo-modal-img').src='${imageUrl}'; document.getElementById('photo-modal').style.display='flex';">
+      </div>
+    ` : ''}
+  </div>
+`;
+
   const m = L.marker([lat, lng], { icon: photoIcon, draggable: false }).addTo(state.photosLayer);
   m.bindPopup(html);
 }
@@ -1534,6 +1546,27 @@ ui.btnCamShot.onclick = async () => {
   })();
 })();
 </script>
+
+<script>
+// Get modal elements
+const photoModal = document.getElementById('photo-modal');
+const photoModalImg = document.getElementById('photo-modal-img');
+
+// Click anywhere on black background closes modal
+photoModal.onclick = () => {
+  photoModal.style.display = 'none';
+  photoModalImg.src = '';
+};
+
+</script>
+
+
+<!-- Large image modal (hidden by default) -->
+<div id="photo-modal" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+  <img id="photo-modal-img" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 2px 20px #000;">
+</div>
+
+
 
     </body>
 </html>
