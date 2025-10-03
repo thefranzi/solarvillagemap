@@ -2,4 +2,8 @@
 .netlify
 
 # Ignore Node.js dependency folder
-/node_modules
+/node_modules/
+/dist/
+/tmp/
+*.log
+
