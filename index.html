@@ -73,53 +73,7 @@
 </style>
 
         <title></title>
-        <script>
-/* ONCLICK_NULL_GUARD */
-(function(){
-  var __origGet = document.getElementById.bind(document);
-  document.getElementById = function(id){
-    var el = __origGet(id);
-    if (el) return el;
-    // Return a harmless stub that logs once if someone tries to set onclick
-    var warned = false;
-    return new Proxy({}, {
-      get: function(target, prop){
-        if (prop === 'onclick') return undefined;
-        if (prop === 'addEventListener') return function(){ /* no-op for missing el */ };
-        if (prop === 'removeEventListener') return function(){};
-        if (prop === 'style') return {};
-        if (!warned) { console.warn("[onclick guard] element not found for id:", id); warned = true; }
-        return undefined;
-      },
-      set: function(target, prop, value){
-        if (prop === 'onclick') {
-          if (!warned) { console.warn("[onclick guard] cannot set onclick; element not found for id:", id); warned = true; }
-          return true; // swallow
-        }
-        return true;
-      }
-    });
-  };
-})();
-</script>
-<style>
-/* MAP_UI_FONT_RESET */
-body,
-.leaflet-container,
-.leaflet-control,
-.leaflet-control-layers,
-.leaflet-control-layers-expanded,
-.leaflet-control-layers-list,
-.leaflet-popup-content {
-  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  font-weight: 400;
-}
-/* Restrict FA to only its classes */
-.fa,.fas,.far,.fal,.fab { font-family:"Font Awesome 5 Free","Font Awesome 5 Pro","Font Awesome 6 Free","Font Awesome 6 Pro"; }
-.fas { font-weight:900; }
-.far { font-weight:400; }
-</style>
-</head>
+        </head>
     <body>
         <div id="map">
 		
@@ -1696,6 +1650,7 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+
 
 
 
