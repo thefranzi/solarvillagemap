@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3362319469452,
+      49.95707877702668
+    ]
+  },
+  "properties": {
+    "title": "Photo",
+    "description": "h",
+    "imageUrl": "/.netlify/functions/photo/photo_1759450588043.jpg",
+    "ts": 1759450588043
+  }
+}
