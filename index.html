@@ -73,7 +73,8 @@
 </style>
 
         <title></title>
-    </head>
+        <link rel="preload" href="/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+</head>
     <body>
         <div id="map">
 		
@@ -1608,5 +1609,25 @@ photoModal.onclick = () => {
 
 
 
-    </body>
+    <script>
+/* REBIND_ONCLICK_AFTER_DOM */
+window.addEventListener('DOMContentLoaded', function () {
+  // Any buttons we commonly use; harmless if some don't exist
+  var ids = [
+    'btn-locate','btn-drop-pin','btn-measure-dist','btn-measure-area',
+    'btn-camera','btn-upload','btn-cancel','btn-gps-follow'
+  ];
+  ids.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;                      // skip missing
+    if (typeof el.onclick === 'function') {
+      var fn = el.onclick;                // capture any pre-set handler
+      el.onclick = null;                  // clear inline assignment
+      el.addEventListener('click', fn, { passive: true });
+    }
+  });
+});
+</script>
+</body>
 </html>
+
