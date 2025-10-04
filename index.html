@@ -943,7 +943,7 @@ function loadScriptOnce(url) {
     if (document.querySelector('script[data-dyn="' + url + '"]')) return resolve();
     var s = document.createElement('script');
     s.src = url;
-    s.defer = true;
+    s.async = true;
     s.setAttribute('data-dyn', url);
     s.onload = resolve;
     s.onerror = reject;
@@ -1650,6 +1650,7 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+
 
 
 
