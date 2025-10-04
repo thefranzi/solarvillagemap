@@ -102,6 +102,23 @@
   };
 })();
 </script>
+<style>
+/* MAP_UI_FONT_RESET */
+body,
+.leaflet-container,
+.leaflet-control,
+.leaflet-control-layers,
+.leaflet-control-layers-expanded,
+.leaflet-control-layers-list,
+.leaflet-popup-content {
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-weight: 400;
+}
+/* Restrict FA to only its classes */
+.fa,.fas,.far,.fal,.fab { font-family:"Font Awesome 5 Free","Font Awesome 5 Pro","Font Awesome 6 Free","Font Awesome 6 Pro"; }
+.fas { font-weight:900; }
+.far { font-weight:400; }
+</style>
 </head>
     <body>
         <div id="map">
@@ -1656,8 +1673,30 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+<script>
+/* DEFAULT_ON_LAYERS */
+(function(){
+  function addAll(tree){
+    (tree||[]).forEach(function(node){
+      if (node && node.children) return addAll(node.children);
+      if (node && node.layer){
+        if (typeof layer_CONT_6 !== "undefined" && node.layer === layer_CONT_6) return; // skip heavy contours
+        try { map.addLayer(node.layer); } catch(e) {}
+      }
+    });
+  }
+  if (typeof overlaysTree !== "undefined" && typeof map !== "undefined") {
+    addAll(overlaysTree);
+  } else {
+    document.addEventListener("DOMContentLoaded", function(){
+      try { addAll(window.overlaysTree||[]); } catch(e){}
+    });
+  }
+})();
+</script>
 </body>
 </html>
+
 
 
 
