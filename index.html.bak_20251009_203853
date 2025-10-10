@@ -187,6 +187,7 @@ leaflet-bottom.leaflet-left{margin-bottom:68px;}
           // Extra hardening for some browsers
           ['mousedown','touchstart','pointerdown','click','dblclick','contextmenu','wheel'].forEach(ev =>
             panel.addEventListener(ev, e => e.stopPropagation())
+          );
         })();
 
         var hash = new L.Hash(map);
@@ -1724,18 +1725,15 @@ if (window.map) {
     });
   })();
   </script>
-  <script src="js/sv-app.js" defer></script>
 </body>
 </html>
 
 =======
       <script src="js/mobile-controls.js" defer></script>
   <script src="js/photo-ui.js" defer></script>
-  <script src="js/sv-app.js" defer></script>
 </body>
 </html>
 >>>>>>> main
-
 
 
 
