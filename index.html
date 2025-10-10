@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -8,11 +8,12 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="stylesheet" href="css/leaflet.css">
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
-        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
+		<link rel="stylesheet" href="css/mobile-buttons.css">
+
         <style>
         html, body, #map {
             width: 100%;
@@ -90,27 +91,27 @@
 		
 		<div id="gpscam-ui">
   <div class="row">
-    <button id="btn-zoom-in"    title="Zoom in"> ＋ </button>
-    <button id="btn-zoom-out"   title="Zoom out"> － </button>
-    <button id="btn-zoom-extents" title="Zoom to full extent">🗺️</button>
+    <button id="btn-zoom-in"    title="Zoom in"> ï¼‹ </button>
+    <button id="btn-zoom-out"   title="Zoom out"> ï¼ </button>
+    <button id="btn-zoom-extents" title="Zoom to full extent">ðŸ—ºï¸</button>
   </div>
 
   <div class="row">
-    <button id="btn-locate-once" title="Center on current location">📍</button>
-    <button id="btn-drop-pin"    title="Drop a pin on next map click">📌</button>
-    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">▶️</button>
+    <button id="btn-locate-once" title="Center on current location">ðŸ“</button>
+    <button id="btn-drop-pin"    title="Drop a pin on next map click">ðŸ“Œ</button>
+    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">â–¶ï¸</button>
     </div>
 
   <div class="row">
-    <button id="btn-measure-dist"  title="Measure distance">📏</button>
-    <button id="btn-measure-area"  title="Measure area">📐</button>
-    <button id="btn-measure-clear" title="Clear measurements">🧹</button>
+    <button id="btn-measure-dist"  title="Measure distance">ðŸ“</button>
+    <button id="btn-measure-area"  title="Measure area">ðŸ“</button>
+    <button id="btn-measure-clear" title="Clear measurements">ðŸ§¹</button>
   </div>
 
   <div class="row">
-    <button id="btn-camera-on"   title="Open device camera">📷</button>
-    <button id="btn-camera-shot" title="Take photo" disabled>🖼️</button>
-    <button id="btn-camera-off"  title="Stop camera" disabled>⏹️</button>
+    <button id="btn-camera-on"   title="Open device camera">ðŸ“·</button>
+    <button id="btn-camera-shot" title="Take photo" disabled>ðŸ–¼ï¸</button>
+    <button id="btn-camera-off"  title="Stop camera" disabled>â¹ï¸</button>
   </div>
 
   <div class="row">
@@ -131,11 +132,14 @@
 </div>
 
         </div>
+		<script src="js/mobile-controls.js" defer></script>
+		<script src="js/photo-ui.js" defer></script>
+
+
         <script src="js/qgis2web_expressions.js"></script>
         <script src="js/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
         <script src="js/L.Control.Layers.Tree.min.js"></script>
-        <script src="js/L.Control.Locate.min.js"></script>
         <script src="js/multi-style-layer.js"></script>
         <script src="js/leaflet.rotatedMarker.js"></script>
         <script src="js/leaflet.pattern.js"></script>
@@ -217,7 +221,6 @@
         var zoomControl = L.control.zoom({
             position: 'topleft'
         }).addTo(map);
-        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
         var measureControl = new L.Control.Measure({
             position: 'topleft',
             primaryLengthUnit: 'meters',
@@ -1031,7 +1034,7 @@ const BACKEND = {
     chkPhotos: document.getElementById('chk-photos')
   };
 
-  const fmt = n => (n==null ? '—' : Math.round(n*10)/10);
+  const fmt = n => (n==null ? 'â€”' : Math.round(n*10)/10);
   const setStatus = m => ui.status.textContent = 'status: ' + m;
   const download = (name, content, type='application/octet-stream') => {
     const a = document.createElement('a');
@@ -1051,8 +1054,7 @@ function normLngLat(coords) {
 }
 
   // ======= remove native zoom and locate controls so we own them in-panel =======
-  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/−
-  // If a Leaflet Locate control was present earlier, don’t add it again (we won’t call L.control.locate at all)
+  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/âˆ’
 
   // ======= GPS visuals =======
   const gpsIcon = L.icon({
@@ -1152,7 +1154,7 @@ function openPhotoModal(src) {
           setStatus(`area: ${fmtSqMeters(area)}  (click to add, Clear to finish)`);
         } else {
           addTemp(L.circleMarker(ll, { radius:4 }));
-          setStatus('area: add at least 3 points…');
+          setStatus('area: add at least 3 pointsâ€¦');
         }
       }
     };
@@ -1160,8 +1162,8 @@ function openPhotoModal(src) {
     map.getContainer().addEventListener('click', captureHandler, true);
   }
 
-  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add points…'); }
-  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add points…'); }
+  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add pointsâ€¦'); }
+  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add pointsâ€¦'); }
   function stop(){ mode = null; clearTemp(); setStatus('measurements cleared'); }
 
   return { startDist, startArea, stop };
@@ -1179,7 +1181,7 @@ function haversine(a, b) {
   return 2 * R * Math.asin(Math.sqrt(aa));
 }
 
-// Spherical polygon area (m²) from array of LatLngs
+// Spherical polygon area (mÂ²) from array of LatLngs
 function sphericalArea(latlngs) {
   const R = 6371008.8;
   const toRad = d => d * Math.PI/180;
@@ -1193,7 +1195,7 @@ function sphericalArea(latlngs) {
 }
 
 function fmtMeters(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
-function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} m²` : `${(m2/1e6).toFixed(2)} km²`; }
+function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e6).toFixed(2)} kmÂ²`; }
 
   function ensureGpsLayers() {
     if (!state.gps.marker) {
@@ -1227,7 +1229,7 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} m²` : `${(m2/1e6)
     state.lastFix = fix; state.track.push(fix);
     updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
     if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
-    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} ±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}°`);
+    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} Â±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}Â°`);
   }
   function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message + '\nUse HTTPS or localhost and grant browser permission.'); }
 
@@ -1420,25 +1422,23 @@ async function camOn() {
 }
 
   // ======= UI wiring =======
-  // zoom +/−
+  // zoom +/âˆ’
   ui.btnZoomIn.onclick  = () => map.setZoom(map.getZoom()+1);
   ui.btnZoomOut.onclick = () => map.setZoom(map.getZoom()-1);
 ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true });
 
   // locate once
-  ui.btnLocateOnce.onclick = () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported.');
-    navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
+  // REMOVED_BY_MOBILE_FIX: old btnLocateOnce handler removed);
   };
 
   // tracking
   ui.btnTrackToggle.onclick = () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported.');
+// REMOVED_BY_MOBILE_FIX:     if (!navigator.geolocation) return alert('Geolocation not supported.');
     if (state.watchId != null) {
-      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = '▶️ Track'; setStatus('tracking stopped');
+// REMOVED_BY_MOBILE_FIX:       navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = 'â–¶ï¸ Track'; setStatus('tracking stopped');
     } else {
-      state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
-      ui.btnTrackToggle.textContent = '⏸️ Stop'; setStatus('tracking…');
+// REMOVED_BY_MOBILE_FIX:       state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
+      ui.btnTrackToggle.textContent = 'â¸ï¸ Stop'; setStatus('trackingâ€¦');
     }
   };
 // --- Drop pin (works even if layers intercept clicks) ---
@@ -1457,7 +1457,7 @@ let dropPinCaptureHandler = null;
 // Arm a one-shot pin placement on next map click
 ui.btnDropPin.onclick = () => {
   state.dropPinArmed = true;
-  setStatus('Click the map to place a pin…');
+  setStatus('Click the map to place a pinâ€¦');
 
   // Install capture-phase handler once
   if (!dropPinCaptureHandler) {
@@ -1468,7 +1468,7 @@ ui.btnDropPin.onclick = () => {
       const panel = document.getElementById('gpscam-ui');
       if (panel && panel.contains(ev.target)) return;
 
-      // Convert screen point → map lat/lng
+      // Convert screen point â†’ map lat/lng
       const rect = map.getContainer().getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
@@ -1495,6 +1495,7 @@ ui.btnDropPin.onclick = () => {
 ui.btnMeasureDist.onclick  = () => Measure.startDist();
 ui.btnMeasureArea.onclick  = () => Measure.startArea();
 ui.btnMeasureClear.onclick = () => Measure.stop();
+
 
 
   // export (Note: btn-dl-geojson is commented out in your HTML, so this won't run)
@@ -1534,7 +1535,7 @@ ui.btnCamShot.onclick = async () => {
   ui.canvas.height = h;
   ui.canvas.getContext('2d').drawImage(ui.video, 0, 0, w, h);
 
-  // PNG source → resize/compress to JPEG (~1–2 MB)
+  // PNG source â†’ resize/compress to JPEG (~1â€“2 MB)
   const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
   const jpegBlob = await resizeImageBlob(rawBlob, 1600, 0.8);
 
@@ -1641,7 +1642,7 @@ if (window.map) {
 (function(){
   function openLayers(){ var btn=document.querySelector('.leaflet-control-layers-toggle'); if(btn) btn.click(); }
   var b;
-  b=document.getElementById('btn-locate');  if(b) b.addEventListener('click', function(){ if(map && map.locate) map.locate({setView:true,maxZoom:18}); });
+// REMOVED_BY_MOBILE_FIX:   b=document.getElementById('btn-locate');  if(b) b.addEventListener('click', function(){ if(map && map.locate) // REMOVED_BY_MOBILE_FIX: map.locate removed });
   b=document.getElementById('btn-add-pin'); if(b) b.addEventListener('click', function(){ var c=map.getCenter(); L.marker(c,{draggable:true}).addTo(map).bindPopup('New pin').openPopup(); });
   b=document.getElementById('btn-camera');  if(b) b.addEventListener('click', function(){ var up=document.getElementById('photo-file')||document.querySelector('input[type=file][accept*="image"]'); if(up) up.click(); });
   b=document.getElementById('btn-measure'); if(b) b.addEventListener('click', function(){ var m=document.querySelector('.leaflet-control-measure .leaflet-control-measure-toggle'); if(m) m.click(); else alert('Measure tool not available.'); });
@@ -1686,5 +1687,57 @@ if (window.map) {
   if(moved){ map.addLayer(cluster); }
 })();
 </script>
+<!-- Camera-first photo UI -->
+<div id="photo-capture" style="display:none; position:fixed; left:8px; right:8px; bottom:8vh; z-index:1500; background:#fff; border-radius:10px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+  <form id="photoForm">
+    <label for="photoInput" class="touch-btn" style="display:inline-block; padding:12px 14px; font-size:16px; cursor:pointer;">
+      Take Photo
+      <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment" style="display:none;">
+    </label>
+
+    <div id="photoPreview" style="margin-top:10px;"></div>
+
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button id="photoUpload" type="button" class="touch-btn" style="display:none;">Upload</button>
+      <button id="photoCancel" type="button" class="touch-btn">Cancel</button>
+    </div>
+
+    <small id="photoHelp" style="display:block; margin-top:6px; font-size:12px; color:#333;">Tap Take Photo â†’ preview â†’ Upload</small>
+  </form>
+</div>
+
+  <script>
+  // one-shot locate (no tracking)
+  (function __oneshot_locate_init(){
+    if(window.__oneshot_locate_init) return; window.__oneshot_locate_init = true;
+    function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+    ready(function(){
+      var btn = document.getElementById('btn-locate-once');
+      if(!btn) return;
+      btn.addEventListener('click', function(){
+        if(!window.map){ alert('Map not ready'); return; }
+        if(!('geolocation' in navigator)){ alert('Geolocation not supported'); return; }
+        btn.disabled = true;
+        var opts = { enableHighAccuracy:false, timeout:8000, maximumAge:300000 };
+        navigator.geolocation.getCurrentPosition(function(pos){
+          try{
+            var lat=pos.coords.latitude, lng=pos.coords.longitude, acc=pos.coords.accuracy||0;
+            var ll = L.latLng(lat,lng), zoom = Math.max((map.getZoom&&map.getZoom())||12, 15);
+            map.setView(ll, zoom);
+            var mk = L.marker(ll);
+            var circ = acc>0 ? L.circle(ll,{radius:acc}) : null;
+            var grp = L.layerGroup(circ?[mk,circ]:[mk]).addTo(map);
+            setTimeout(function(){ try{ map.removeLayer(grp);}catch(e){} }, 5000);
+          } finally { btn.disabled = false; }
+        }, function(err){
+          console.warn('Locate failed', err);
+          alert('Could not get location: ' + (err && err.message ? err.message : 'Unknown error'));
+          btn.disabled = false;
+        }, opts);
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
+
