@@ -1,36 +1,14 @@
-// Store pins as individual JSON files in GitHub (data/pins/*.json)
+﻿import { gh, cfg } from './gh-utils.mjs';
 const GH_API = 'https://api.github.com';
-
-function cfg() {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GH_OWNER;
-  const repo  = process.env.GH_REPO;
-  const branch = process.env.GH_BRANCH || 'main';
-  const dir   = process.env.GH_PINS_DIR || 'data/pins';
-  if (!token || !owner || !repo) throw new Error('Missing GITHUB_TOKEN / GH_OWNER / GH_REPO');
-  return { token, owner, repo, branch, dir };
-}
-
-async function gh(path, method = 'GET', body) {
-  const { token } = cfg();
-  const res = await fetch(`${GH_API}${path}`, {
-    method,
-    headers: {
-      authorization: `Bearer ${token}`,
-      accept: 'application/vnd.github+json',
-      'content-type': 'application/json'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${await res.text()}`);
-  return res.json();
-}
-
+// Store pins as individual JSON files in GitHub (data/pins/*.json)
+// Store pins as individual JSON files in GitHub (data/pins/*.json)
 async function listPins() {
-  const { owner, repo, branch, dir } = cfg();
+  const baseCfg = cfg('GITHUB_TOKEN', 'GH_OWNER', 'GH_REPO', 'GH_BRANCH');
+  const { pinsDir: dir } = cfg();
+  const { owner, repo, branch } = baseCfg;
   let items = [];
   try {
-    items = await gh(`/repos/${owner}/${repo}/contents/${encodeURIComponent(dir)}?ref=${branch}`);
+    items = await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dir) + '?ref=' + branch);
   } catch {
     return { type: 'FeatureCollection', features: [] };
   }
@@ -43,27 +21,36 @@ async function listPins() {
   }
   return { type: 'FeatureCollection', features };
 }
-
 async function createPin(feature) {
-  const { owner, repo, branch, dir } = cfg();
-  const key = `pin_${Date.now()}_${Math.random().toString(36).slice(2,9)}.json`;
-  const path = `${dir}/${key}`;
-  const content = Buffer.from(JSON.stringify(feature, null, 2)).toString('base64');
-  await gh(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, 'PUT', {
-    message: `Add pin ${key}`, content, branch
-  });
-  return feature;
+  const { Buffer } = await import('buffer');
+  const baseCfg = cfg('GITHUB_TOKEN', 'GH_OWNER', 'GH_REPO', 'GH_BRANCH');
+  const { pinsDir: dir } = cfg();
+  const { owner, repo, branch } = baseCfg;
+  const stamp = Date.now();
+  const key = 'pin_' + stamp + '.json';
+  const path = dir + '/' + key;
+  const payload = {
+    message: 'Add pin ' + stamp,
+    content: Buffer.from(JSON.stringify(feature, null, 2)).toString('base64'),
+    branch
+  };
+  await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(path), 'PUT', payload);
+  return { key, path };
 }
-
 async function deletePin(key) {
-  const { owner, repo, branch, dir } = cfg();
-  const path = `${dir}/${key}`;
-  const meta = await gh(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`, 'GET');
-  await gh(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, 'DELETE', {
-    message: `Delete pin ${key}`, sha: meta.sha, branch
-  });
+  const baseCfg = cfg('GITHUB_TOKEN', 'GH_OWNER', 'GH_REPO', 'GH_BRANCH');
+  const { pinsDir: dir } = cfg();
+  const { owner, repo, branch } = baseCfg;
+  const path = dir + '/' + key;
+  const file = await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(path) + '?ref=' + branch);
+  const payload = {
+    message: 'Delete pin ' + key,
+    sha: file.sha,
+    branch
+  };
+  await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(path), 'DELETE', payload);
+  return { ok: true };
 }
-
 export async function handler(event) {
   try {
     if (event.httpMethod === 'OPTIONS') {
@@ -91,14 +78,11 @@ export async function handler(event) {
       const key = (new URL(event.rawUrl)).searchParams.get('key');
       if (!key) return { statusCode: 400, body: 'key required' };
       await deletePin(key);
-      return { statusCode: 204, headers: { 'access-control-allow-origin': '*' } };
+      return { statusCode: 204, headers: { 'access-control-allow-origin': '*' }};
     }
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { statusCode: 405, body: 'Method Not Allowed', headers: { 'access-control-allow-origin': '*' } };
   } catch (e) {
-    return {
-      statusCode: 500,
-      headers: { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' },
-      body: e.stack || e.message || 'unknown error'
-    };
+    return { statusCode: 500, headers: { 'content-type': 'text/plain', 'access-control-allow-origin': '*' }, body: e.stack || e.message };
   }
 }
+

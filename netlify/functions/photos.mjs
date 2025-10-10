@@ -1,30 +1,14 @@
-// Serve photo metadata (GeoJSON features) from GitHub (data/photo-features/*.json)
+﻿import { gh, cfg } from './gh-utils.mjs';
 const GH_API = 'https://api.github.com';
-
-function cfg() {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GH_OWNER;
-  const repo  = process.env.GH_REPO;
-  const branch = process.env.GH_BRANCH || 'main';
-  const dir   = process.env.GH_PHOTOS_DIR || 'data/photo-features';
-  if (!token || !owner || !repo) throw new Error('Missing GITHUB_TOKEN / GH_OWNER / GH_REPO');
-  return { token, owner, repo, branch, dir };
-}
-
-async function gh(path) {
-  const { token } = cfg();
-  const res = await fetch(`${GH_API}${path}`, {
-    headers: { authorization: `Bearer ${token}`, accept: 'application/vnd.github+json' }
-  });
-  if (!res.ok) throw new Error(`GET ${path} -> ${res.status}: ${await res.text()}`);
-  return res.json();
-}
-
+// Serve photo metadata (GeoJSON features) from GitHub (data/photo-features/*.json)
+// Serve photo metadata (GeoJSON features) from GitHub (data/photo-features/*.json)
 async function listPhotoFeatures() {
-  const { owner, repo, branch, dir } = cfg();
+  const baseCfg = cfg('GITHUB_TOKEN', 'GH_OWNER', 'GH_REPO', 'GH_BRANCH');
+  const { metaDir: dir } = cfg();
+  const { owner, repo, branch } = baseCfg;
   let items = [];
   try {
-    items = await gh(`/repos/${owner}/${repo}/contents/${encodeURIComponent(dir)}?ref=${branch}`);
+    items = await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dir) + '?ref=' + branch);
   } catch {
     return { type: 'FeatureCollection', features: [] };
   }
@@ -37,7 +21,6 @@ async function listPhotoFeatures() {
   }
   return { type: 'FeatureCollection', features };
 }
-
 export async function handler(event) {
   try {
     if (event.httpMethod === 'OPTIONS') {
@@ -55,3 +38,4 @@ export async function handler(event) {
     return { statusCode: 500, headers: { 'content-type': 'text/plain', 'access-control-allow-origin': '*' }, body: e.stack || e.message };
   }
 }
+
