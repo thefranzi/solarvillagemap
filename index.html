@@ -22,7 +22,6 @@
             margin: 0;
         }
         </style>
-		
 
 
 <style>
@@ -88,7 +87,6 @@
 </head>
     <body>
         <div id="map">
-		
 		<div id="gpscam-ui">
   <div class="row">
     <button id="btn-zoom-in"    title="Zoom in"> ï¼‹ </button>
@@ -976,7 +974,6 @@ function pop_ESA_7(feature, layer) {
             resetLabels([layer_LOTS_5,layer_CE_14,layer_FENCE_20,layer_EX_FENCE_21]);
         });
         </script>
-		
 		<script>
 (() => {
   // ======= BACKEND CONFIG (same as before) =======
@@ -1265,7 +1262,6 @@ async function savePin(lng, lat, title, description) {
     geometry: { type: 'Point', coordinates: [lng, lat] },
     properties: { title, description, ts: Date.now() }
   };
-  
   // This will now throw an error if the network request fails, which is what we want.
   const response = await fetch(BACKEND.pinsPost, {
     method: 'POST',
@@ -1317,7 +1313,6 @@ ${imageUrl ? `
 async function uploadPhoto(blob, filename, lat, lng, title, description) {
   const fd = new FormData();
   const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
-  
   fd.append('file', file);
   fd.append('lat', String(lat));
   fd.append('lng', String(lng));
@@ -1331,7 +1326,6 @@ async function uploadPhoto(blob, filename, lat, lng, title, description) {
   }
 
   const { feature } = await response.json();
-  
   // Add the new photo feature to the map
   addPhotoFeature(feature);
 }
@@ -1580,10 +1574,7 @@ const photoModal = document.getElementById('photo-modal');
 const photoModalImg = document.getElementById('photo-modal-img');
 
 // Click anywhere on black background closes modal
-photoModal.onclick = () => {
-  photoModal.style.display = 'none';
-  photoModalImg.src = '';
-};
+if\ \(photoModal\)\ \{\n\ \ photoModal\.addEventListener\('click',\ function\ \(\)\ \{\n\ \ \ \ if\ \(photoModal\)\ \{\ photoModal\.style\.display\ =\ 'none';\ }\n\ \ \ \ if\ \(photoModalImg\)\ \{\ photoModalImg\.src\ =\ '';\ }\n\ \ }\);\n}
 
 </script>
 
@@ -1759,6 +1750,9 @@ if (window.map) {
   <script src='js/mobile-controls.js' defer></script>
 </body>
 </html>
+
+
+
 
 
 
