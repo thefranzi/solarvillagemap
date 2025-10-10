@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -1577,10 +1577,12 @@ const photoModal = document.getElementById('photo-modal');
 const photoModalImg = document.getElementById('photo-modal-img');
 
 // Click anywhere on black background closes modal
-photoModal.onclick = () => {
-  photoModal.style.display = 'none';
-  photoModalImg.src = '';
-};
+if (typeof photoModal !== 'undefined' && photoModal) {
+  photoModal.addEventListener('click', function () {
+    try { if (photoModal) photoModal.style.display = 'none'; } catch(e){}
+    try { if (typeof photoModalImg !== 'undefined' && photoModalImg) photoModalImg.src = ''; } catch(e){}
+  });
+}
 
 </script>
 
