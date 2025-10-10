@@ -20,7 +20,7 @@
             height: 100%;
             padding: 0;
             margin: 0;
-/*__SV_FIX__: dropped lone } */
+        }
         </style>
 		
 
@@ -31,13 +31,13 @@
   position: absolute; z-index: 9999; top: 10px; left: 10px;
   background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 8px 6px 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,.2); font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-/*__SV_FIX__: dropped lone } */
+}
 .gpscam-ui .row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   margin-bottom: 4px;
-/*__SV_FIX__: dropped lone } */
+}
 
 
 #gpscam-ui button,
@@ -52,7 +52,7 @@
   display: flex;
   align-items: center;
   justify-content: center;    /* Vertically/horizontally centers icons/text */
-/*__SV_FIX__: dropped lone } */
+}
 
 #gps-status { margin-top: 4px; font-size: 12px; opacity: .8; }
  #camera-wrap { display:none; margin-top:6px; z-index: 1000; }
@@ -65,7 +65,7 @@
     background: #000;          /* so you see a frame even before video shows */
     object-fit: cover;         /* fill the box nicely */
     border-radius: 6px;
-/*__SV_FIX__: dropped lone } */
+  }
 
   #cam-canvas { display:none; }
 /* Fallback layer toggles shown only if no Leaflet layers control is available */
@@ -204,10 +204,10 @@
                  var key = td ? td.id : '';
                  if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
                        rows[i].parentNode.removeChild(rows[i]);
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+                 }
+           }
            return tempDiv.innerHTML;
-/*__SV_FIX__: dropped lone } */
+        }
         // add class to format popup if it contains media
 		function addClassToPopupIfMedia(content, popup) {
 			var tempDiv = document.createElement('div');
@@ -220,8 +220,8 @@
 					}, 10);
 			} else {
 				popup._contentNode.classList.remove('media');
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+			}
+		}
         var zoomControl = L.control.zoom({
             position: 'topleft'
         }).addTo(map);
@@ -237,7 +237,7 @@
         document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
         var bounds_group = new L.featureGroup([]);
         function setBounds() {
-/*__SV_FIX__: dropped lone } */
+        }
         map.createPane('pane_GoogleMaps_0');
         map.getPane('pane_GoogleMaps_0').style.zIndex = 400;
         var layer_GoogleMaps_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -282,7 +282,7 @@
         layer_WorldImagery_3;
         map.addLayer(layer_WorldImagery_3);
         function pop_BNDRY_4(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_BNDRY_4_0() {
             return {
@@ -295,8 +295,8 @@
                 weight: 4.0,
                 fillOpacity: 0,
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_BNDRY_4');
         map.getPane('pane_BNDRY_4').style.zIndex = 404;
         map.getPane('pane_BNDRY_4').style['mix-blend-mode'] = 'normal';
@@ -312,7 +312,7 @@
         bounds_group.addLayer(layer_BNDRY_4);
         map.addLayer(layer_BNDRY_4);
         function pop_LOTS_5(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_LOTS_5_0() {
             return {
@@ -325,8 +325,8 @@
                 weight: 6.0,
                 fillOpacity: 0,
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_LOTS_5');
         map.getPane('pane_LOTS_5').style.zIndex = 405;
         map.getPane('pane_LOTS_5').style['mix-blend-mode'] = 'normal';
@@ -342,7 +342,7 @@
         bounds_group.addLayer(layer_LOTS_5);
         map.addLayer(layer_LOTS_5);
         function pop_CONT_6(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_CONT_6_0() {
             return {
@@ -355,15 +355,15 @@
                 weight: 1.0,
                 fillOpacity: 0,
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_CONT_6');
         map.getPane('pane_CONT_6').style.zIndex = 406;
         map.getPane('pane_CONT_6').style['mix-blend-mode'] = 'normal';
         var layer_CONT_6 = L.layerGroup();
 layer_CONT_6.__loaded = false;
 function pop_ESA_7(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_ESA_7_0(feature) {
             switch(String(feature.properties['ESA_ZONE'])) {
@@ -380,7 +380,7 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(150,0,0,0.43137254901960786)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
                 case '2':
                     return {
@@ -395,7 +395,7 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(200,50,0,0.43137254901960786)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
                 case '3':
                     return {
@@ -410,7 +410,7 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(255,165,0,0.43137254901960786)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
                 case '4':
                     return {
@@ -425,10 +425,10 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(255,255,0,0.43137254901960786)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_ESA_7');
         map.getPane('pane_ESA_7').style.zIndex = 407;
         map.getPane('pane_ESA_7').style['mix-blend-mode'] = 'normal';
@@ -443,7 +443,7 @@ function pop_ESA_7(feature, layer) {
         });
         bounds_group.addLayer(layer_ESA_7);
         function pop_DW_8(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_DW_8_0() {
             return {
@@ -456,8 +456,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 1.0,
                 fillOpacity: 0,
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_DW_8');
         map.getPane('pane_DW_8').style.zIndex = 408;
         map.getPane('pane_DW_8').style['mix-blend-mode'] = 'normal';
@@ -473,7 +473,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_DW_8);
         map.addLayer(layer_DW_8);
         function pop_SBE_9(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_SBE_9_0() {
             return {
@@ -486,8 +486,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 2.0,
                 fillOpacity: 0,
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         function style_SBE_9_1() {
             return {
                 pane: 'pane_SBE_9',
@@ -501,8 +501,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(251,230,255,0.39)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_SBE_9');
         map.getPane('pane_SBE_9').style.zIndex = 409;
         map.getPane('pane_SBE_9').style['mix-blend-mode'] = 'normal';
@@ -518,7 +518,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_SBE_9);
         map.addLayer(layer_SBE_9);
         function pop_EX_BLD_10(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_EX_BLD_10_0() {
             return {
@@ -531,8 +531,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 3.0,
                 fillOpacity: 0,
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         function style_EX_BLD_10_1() {
             return {
                 pane: 'pane_EX_BLD_10',
@@ -546,8 +546,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(251,230,255,0.573)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_EX_BLD_10');
         map.getPane('pane_EX_BLD_10').style.zIndex = 410;
         map.getPane('pane_EX_BLD_10').style['mix-blend-mode'] = 'normal';
@@ -563,7 +563,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_EX_BLD_10);
         map.addLayer(layer_EX_BLD_10);
         function pop_CRK_COV_11(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_CRK_COV_11_0() {
             return {
@@ -578,8 +578,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(60,146,155,0.41)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_CRK_COV_11');
         map.getPane('pane_CRK_COV_11').style.zIndex = 411;
         map.getPane('pane_CRK_COV_11').style['mix-blend-mode'] = 'normal';
@@ -595,7 +595,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_CRK_COV_11);
         map.addLayer(layer_CRK_COV_11);
         function pop_ENV_RST_12(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_ENV_RST_12_0() {
             return {
@@ -610,8 +610,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(188,240,183,0.389)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_ENV_RST_12');
         map.getPane('pane_ENV_RST_12').style.zIndex = 412;
         map.getPane('pane_ENV_RST_12').style['mix-blend-mode'] = 'normal';
@@ -627,7 +627,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_ENV_RST_12);
         map.addLayer(layer_ENV_RST_12);
         function pop_SRW_MOTI_13(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_SRW_MOTI_13_0() {
             return {
@@ -642,8 +642,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(255,157,157,0.38299999999999995)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_SRW_MOTI_13');
         map.getPane('pane_SRW_MOTI_13').style.zIndex = 413;
         map.getPane('pane_SRW_MOTI_13').style['mix-blend-mode'] = 'normal';
@@ -659,7 +659,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_SRW_MOTI_13);
         map.addLayer(layer_SRW_MOTI_13);
         function pop_CE_14(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_CE_14_0() {
             return {
@@ -674,8 +674,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(206,252,255,0.19899999999999998)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_CE_14');
         map.getPane('pane_CE_14').style.zIndex = 414;
         map.getPane('pane_CE_14').style['mix-blend-mode'] = 'normal';
@@ -691,7 +691,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_CE_14);
         map.addLayer(layer_CE_14);
         function pop_BA_15(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_BA_15_0() {
             return {
@@ -704,8 +704,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 2.0,
                 fillOpacity: 0,
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_BA_15');
         map.getPane('pane_BA_15').style.zIndex = 415;
         map.getPane('pane_BA_15').style['mix-blend-mode'] = 'normal';
@@ -721,7 +721,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_BA_15);
         map.addLayer(layer_BA_15);
         function pop_ALR_16(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_ALR_16_0() {
             return {
@@ -736,8 +736,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(207,0,0,0.376)',
                 interactive: false,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_ALR_16');
         map.getPane('pane_ALR_16').style.zIndex = 416;
         map.getPane('pane_ALR_16').style['mix-blend-mode'] = 'normal';
@@ -753,7 +753,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_ALR_16);
         map.addLayer(layer_ALR_16);
         function pop_AOI_17(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_AOI_17_0(feature) {
             switch(String(feature.properties['AOI_STATUS'])) {
@@ -770,7 +770,7 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(0,170,0,0.3566666666666667)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
                 case 'Not Cleared':
                     return {
@@ -785,10 +785,10 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(200,0,0,0.3566666666666667)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
+            }
                     break;
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_AOI_17');
         map.getPane('pane_AOI_17').style.zIndex = 417;
         map.getPane('pane_AOI_17').style['mix-blend-mode'] = 'normal';
@@ -803,7 +803,7 @@ function pop_ESA_7(feature, layer) {
         });
         bounds_group.addLayer(layer_AOI_17);
         function pop_SEPTIC_18(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_SEPTIC_18_0() {
             return {
@@ -818,8 +818,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(122,115,93,0.9)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_SEPTIC_18');
         map.getPane('pane_SEPTIC_18').style.zIndex = 418;
         map.getPane('pane_SEPTIC_18').style['mix-blend-mode'] = 'normal';
@@ -835,7 +835,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_SEPTIC_18);
         map.addLayer(layer_SEPTIC_18);
         function pop_WELLS_19(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_WELLS_19_0() {
             return {
@@ -850,8 +850,8 @@ function pop_ESA_7(feature, layer) {
                 fillOpacity: 1,
                 fillColor: 'rgba(53,0,255,1.0)',
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_WELLS_19');
         map.getPane('pane_WELLS_19').style.zIndex = 419;
         map.getPane('pane_WELLS_19').style['mix-blend-mode'] = 'normal';
@@ -867,7 +867,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_WELLS_19);
         map.addLayer(layer_WELLS_19);
         function pop_FENCE_20(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_FENCE_20_0() {
             return {
@@ -880,8 +880,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 3.0,
                 fillOpacity: 0,
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_FENCE_20');
         map.getPane('pane_FENCE_20').style.zIndex = 420;
         map.getPane('pane_FENCE_20').style['mix-blend-mode'] = 'normal';
@@ -897,7 +897,7 @@ function pop_ESA_7(feature, layer) {
         bounds_group.addLayer(layer_FENCE_20);
         map.addLayer(layer_FENCE_20);
         function pop_EX_FENCE_21(feature, layer) {
-/*__SV_FIX__: dropped lone } */
+        }
 
         function style_EX_FENCE_21_0() {
             return {
@@ -910,8 +910,8 @@ function pop_ESA_7(feature, layer) {
                 weight: 3.0,
                 fillOpacity: 0,
                 interactive: true,
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+            }
+        }
         map.createPane('pane_EX_FENCE_21');
         map.getPane('pane_EX_FENCE_21').style.zIndex = 421;
         map.getPane('pane_EX_FENCE_21').style['mix-blend-mode'] = 'normal';
@@ -983,14 +983,14 @@ function pop_ESA_7(feature, layer) {
 		<script>
 (() => {
   // ======= BACKEND CONFIG (same as before) =======
-; const BACKEND = {
+const BACKEND = {
   pinsGet:    '/.netlify/functions/pins',
   pinsPost:   '/.netlify/functions/pins',
   photosGet:  '/.netlify/functions/photos',
   photoUpload:'/.netlify/functions/uploadPhoto'
 
   // ======= state + helpers =======
-;   const state = {
+  const state = {
     watchId: null,
     lastFix: null,
     track: [],
@@ -1005,9 +1005,9 @@ function pop_ESA_7(feature, layer) {
       tempPoints: [],       // LatLng[]
       tempLayer: L.featureGroup().addTo(map),
       tooltip: null
-/*__SV_FIX__: dropped lone } */
+    }
 
-;   const ui = {
+  const ui = {
     status: document.getElementById('gps-status'),
     // zoom + locate
     btnZoomIn:  document.getElementById('btn-zoom-in'),
@@ -1034,7 +1034,7 @@ function pop_ESA_7(feature, layer) {
     chkPins:   document.getElementById('chk-pins'),
     chkPhotos: document.getElementById('chk-photos')
 
-;   const fmt = n => (n==null ? 'â€”' : Math.round(n*10)/10);
+  const fmt = n => (n==null ? 'â€”' : Math.round(n*10)/10);
   const setStatus = m => ui.status.textContent = 'status: ' + m;
   const download = (name, content, type='application/octet-stream') => {
     const a = document.createElement('a');
@@ -1046,11 +1046,11 @@ function normLngLat(coords) {
   let [x, y] = coords.map(Number); // x=first, y=second
   // If the first value looks like a latitude (<=90) and the second like a longitude (>90),
   // swap them. Also handle impossible ranges.
-;   const looksLat = Math.abs(x) <= 90 && Math.abs(y) > 90;
+  const looksLat = Math.abs(x) <= 90 && Math.abs(y) > 90;
   const impossible = Math.abs(x) > 180 || Math.abs(y) > 90;
   if (looksLat || impossible) [x, y] = [y, x];
   return [x, y];
-/*__SV_FIX__: dropped lone } */
+}
 
   // ======= remove native zoom and locate controls so we own them in-panel =======
   if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/âˆ’
@@ -1060,7 +1060,7 @@ function normLngLat(coords) {
 >>>>>>> main
 
   // ======= GPS visuals =======
-;   const gpsIcon = L.icon({
+  const gpsIcon = L.icon({
     iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
         <circle cx="20" cy="20" r="10" fill="#1e90ff" />
@@ -1069,7 +1069,7 @@ function normLngLat(coords) {
     iconSize: [40,40], iconAnchor: [20,20]
   });
   // Colored icons for Pins (orange) and Photos (purple)
-; const pinIcon = L.icon({
+const pinIcon = L.icon({
   iconUrl:
     'data:image/svg+xml;utf8,' +
     encodeURIComponent(`
@@ -1099,7 +1099,7 @@ const photoIcon = L.icon({
 });
 
 // ========= Measurement Controller (capture-phase, layer-proof) =========
-; const Measure = (() => {
+const Measure = (() => {
   let mode = null; // 'dist' | 'area' | null
   let pts = [];
   let captureHandler = null;
@@ -1114,12 +1114,12 @@ const photoIcon = L.icon({
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
     return map.containerPointToLatLng([x, y]);
-/*__SV_FIX__: dropped lone } */
+  }
 
 function openPhotoModal(src) {
   document.getElementById('photo-modal-img').src = src;
   document.getElementById('photo-modal').style.display = 'flex';
-/*__SV_FIX__: dropped lone } */
+}
 
 
 
@@ -1146,11 +1146,11 @@ function openPhotoModal(src) {
           addTemp(L.polyline([pts[pts.length-2], ll], { weight: 3 }));
           const meters = pts.slice(1).reduce((sum, p, i)=> sum + haversine(pts[i], p), 0);
           setStatus(`distance: ${fmtMeters(meters)}  (click to add, Clear to finish)`);
-/*__SV_FIX__: dropped lone } */
+        }
       } else if (mode === 'area') {
         if (pts.length >= 3) {
           // remove last polygon before re-draw
-;           const lastPoly = tempLayers.find(l => l instanceof L.Polygon);
+          const lastPoly = tempLayers.find(l => l instanceof L.Polygon);
           if (lastPoly) { map.removeLayer(lastPoly); tempLayers.splice(tempLayers.indexOf(lastPoly),1); }
           addTemp(L.polygon(pts, { weight:2, fillOpacity:0.1 }));
           const area = sphericalArea(pts);
@@ -1158,11 +1158,11 @@ function openPhotoModal(src) {
         } else {
           addTemp(L.circleMarker(ll, { radius:4 }));
           setStatus('area: add at least 3 pointsâ€¦');
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+        }
+      }
     // true = capture phase
     map.getContainer().addEventListener('click', captureHandler, true);
-/*__SV_FIX__: dropped lone } */
+  }
 
   function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add pointsâ€¦'); }
   function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add pointsâ€¦'); }
@@ -1181,7 +1181,7 @@ function haversine(a, b) {
   const s1 = Math.sin(dLat/2), s2 = Math.sin(dLng/2);
   const aa = s1*s1 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * s2*s2;
   return 2 * R * Math.asin(Math.sqrt(aa));
-/*__SV_FIX__: dropped lone } */
+}
 
 // Spherical polygon area (mÂ²) from array of LatLngs
 function sphericalArea(latlngs) {
@@ -1192,9 +1192,9 @@ function sphericalArea(latlngs) {
     const p1 = latlngs[i];
     const p2 = latlngs[(i+1) % latlngs.length];
     total += toRad(p2.lng - p1.lng) * (2 + Math.sin(toRad(p1.lat)) + Math.sin(toRad(p2.lat)));
-/*__SV_FIX__: dropped lone } */
+  }
   return Math.abs(total) * R * R / 2;
-/*__SV_FIX__: dropped lone } */
+}
 
 function fmtMeters(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
 function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e6).toFixed(2)} kmÂ²`; }
@@ -1204,27 +1204,27 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e
       const useRot = typeof L.rotatedMarker === 'function';
       state.gps.marker = (useRot ? L.rotatedMarker([0,0], {icon:gpsIcon, rotationAngle:0})
                                   : L.marker([0,0], {icon:gpsIcon})).addTo(map);
-/*__SV_FIX__: dropped lone } */
+    }
     if (!state.gps.accuracy) state.gps.accuracy = L.circle([0,0], {radius:1, color:'#1e90ff', fillOpacity:0.15}).addTo(map);
     if (!state.gps.bearingLine) state.gps.bearingLine = L.polyline([[0,0],[0,0]], {dashArray:'6,6'}).addTo(map);
-/*__SV_FIX__: dropped lone } */
+  }
   function updateGps(lat, lng, acc, heading) {
     ensureGpsLayers();
     state.gps.marker.setLatLng([lat,lng]);
     state.gps.accuracy.setLatLng([lat,lng]).setRadius(acc||1);
     if (state.gps.marker.setRotationAngle && typeof heading === 'number' && !Number.isNaN(heading)) {
       state.gps.marker.setRotationAngle(heading);
-/*__SV_FIX__: dropped lone } */
+    }
     // Short bearing line
-;     const dist = 25; // meters
+    const dist = 25; // meters
     let dest;
     if (L.GeometryUtil?.destination) dest = L.GeometryUtil.destination(L.latLng(lat, lng), heading||0, dist);
     else {
       const rad = (heading||0)*Math.PI/180;
       dest = L.latLng(lat + 0.0002*Math.cos(rad), lng + 0.0002*Math.sin(rad));
-/*__SV_FIX__: dropped lone } */
+    }
     state.gps.bearingLine.setLatLngs([[lat,lng], dest]);
-/*__SV_FIX__: dropped lone } */
+  }
   function onFix(p, recenter=false) {
     const c = p.coords;
     const fix = { time:p.timestamp, lat:c.latitude, lng:c.longitude, accuracy:c.accuracy, speed:c.speed, heading:c.heading, alt:c.altitude };
@@ -1232,19 +1232,19 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e
     updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
     if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
     setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} Â±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}Â°`);
-/*__SV_FIX__: dropped lone } */
+  }
   function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message + '\nUse HTTPS or localhost and grant browser permission.'); }
 
   // ======= Pins (shared) =======
 async function loadPins() {
   // Add a cache-busting parameter to prevent showing stale data
-;   const url = `${BACKEND.pinsGet}?t=${Date.now()}`;
+  const url = `${BACKEND.pinsGet}?t=${Date.now()}`;
   const response = await fetch(url, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Could not load pins from server.');
-/*__SV_FIX__: dropped lone } */
+  }
   return response.json();
-/*__SV_FIX__: dropped lone } */
+}
 
 function addPinFeature(feat) {
   if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
@@ -1252,14 +1252,14 @@ function addPinFeature(feat) {
   const { title = '', description = '' } = feat.properties || {};
   const m = L.marker([lat, lng], { icon: pinIcon, draggable: false }).addTo(state.pinsLayer);
   m.bindPopup(`<b>${title || 'Pin'}</b><br>${description || ''}`);
-/*__SV_FIX__: dropped lone } */
+}
 async function placePinAt(latlng) {
   const { lat, lng } = latlng;
   const title = prompt('Pin title:', 'Pin') || 'Pin';
   const description = prompt('Pin description (optional):', '') || '';
   await savePin(lng, lat, title, description);
   setStatus('pin saved');
-/*__SV_FIX__: dropped lone } */
+}
 
 async function savePin(lng, lat, title, description) {
   const feature = {
@@ -1268,7 +1268,7 @@ async function savePin(lng, lat, title, description) {
     properties: { title, description, ts: Date.now() }
   
   // This will now throw an error if the network request fails, which is what we want.
-;   const response = await fetch(BACKEND.pinsPost, {
+  const response = await fetch(BACKEND.pinsPost, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(feature)
@@ -1276,11 +1276,11 @@ async function savePin(lng, lat, title, description) {
 
   if (!response.ok) {
     throw new Error('Failed to save pin to the server.');
-/*__SV_FIX__: dropped lone } */
+  }
 
   // Add the pin to the map using the response from the server.
   addPinFeature(await response.json());
-/*__SV_FIX__: dropped lone } */
+}
 
   // ======= Photos (shared) =======
 async function loadPhotos() {
@@ -1288,9 +1288,9 @@ async function loadPhotos() {
   const response = await fetch(url, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Could not load photos from server.');
-/*__SV_FIX__: dropped lone } */
+  }
   return response.json();
-/*__SV_FIX__: dropped lone } */
+}
 
 function addPhotoFeature(feat) {
   if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
@@ -1313,7 +1313,7 @@ ${imageUrl ? `
 
   const m = L.marker([lat, lng], { icon: photoIcon, draggable: false }).addTo(state.photosLayer);
   m.bindPopup(html);
-/*__SV_FIX__: dropped lone } */
+}
 
 async function uploadPhoto(blob, filename, lat, lng, title, description) {
   const fd = new FormData();
@@ -1329,20 +1329,20 @@ async function uploadPhoto(blob, filename, lat, lng, title, description) {
 
   if (!response.ok) {
     throw new Error('Photo upload failed.');
-/*__SV_FIX__: dropped lone } */
+  }
 
-;   const { feature } = await response.json();
+  const { feature } = await response.json();
   
   // Add the new photo feature to the map
   addPhotoFeature(feature);
-/*__SV_FIX__: dropped lone } */
+}
 
 
 // === Image resize/compress helper ===
 // Scales the image to fit within maxDim x maxDim and returns a JPEG Blob.
 async function resizeImageBlob(srcBlob, maxDim = 1600, quality = 0.8) {
   // read blob into an Image
-;   const dataUrl = await new Promise((resolve, reject) => {
+  const dataUrl = await new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result);
     r.onerror = reject;
@@ -1356,28 +1356,28 @@ async function resizeImageBlob(srcBlob, maxDim = 1600, quality = 0.8) {
   });
 
   // compute target size (keep aspect)
-;   const { naturalWidth: w0, naturalHeight: h0 } = img;
+  const { naturalWidth: w0, naturalHeight: h0 } = img;
   const scale = Math.min(1, maxDim / Math.max(w0, h0));
   const w = Math.max(1, Math.round(w0 * scale));
   const h = Math.max(1, Math.round(h0 * scale));
 
   // draw to offscreen canvas
-;   const c = document.createElement('canvas');
+  const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const ctx = c.getContext('2d');
   ctx.drawImage(img, 0, 0, w, h);
 
   // export as JPEG
-;   const outBlob = await new Promise(res => c.toBlob(res, 'image/jpeg', quality));
+  const outBlob = await new Promise(res => c.toBlob(res, 'image/jpeg', quality));
   if (!outBlob) throw new Error('JPEG encode failed');
   return outBlob;
-/*__SV_FIX__: dropped lone } */
+}
 
   // ======= Camera =======
 async function camOn() {
   try {
     // Prefer rear camera; fall back gracefully
-;     const choices = [
+    const choices = [
       { video: { facingMode: { ideal: 'environment' } }, audio: false },
       { video: true, audio: false }
     ];
@@ -1385,7 +1385,7 @@ async function camOn() {
     for (const c of choices) {
       try { stream = await navigator.mediaDevices.getUserMedia(c); if (stream) break; }
       catch (e) { lastErr = e; }
-/*__SV_FIX__: dropped lone } */
+    }
     if (!stream) throw lastErr || new Error('No camera available');
 
     state.cam.stream = stream;
@@ -1407,7 +1407,7 @@ async function camOn() {
       else {
         ui.video.addEventListener('loadedmetadata', ready, { once: true });
         ui.video.addEventListener('canplay', ready, { once: true });
-/*__SV_FIX__: dropped lone } */
+      }
     });
 
     // Show the preview container
@@ -1419,8 +1419,8 @@ async function camOn() {
   } catch (e) {
     alert('Camera error: ' + e.message + '\nTip: open the site over HTTPS (Netlify) or http://localhost.');
     setStatus('camera error');
-/*__SV_FIX__: dropped lone } */
-/*__SV_FIX__: dropped lone } */
+  }
+}
 
   // ======= UI wiring =======
   // zoom +/âˆ’
@@ -1451,7 +1451,7 @@ ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true 
       state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
 >>>>>>> main
       ui.btnTrackToggle.textContent = 'â¸ï¸ Stop'; setStatus('trackingâ€¦');
-/*__SV_FIX__: dropped lone } */
+    }
 // --- Drop pin (works even if layers intercept clicks) ---
 
 // helper to save a pin at a given latlng
@@ -1461,7 +1461,7 @@ async function placePinAt(latlng) {
   const description = prompt('Pin description (optional):', '') || '';
   await savePin(lng, lat, title, description);
   setStatus('pin saved');
-/*__SV_FIX__: dropped lone } */
+}
 
 let dropPinCaptureHandler = null;
 
@@ -1476,11 +1476,11 @@ ui.btnDropPin.onclick = () => {
       if (!state.dropPinArmed) return;
 
       // Ignore clicks on the floating UI panel
-;       const panel = document.getElementById('gpscam-ui');
+      const panel = document.getElementById('gpscam-ui');
       if (panel && panel.contains(ev.target)) return;
 
       // Convert screen point â†’ map lat/lng
-;       const rect = map.getContainer().getBoundingClientRect();
+      const rect = map.getContainer().getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
       const latlng = map.containerPointToLatLng([x, y]);
@@ -1494,7 +1494,7 @@ ui.btnDropPin.onclick = () => {
 
     // true = capture phase (runs before layer handlers)
     map.getContainer().addEventListener('click', dropPinCaptureHandler, true);
-/*__SV_FIX__: dropped lone } */
+  }
 
   // in-panel toggles control layer visibility
   ui.chkPins.onchange   = () => ui.chkPins.checked   ? map.addLayer(state.pinsLayer)   : map.removeLayer(state.pinsLayer);
@@ -1513,7 +1513,7 @@ ui.btnMeasureClear.onclick = () => Measure.stop();
         if (!state.track.length) return alert('No positions logged yet.');
         const fc = { type:'FeatureCollection', features: state.track.map(f => ({ type:'Feature', geometry:{ type:'Point', coordinates:[f.lng, f.lat] }, properties:{ time:new Date(f.time).toISOString(), accuracy:f.accuracy, speed:f.speed, heading:f.heading } })) };
         download('qgis2web_track.geojson', JSON.stringify(fc, null, 2), 'application/geo+json');
-/*__SV_FIX__: dropped lone } */
+  }
 
   // camera
 ui.btnCamOn.onclick = camOn;
@@ -1535,7 +1535,7 @@ ui.btnCamShot.onclick = async () => {
     });
     w = ui.video.videoWidth || 1280;
     h = ui.video.videoHeight || 720;
-/*__SV_FIX__: dropped lone } */
+  }
 
   // Draw current frame
   ui.canvas.width = w;
@@ -1543,11 +1543,11 @@ ui.btnCamShot.onclick = async () => {
   ui.canvas.getContext('2d').drawImage(ui.video, 0, 0, w, h);
 
   // PNG source â†’ resize/compress to JPEG (~1â€“2 MB)
-;   const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
+  const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
   const jpegBlob = await resizeImageBlob(rawBlob, 1600, 0.8);
 
   // Use last GPS fix or map center
-;   const fix = state.lastFix;
+  const fix = state.lastFix;
   const lat = fix ? fix.lat : map.getCenter().lat;
   const lng = fix ? fix.lng : map.getCenter().lng;
 
@@ -1567,14 +1567,14 @@ ui.btnCamShot.onclick = async () => {
     } catch(e) { 
         console.error('Pins load error', e);
         alert('Could not load existing pins. Check the console for details.');
-/*__SV_FIX__: dropped lone } */
+    }
     try { 
         const photos = await loadPhotos();
         (photos.features || []).forEach(addPhotoFeature);
     } catch(e) { 
         console.error('Photos load error', e);
         alert('Could not load existing photos. Check the console for details.');
-/*__SV_FIX__: dropped lone } */
+    }
     setStatus('ready');
   })();
 })();
@@ -1582,7 +1582,7 @@ ui.btnCamShot.onclick = async () => {
 
 <script>
 // Get modal elements
-; const photoModal = document.getElementById('photo-modal');
+const photoModal = document.getElementById('photo-modal');
 const photoModalImg = document.getElementById('photo-modal-img');
 
 // Click anywhere on black background closes modal
@@ -1592,10 +1592,10 @@ if (typeof photoModal !== "undefined" && photoModal) {
     try{ photoModal.style.display = "none"; }catch(e){}
     try{ if (typeof photoModalImg !== "undefined" && photoModalImg) { photoModalImg.src = ""; } }catch(e){}
   });
-/*__SV_FIX__: dropped lone } */
+}
     document.head.appendChild(s);
   });
-/*__SV_FIX__: dropped lone } */
+}
 async function ensureContoursLoaded() {
   try {
     if (!window.layer_CONT_6) { console.warn('[contours] layer_CONT_6 missing'); return; }
@@ -1606,11 +1606,11 @@ async function ensureContoursLoaded() {
     nl.eachLayer(function(ly){ layer_CONT_6.addLayer(ly); });
     layer_CONT_6.__loaded = true;
   } catch(e) { console.error('[contours] load error', e); }
-/*__SV_FIX__: dropped lone } */
+}
 if (window.map) {
   map.on('overlayadd', function(e){ if (e && e.layer === layer_CONT_6) ensureContoursLoaded(); });
   map.on('layeradd',   function(e){ if (e && e.layer === layer_CONT_6) ensureContoursLoaded(); });
-/*__SV_FIX__: dropped lone } */
+}
 </script>
 <!-- Sticky Bottom Action Bar + Toast -->
 <div id="actionbar" class="sv-actionbar">
@@ -1652,12 +1652,12 @@ if (window.map) {
         m.openPopup();
       }catch(e){ console.error('EXIF/photo error', e); }
     });
-/*__SV_FIX__: dropped lone } */
+  }
   document.addEventListener('click', function(e){
     var t=e.target;
     if(t && t.tagName==='IMG' && (t.classList.contains('sv-photo') || (t.closest && t.closest('.leaflet-popup-content')))){
       var u=t.src, w=window.open('','_blank'); if(w && w.document) w.document.write('<meta name="viewport" content="width=device-width, initial-scale=1"><img src="'+u+'" style="max-width:100%;height:auto;display:block;margin:0 auto">');
-/*__SV_FIX__: dropped lone } */
+    }
   }, false);
 })();
 </script>
@@ -1669,7 +1669,7 @@ if (window.map) {
     if(ly && ly.eachLayer){
       ly.eachLayer(function(c){ if(c && c.getLatLng){ cluster.addLayer(c); moved++; } });
       if(moved){ try{ map.removeLayer(ly); }catch(e){} }
-/*__SV_FIX__: dropped lone } */
+    }
   });
   if(moved){ map.addLayer(cluster); }
 })();
@@ -1734,6 +1734,5 @@ if (window.map) {
 </body>
 </html>
 >>>>>>> main
-
 
 

@@ -1,4 +1,4 @@
-﻿/* sv-mobile.css: production mobile polish */
+﻿/* sv-mobile.css */
 @media (max-width:1200px){
   #left-toolbox, .left-toolbox, #sidebar, .sidebar, #toolbox-left, .toolbox-left { display:none !important; }
 }
