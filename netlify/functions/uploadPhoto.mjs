@@ -1,7 +1,6 @@
-// netlify/functions/uploadPhoto.mjs
-const GH_API = 'https://api.github.com';
-
-function cfg() {
+﻿import { Buffer } from 'buffer';
+import { gh, cfg } from '../github-api-utils.mjs';
+// netlify/functions/uploadPhoto.mjsfunction cfg() {
   const token   = process.env.GITHUB_TOKEN;
   const owner   = process.env.GH_OWNER;
   const repo    = process.env.GH_REPO;
@@ -149,3 +148,5 @@ const imageUrl = `/.netlify/functions/photo/${encodeURIComponent(key)}`;
     };
   }
 }
+
+

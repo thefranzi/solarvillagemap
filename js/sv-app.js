@@ -1,341 +1,298 @@
 ﻿(function(){
-  // --- Config ---
-  var GH_SLUG   = "thefranzi/solarvillagemap";     // <owner>/<repo>
-  var GH_BRANCH = "mobile-one-shot-locate";        // branch for raw reads & function commits
-  var SITE_FALLBACK = {lat:49.8870, lng:-119.4960};
-
-  // --- tiny helpers ---
-  function ready(fn){ if(document.readyState!=="loading") fn(); else document.addEventListener("DOMContentLoaded", fn); }
-  function $(sel){ return document.querySelector(sel); }
-  function mapOk(m){ return !!(m && typeof m.setView==="function" && typeof m.eachLayer==="function"); }
-  function raw(p){ p=String(p||"").replace(/^\/+/,""); return "https://raw.githubusercontent.com/"+GH_SLUG+"/"+encodeURIComponent(GH_BRANCH)+"/"+p; }
-  function ensureEl(id, html){
-    var el=document.getElementById(id); if(el) return el;
-    var wrap=document.createElement("div"); wrap.innerHTML=html; el=wrap.firstChild; document.body.appendChild(el); return el;
-  }
-  function killTopLeft(){ var tl=$(".leaflet-top.leaflet-left"); if(tl&&tl.parentNode) try{ tl.parentNode.removeChild(tl);}catch(e){} }
-
-  // --- bottom bar + switches ---
-  function toolbar(){
-    var bars = document.querySelectorAll("#bottom-toolbar-fixed");
-    for(var i=1;i<bars.length;i++){ try{ bars[i].parentNode.removeChild(bars[i]); }catch(e){} }
-    var bar = bars[0];
-    if(!bar){
-      bar = document.createElement("div");
-      bar.id="bottom-toolbar-fixed";
-      document.body.appendChild(bar);
-    }
-    // switches block (Photos / Pins)
-    var inline = document.getElementById("sv-inline");
-    if(!inline){
-      inline = document.createElement("div");
-      inline.id="sv-inline"; inline.className="sv-inline";
-      inline.innerHTML = "<label><input type='checkbox' id='sv-tog-photos' checked> Photos</label>"
-                       + " <label><input type='checkbox' id='sv-tog-pins' checked> Pins</label>";
-      bar.appendChild(inline);
-    }
-    function mk(id, text, onClick){
-      var b=document.getElementById(id);
-      if(!b){
-        b=document.createElement("button");
-        b.id=id; b.className="sv-btn"; b.textContent=text;
-        b.onclick=onClick;
-        bar.insertBefore(b, inline); // buttons before switches
+  function onReady(fn){ if(document.readyState !== "loading") fn(); else document.addEventListener("DOMContentLoaded", fn); }
+  function findMap(){
+    try{
+      if (window.map && typeof map.setView==="function" && typeof map.eachLayer==="function") return window.map;
+      if (window.L && L.Map) {
+        var c = document.getElementsByClassName("leaflet-container");
+        if (c && c.length && window.map) return window.map;
       }
+    }catch(e){}
+    return null;
+  }
+  function ensureLayersTopRight(map){
+    try{
+      var layers = document.querySelector(".leaflet-control-layers");
+      var tr = document.querySelector(".leaflet-top.leaflet-right");
+      if(layers && tr && layers.parentElement !== tr){ tr.appendChild(layers); }
+      if(layers) layers.style.display = "block";
+    }catch(e){}
+  }
+  function bar(){
+    var el = document.getElementById("bottom-toolbar-fixed");
+    if(!el){ el = document.createElement("div"); el.id = "bottom-toolbar-fixed"; document.body.appendChild(el); }
+    function mk(id, label, handler){
+      var b = document.getElementById(id);
+      if(!b){
+        b = document.createElement("button");
+        b.id = id; b.className = "sv-btn"; b.textContent = label;
+        el.appendChild(b);
+      }
+      b.onclick = handler;
       return b;
     }
-    return {bar:bar, inline:inline, mk:mk};
+    return { el: el, mk: mk };
   }
-
-  // --- layers: photos + pins groups ---
-  function ensureGroups(map){
-    window.SV = window.SV || {};
-    if(!SV.pins)   SV.pins   = L.layerGroup().addTo(map);
-    if(!SV.photos) SV.photos = L.layerGroup().addTo(map);
-  }
-  function overlaysOnExceptContours(){
-    var panel = $(".leaflet-control-layers-overlays") || $(".leaflet-control-layers-list");
-    if(!panel) return;
-    var labels = panel.getElementsByTagName("label");
-    for(var i=0;i<labels.length;i++){
-      var lb=labels[i], t=(lb.textContent||"").toLowerCase();
-      var cb=lb.querySelector('input[type="checkbox"]'); if(!cb) continue;
-      var isContour = /(^|\W)cont(ours?)?(\W|$)|cont\./i.test(t);
-      var shouldOn = !isContour;
-      if(shouldOn && !cb.checked) cb.click();
-      if(!shouldOn && cb.checked) cb.click();
-    }
-  }
-  function wireSwitches(map){
-    function bind(id, grp){
-      var cb=document.getElementById(id); if(!cb || !grp) return;
-      cb.addEventListener("change", function(){
-        try{ this.checked ? map.addLayer(grp) : map.removeLayer(grp); }catch(e){}
-      });
-      try{
-        if(cb.checked && !map.hasLayer(grp)) map.addLayer(grp);
-        if(!cb.checked && map.hasLayer(grp)) map.removeLayer(grp);
-      }catch(e){}
-    }
-    bind("sv-tog-photos", SV.photos);
-    bind("sv-tog-pins",   SV.pins);
-  }
-
-  // --- load/save GeoJSON (append feature to file via Netlify function) ---
-  function loadGeo(url, group, kind){
-    return fetch(url+"?t="+Date.now()).then(function(r){ if(!r.ok) throw new Error(r.statusText); return r.json(); })
-      .then(function(j){
-        try{ group.clearLayers(); }catch(e){}
-        var feats = (j && j.features)||[];
-        for(var i=0;i<feats.length;i++){
-          var f=feats[i]; if(!f || !f.geometry || f.geometry.type!=="Point") continue;
-          var c=f.geometry.coordinates, ll=L.latLng(c[1],c[0]);
-          if(kind==="photos"){
-            var u=f.properties && f.properties.url;
-            var html = u ? "<img src='"+u+"' style='max-width:240px;height:auto;border-radius:6px'>" : "Photo";
-            L.marker(ll).addTo(group).bindPopup(html);
-          }else{
-            var nm=(f.properties&&f.properties.name)||"Pin";
-            var ds=(f.properties&&f.properties.desc)||"";
-            L.marker(ll).addTo(group).bindPopup("<b>"+nm+"</b><br>"+ds);
-          }
+  function addPinsPhotosTogglesIntoLayers(map, pinsGroup, photosGroup){
+    function tryPanel(){
+      var panel = document.querySelector(".leaflet-control-layers-overlays") || document.querySelector(".leaflet-control-layers-list");
+      if(!panel){ return setTimeout(tryPanel, 300); }
+      function addToggle(label, group){
+        var id = "sv-chk-" + label.toLowerCase();
+        if(document.getElementById(id)) return;
+        var lab = document.createElement("label");
+        lab.style.display = "block";
+        lab.innerHTML = "<input type='checkbox' id='"+id+"' checked> "+label;
+        panel.appendChild(lab);
+        var cb = lab.querySelector("input");
+        if(cb){
+          cb.checked = true;
+          if(!map.hasLayer(group)) map.addLayer(group);
+          cb.addEventListener("change", function(){
+            if(this.checked){ map.addLayer(group); } else { map.removeLayer(group); }
+          });
         }
-      }).catch(function(){ /* ignore 404 on empty */ });
-  }
-  function commitFeature(feature, target){ // target: "pins" | "photos"
-    return fetch("/.netlify/functions/repo-commit",{
-      method:"POST", headers:{ "content-type":"application/json" },
-      body: JSON.stringify({ feature: feature, geoTarget: target, branch: GH_BRANCH, repo: GH_SLUG })
-    }).then(function(r){ return r.json().catch(function(){ return {ok:r.ok}; }); });
-  }
-  function commitUpload(dataUrl, filename){
-    return fetch("/.netlify/functions/repo-commit",{
-      method:"POST", headers:{ "content-type":"application/json" },
-      body: JSON.stringify({ dataUrl: dataUrl, filename: filename, subdir: "uploads", branch: GH_BRANCH, repo: GH_SLUG })
-    }).then(function(r){ return r.json().catch(function(){ return {ok:r.ok}; }); });
-  }
+      }
+      addToggle("Photos", photosGroup);
+      addToggle("Pins", pinsGroup);
 
-  // --- Photo UI (capture → preview → upload → add Feature) ---
+      // Turn ON all overlays except anything matching "CONT"
+      var labels = panel.getElementsByTagName("label");
+      for(var i=0;i<labels.length;i++){
+        var t = (labels[i].textContent || "").toUpperCase();
+        var cb = labels[i].querySelector("input[type=checkbox]");
+        if(!cb) continue;
+        var shouldOn = (t.indexOf("CONT") === -1); // everything but CONT*
+        if(shouldOn && !cb.checked) cb.click();
+        if(!shouldOn && cb.checked) cb.click();
+      }
+    }
+    tryPanel();
+  }
   function ensurePhotoUI(){
-    var html = ""
-      +"<div id='photo-capture'>"
-      +"  <div><label class='sv-btn'>Take Photo"
-      +"    <input id='photoInput' type='file' accept='image/*' capture='environment' style='display:none'>"
-      +"  </label></div>"
-      +"  <div id='photoPreview' style='margin-top:8px;'></div>"
-      +"  <div class='row'><button id='photoUpload' class='sv-btn' style='display:none'>Upload</button><button id='photoCancel' class='sv-btn'>Cancel</button></div>"
-      +"  <div style='margin-top:6px;font-size:12px;color:#333'>Flow: Take Photo → Preview → Upload</div>"
-      +"</div>";
-    var ui = ensureEl("photo-capture", html);
+    if(document.getElementById("photo-capture")) return;
+    var w = document.createElement("div");
+    w.id = "photo-capture";
+    w.innerHTML =
+      "<form id='photoForm'>"
+      +"<label for='photoInput' class='sv-btn' style='display:inline-block;cursor:pointer;'>Take Photo"
+      +"  <input id='photoInput' type='file' accept='image/*' capture='environment' style='display:none;'>"
+      +"</label>"
+      +" <button id='photoUpload' type='button' class='sv-btn' style='display:none'>Upload</button>"
+      +" <button id='photoCancel' type='button' class='sv-btn'>Cancel</button>"
+      +"<div id='photoPreview' style='margin-top:10px'></div>"
+      +"<small style='display:block;margin-top:6px;font-size:12px'>Take → preview → Upload</small>"
+      +"</form>";
+    document.body.appendChild(w);
 
-    var input   = document.getElementById("photoInput");
+    var input = document.getElementById("photoInput");
     var preview = document.getElementById("photoPreview");
-    var up      = document.getElementById("photoUpload");
-    var cancel  = document.getElementById("photoCancel");
+    var upload = document.getElementById("photoUpload");
+    var cancel = document.getElementById("photoCancel");
 
-    window.openPhotoUI  = function(){ ui.style.display="block"; };
-    window.closePhotoUI = function(){ ui.style.display="none"; preview.innerHTML=""; up.style.display="none"; input.value=""; };
+    window.openPhotoUI = function(){ w.style.display = "block"; };
+    window.closePhotoUI = function(){ w.style.display = "none"; preview.innerHTML = ""; upload.style.display="none"; if(input) input.value=""; };
 
-    input.addEventListener("change", function(ev){
-      var file=ev && ev.target && ev.target.files && ev.target.files[0]; if(!file) return;
-      preview.textContent="Preparing preview…";
-      var reader=new FileReader();
-      reader.onload=function(){
-        var img=new Image();
-        img.onload=function(){
-          // compress to max 1600px
-          var w=img.width,h=img.height,max=1600;
-          if(Math.max(w,h)>max){ if(w>h){ h=Math.round(h*(max/w)); w=max; } else { w=Math.round(w*(max/h)); h=max; } }
-          var c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(img,0,0,w,h);
-          var dataUrl=c.toDataURL("image/jpeg",0.78);
-          preview.innerHTML="<img id='previewImg' alt='preview' style='max-width:100%;height:auto;border-radius:8px'>";
-          document.getElementById("previewImg").src=dataUrl;
-          up.style.display="inline-block";
-          up.onclick=function(){
-            // 1) upload image blob to /uploads in repo
-            var fname = "photo-"+Date.now()+".jpg";
-            commitUpload(dataUrl, fname).then(function(res){
-              if(!res || !res.ok || !res.url){ alert("Upload failed"); return; }
-              // 2) add photo feature at current center
-              var m = window.map;
-              var center = (m&&m.getCenter&&m.getCenter()) || SITE_FALLBACK;
-              var feat = {
-                type:"Feature",
-                geometry:{type:"Point", coordinates:[center.lng, center.lat]},
-                properties:{ url: res.url, when: Date.now(), name: fname }
-              };
-              commitFeature(feat, "photos").then(function(){
-                try{ if(window.SV && SV.reloadPhotos) SV.reloadPhotos(); }catch(e){}
-                alert("Photo saved.");
-                window.closePhotoUI();
-              });
+    input && input.addEventListener("change", function(ev){
+      var file = ev && ev.target && ev.target.files && ev.target.files[0];
+      if(!file) return;
+      preview.textContent = "Preparing preview...";
+      var rdr = new FileReader();
+      rdr.onload = function(){
+        var img = new Image();
+        img.onload = function(){
+          var max = 1600, w0 = img.width, h0 = img.height, w1=w0, h1=h0;
+          if(Math.max(w0,h0)>max){
+            if(w0>h0){ h1 = Math.round(h0*(max/w0)); w1 = max; }
+            else { w1 = Math.round(w0*(max/h0)); h1 = max; }
+          }
+          var c = document.createElement("canvas"); c.width = w1; c.height = h1;
+          c.getContext("2d").drawImage(img,0,0,w1,h1);
+          var dataUrl = c.toDataURL("image/jpeg", 0.78);
+          preview.innerHTML = "<img alt='preview' style='max-width:100%;height:auto;border-radius:8px'>";
+          preview.firstChild.src = dataUrl;
+          upload.style.display = "inline-block";
+          upload.onclick = function(){
+            // Try Netlify function; if missing, offer a download fallback.
+            fetch("/.netlify/functions/repo-commit", {
+              method: "POST",
+              headers: { "content-type":"application/json" },
+              body: JSON.stringify({ dataUrl: dataUrl, filename: ("photo_"+Date.now()+".jpg"), subdir: "uploads" })
+            }).then(function(r){ return r.text().then(function(t){ return {ok:r.ok, text:t};}); })
+            .then(function(res){
+              if(!res.ok){
+                // Fallback: download locally so user can attach manually
+                var a = document.createElement("a");
+                a.href = dataUrl; a.download = "photo_"+Date.now()+".jpg";
+                a.click();
+                alert("Upload function not found; downloaded photo locally.");
+              } else {
+                alert("Photo uploaded.");
+              }
+              window.closePhotoUI();
+            }).catch(function(){
+              var a = document.createElement("a");
+              a.href = dataUrl; a.download = "photo_"+Date.now()+".jpg";
+              a.click();
+              alert("Upload function not reachable; downloaded photo locally.");
+              window.closePhotoUI();
             });
           };
         };
-        img.src = reader.result;
+        img.src = rdr.result;
       };
-      reader.readAsDataURL(file);
+      rdr.readAsDataURL(file);
     });
-    cancel.onclick=function(){ window.closePhotoUI(); };
+    cancel && (cancel.onclick = function(){ window.closePhotoUI(); });
   }
 
-  // --- Measure tools (picker: Linear / Area / Clear) ---
-  function ensureMeasurePicker(){
-    var html = ""
-      +"<div id='sv-measure-picker'>"
-      +"  <button id='sv-msr-l'>Linear</button>"
-      +"  <button id='sv-msr-a'>Area</button>"
-      +"  <button id='sv-msr-c'>Clear</button>"
-      +"</div>";
-    var el = ensureEl("sv-measure-picker", html);
-    return el;
-  }
-  function wireMeasure(map){
-    var state = { mode:null, line:null, poly:null, pts:[] };
-    var picker = ensureMeasurePicker();
-    function fmt(m){ return m<1000? (m.toFixed(0)+" m") : ((m/1000).toFixed(2)+" km"); }
-    function fmtA(a){ return a<1e6? (a.toFixed(0)+" m²") : ((a/1e6).toFixed(2)+" km²"); }
+  function measureTool(map, UI){
+    var chip = document.querySelector(".sv-chip");
+    if(!chip){ chip = document.createElement("div"); chip.className="sv-chip"; chip.style.display="none"; document.body.appendChild(chip); }
+    function show(t){ chip.textContent=t; chip.style.display="block"; }
+    function hide(){ chip.style.display="none"; }
 
-    function off(){
-      map.off("click", onClick);
-      state.mode=null; state.pts=[];
-      try{ if(state.line){ map.removeLayer(state.line); state.line=null; } }catch(e){}
-      try{ if(state.poly){ map.removeLayer(state.poly); state.poly=null; } }catch(e){}
-      picker.style.display="none";
+    var state = { on:false, pts:[], line:null };
+    function fmt(m){ return m<1000 ? (m.toFixed(0)+" m") : ((m/1000).toFixed(2)+" km"); }
+    function total(){
+      var d=0, i; for(i=1;i<state.pts.length;i++){ d += state.pts[i-1].distanceTo(state.pts[i]); } return d;
     }
-    function onClick(ev){
+    function clickAdd(ev){
       state.pts.push(ev.latlng);
-      if(state.mode==="linear"){
-        if(!state.line){ state.line=L.polyline(state.pts,{color:"#222",weight:3,dashArray:"6,4"}).addTo(map); }
-        else { state.line.setLatLngs(state.pts); }
-        var d=0; for(var i=1;i<state.pts.length;i++){ d+=state.pts[i-1].distanceTo(state.pts[i]); }
-        map.closePopup();
-        L.popup({autoClose:true, closeButton:false})
-          .setLatLng(ev.latlng).setContent("Distance: "+fmt(d)).openOn(map);
-      } else if(state.mode==="area"){
-        if(!state.poly){ state.poly=L.polygon(state.pts,{color:"#222",weight:2,fillOpacity:0.1}).addTo(map); }
-        else { state.poly.setLatLngs([state.pts]); }
-        if(state.pts.length>=3){
-          // rough planar area (Leaflet has no built-in geodesic; fine for small projects)
-          var area=0;
-          for(var j=0;j<state.pts.length;j++){
-            var p1=state.pts[j], p2=state.pts[(j+1)%state.pts.length];
-            area += (p1.lng * p2.lat - p2.lng * p1.lat);
-          }
-          area = Math.abs(area)*12364.0; // crude scale for lat/lng degrees near mid-lat; good enough visually
-          map.closePopup();
-          L.popup({autoClose:true, closeButton:false})
-            .setLatLng(ev.latlng).setContent("Area: "+fmtA(area)).openOn(map);
-        }
-      }
+      if(!state.line){ state.line = L.polyline(state.pts, { color:"#222", weight:3, dashArray:"6,4" }).addTo(map); }
+      else { state.line.setLatLngs(state.pts); }
+      show("Distance: "+fmt(total())+"  (double-tap to finish)");
     }
-
-    document.getElementById("sv-msr-l").onclick=function(){ off(); state.mode="linear"; map.on("click", onClick); };
-    document.getElementById("sv-msr-a").onclick=function(){ off(); state.mode="area";   map.on("click", onClick); };
-    document.getElementById("sv-msr-c").onclick=function(){ off(); alert("Measurements cleared."); };
-
-    return { open:function(){ picker.style.display="flex"; }, close:off };
+    function dblFinish(){
+      hide();
+      map.off("click", clickAdd);
+      map.off("dblclick", dblFinish);
+      state.on=false;
+    }
+    UI.mk("btn-measure", "📏 Measure", function(){
+      if(!state.on){
+        state.on = true; state.pts=[]; if(state.line){ try{ map.removeLayer(state.line);}catch(e){} state.line=null;
+        show("Distance: 0 m  (double-tap to finish)");
+        map.on("click", clickAdd);
+        map.on("dblclick", dblFinish);
+      }else{
+        dblFinish();
+      }
+    });
   }
 
-  // --- Boot ---
-  function boot(){
-    var tries=0;
-    var t = setInterval(function(){
-      var m = window.map || null;
-      if(!mapOk(m)){ if(++tries>80){ clearInterval(t); } return; }
-      clearInterval(t);
+  // MAIN
+  onReady(function(){
+    var tries = 0;
+    (function boot(){
+      var map = findMap();
+      if(!map){ if(++tries<40){ return setTimeout(boot, 250); } else { console.warn("Leaflet map not detected."); return; } }
 
-      try{ if(m.options && m.options.minZoom>2) m.options.minZoom=2; if(m.setMinZoom) m.setMinZoom(2); }catch(e){}
-      killTopLeft();
+      // Allow zooming far out more easily
+      try{ map.setMinZoom && map.setMinZoom(1); }catch(e){}
 
-      ensureGroups(m);
+      ensureLayersTopRight(map);
+      var UI = bar();
 
-      var UI = toolbar();
-      overlaysOnExceptContours();
-
-      // switches bind
-      window.SV.reloadPins   = function(){ return loadGeo(raw("data/pins.geojson"),   SV.pins,   "pins"); };
-      window.SV.reloadPhotos = function(){ return loadGeo(raw("data/photos.geojson"), SV.photos, "photos"); };
-      SV.reloadPins(); SV.reloadPhotos();
-      wireSwitches(m);
-
-      // buttons
-      UI.mk("btn-center-site","🎯 Site", function(){
+      // 1) Project center button (adjust coordinates if you want)
+      var site = window.SV_SITE_CENTER || { lat:49.8870, lng:-119.4960 };
+      UI.mk("btn-center-site", "🎯 Project", function(){
         try{
-          var c = (m.getBounds && m.getBounds().getCenter()) || (m.getCenter && m.getCenter()) || L.latLng(SITE_FALLBACK.lat, SITE_FALLBACK.lng);
-          var z = (m.getZoom && m.getZoom()) || 15; if(z<15) z=15;
-          m.setView(c, z);
+          var ll = L.latLng(site.lat, site.lng);
+          var z = (map.getZoom && map.getZoom()) || 15; if(z<15) z=15;
+          map.setView(ll, z);
         }catch(e){}
       });
 
+      // 2) Locate (current device position) — THIS IS THE BUTTON YOU WANTED
       UI.mk("btn-locate-once","📍 Locate", function(){
         if(!("geolocation" in navigator)) return alert("Geolocation unsupported");
         navigator.geolocation.getCurrentPosition(function(pos){
           var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
-          var z  = (m.getZoom && m.getZoom()) || 15; if(z<15) z=15;
-          m.setView(ll, z);
+          var z = (map.getZoom && map.getZoom()) || 15; if(z<15) z=15;
+          map.setView(ll, z);
           try{
-            var mk=L.marker(ll); var acc=pos.coords.accuracy||0;
-            var c = acc ? L.circle(ll,{radius:acc}) : null;
-            var g=L.layerGroup(c?[mk,c]:[mk]).addTo(m);
-            setTimeout(function(){ try{ m.removeLayer(g);}catch(e){} }, 4000);
+            var mk = L.marker(ll);
+            var acc = pos.coords.accuracy || 0;
+            var circ = acc ? L.circle(ll, {radius:acc}) : null;
+            var g = L.layerGroup(circ ? [mk,circ] : [mk]).addTo(map);
+            setTimeout(function(){ try{ map.removeLayer(g); }catch(e){} }, 5000);
           }catch(e){}
-        }, function(){ alert("Locate failed"); }, {timeout:8000, maximumAge:300000});
+        }, function(e){ alert("Locate failed"); }, { timeout:8000, maximumAge:300000 });
       });
 
-      var msr = wireMeasure(m);
-      UI.mk("btn-measure","📏 Measure", function(){ msr.open(); });
+      // 3) Measure (distance) — single button stateful
+      measureTool(map, UI);
 
-      UI.mk("btn-pin","📌 Pin", function(){
-        alert("Tap the map to drop a pin, then you’ll be prompted for a title/description.");
-        var once = function(ev){
-          m.off("click", once);
-          try{
-            var nm = window.prompt("Pin title?"); if(nm===null) return;
-            var ds = window.prompt("Description (optional):") || "";
-            var feat = {
-              type:"Feature",
-              geometry:{type:"Point", coordinates:[ev.latlng.lng, ev.latlng.lat]},
-              properties:{ name:nm, desc:ds, when: Date.now() }
-            };
-            commitFeature(feat,"pins").then(function(){
-              SV.reloadPins();
-              L.marker(ev.latlng).addTo(m).bindPopup("<b>"+nm+"</b><br>"+ds).openPopup();
-              alert("Pin saved.");
-            });
-          }catch(e){}
-        };
-        m.once("click", once);
-      });
+      // 4) Pins/Photos overlay groups + reloaders (handles 404s gracefully)
+      window.SV = window.SV || {};
+      SV.pins   = SV.pins   || L.layerGroup().addTo(map);
+      SV.photos = SV.photos || L.layerGroup().addTo(map);
 
-      ensurePhotoUI();
-      UI.mk("btn-photo","📷 Photo", function(){ window.openPhotoUI(); });
-    }, 250);
-  }
-
-  ready(boot);
-try{ svHideTopLeftForever(); }catch(e){}
-})();
-(function(){
-  function svKillTopLeftOnce(){
-    try{
-      var nodes = document.querySelectorAll('.leaflet-top.leaflet-left');
-      for(var i=0;i<nodes.length;i++){
-        var n = nodes[i];
-        // try remove the whole column
-        if(n && n.parentNode){ n.parentNode.removeChild(n); }
+      function rawBase(){ return "https://raw.githubusercontent.com/thefranzi/solarvillagemap/mobile-one-shot-locate"; }
+      function loadGeo(url, group, kind){
+        return fetch(url + "?t=" + Date.now())
+          .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+          .then(function(json){
+            try{ group.clearLayers(); }catch(e){}
+            var feats = (json && json.features) || [];
+            for(var i=0;i<feats.length;i++){
+              var f = feats[i]; if(!f || !f.geometry || f.geometry.type!=="Point") continue;
+              var c = f.geometry.coordinates; var ll = L.latLng(c[1], c[0]);
+              if(kind==="photos"){
+                var u = f.properties && f.properties.url;
+                var html = u ? "<img src='"+u+"' style='max-width:240px;height:auto;border-radius:6px'>" : "Photo";
+                L.marker(ll).bindPopup(html).addTo(group);
+              }else{
+                var nm = (f.properties && f.properties.name) || "Pin";
+                var ds = (f.properties && f.properties.desc) || "";
+                L.marker(ll).bindPopup("<b>"+nm+"</b><br>"+ds).addTo(group);
+              }
+            }
+          }).catch(function(){ /* ignore 404 / missing files */ });
       }
-    }catch(e){}
-  }
-  window.svHideTopLeftForever = function(){
-    // run immediately and then a few times to catch re-renders
-    var count = 0;
-    var max = 40; // ~10s at 250ms
-    svKillTopLeftOnce();
-    var t = setInterval(function(){
-      svKillTopLeftOnce();
-      if(++count >= max){ clearInterval(t); }
-    }, 250);
-  };
-})();
 
+      window.SV.reloadPins   = function(){ return loadGeo(rawBase()+"/data/pins.geojson",   SV.pins,   "pins");   };
+      window.SV.reloadPhotos = function(){ return loadGeo(rawBase()+"/data/photos.geojson", SV.photos, "photos"); };
+
+      SV.reloadPins(); SV.reloadPhotos();
+
+      // 5) Add toggles INSIDE the Layers panel (not bottom bar) and auto-disable CONT*
+      addPinsPhotosTogglesIntoLayers(map, SV.pins, SV.photos);
+
+      // 6) Photo UI + Photo button
+      ensurePhotoUI();
+      UI.mk("btn-photo", "📷 Photo", function(){ window.openPhotoUI(); });
+
+      // 7) Pin button (one-shot place + optional commit via Netlify function)
+      UI.mk("btn-pin", "📌 Pin", function(){
+        alert("Tap the map to place a pin…");
+        var once = function(ev){
+          map.off("click", once);
+          var ll = ev.latlng;
+          var name = window.prompt("Pin title?");
+          if(name === null) return;
+          var desc = window.prompt("Description? (optional)") || "";
+          var feat = {type:"Feature",geometry:{type:"Point",coordinates:[ll.lng,ll.lat]},properties:{name:name,desc:desc,when:(new Date()).getTime()}};
+          fetch("/.netlify/functions/repo-commit", {
+            method:"POST", headers:{"content-type":"application/json"},
+            body: JSON.stringify({ feature: feat, geoTarget: "pins" })
+          }).then(function(r){ return r.json(); })
+            .then(function(){ SV.reloadPins(); alert("Pin saved."); })
+            .catch(function(){ L.marker(ll).bindPopup("<b>"+name+"</b><br>"+desc).addTo(SV.pins); alert("No commit function; pin shown locally only."); });
+        };
+        map.once("click", once);
+      });
+
+    })();
+  });
+
+  // Safe guard for any leftover inline script setting photo modal onclick (prevents null .onclick crashes)
+  (function(){
+    var el = document.getElementById("photo-modal");
+    if(el){ el.addEventListener("click", function(){
+      var img = document.getElementById("photo-modal-img");
+      el.style.display = "none"; if(img) img.src = "";
+    }); }
+  })();
+})();
