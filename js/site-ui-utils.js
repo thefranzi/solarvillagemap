@@ -3,6 +3,9 @@
   function afterMap(fn){ if(window.map) fn(); else setTimeout(()=>afterMap(fn), 200); }
 
   ready(function(){ afterMap(function(){
+    // 0) Remove known left panels (JS hard kill, in case CSS misses)
+    ['#left-toolbox','.left-toolbox','#sidebar','.sidebar','[class*=""sidebar-left""]','#toolbox-left','.toolbox-left']
+      .forEach(sel=>{ try{ var n=document.querySelector(sel); if(n && n.remove) n.remove(); }catch(e){} });
 
     // 1) Allow deeper zoom-out
     try{
@@ -11,45 +14,37 @@
       if (map.eachLayer){
         map.eachLayer(function(lyr){
           if(lyr && lyr.options){
-            if('minZoom' in lyr.options) lyr.options.minZoom = Math.min(lyr.options.minZoom, 2);
+            if('minZoom' in lyr.options)       lyr.options.minZoom       = Math.min(lyr.options.minZoom, 2);
             if('minNativeZoom' in lyr.options) lyr.options.minNativeZoom = Math.min(lyr.options.minNativeZoom, 2);
           }
         });
       }
     } catch(e){ console.warn('minZoom patch failed', e); }
 
-    // 2) Ensure Layers control is visible & in top-right corner
+    // 2) Ensure Layers control is visible and in top-right corner
     try{
       var layersCtrl = document.querySelector('.leaflet-control-layers');
       var topRight = document.querySelector('.leaflet-top.leaflet-right');
       if(layersCtrl && topRight && layersCtrl.parentElement !== topRight){ topRight.appendChild(layersCtrl); }
-      if(layersCtrl){ layersCtrl.style.display = 'block'; layersCtrl.style.removeProperty('display'); }
+      if(layersCtrl){ layersCtrl.style.removeProperty && layersCtrl.style.removeProperty('display'); layersCtrl.style.display = 'block'; }
     } catch(e){ console.warn('layers placement failed', e); }
 
-    // 3) Bottom toolbar: reuse existing or create new fixed bar
+    // 3) Bottom toolbar: reuse existing or create a fixed one
     var bar = document.getElementById('bottom-toolbar') || document.querySelector('.bottom-toolbar');
-    if(!bar){
-      bar = document.createElement('div');
-      bar.id = 'bottom-toolbar-fixed';
-      document.body.appendChild(bar);
-    }
+    if(!bar){ bar = document.createElement('div'); bar.id = 'bottom-toolbar-fixed'; document.body.appendChild(bar); }
 
-    // 3a) Remove any bottom 'Layers' button (by id or text match)
+    // 3a) Remove any 'Layers' button in bottom bar (by id or text)
     try{
-      var candidates = Array.from(bar.querySelectorAll('button, a'));
-      candidates.forEach(function(el){
+      Array.from(bar.querySelectorAll('button, a')).forEach(function(el){
         var txt = (el.textContent||'').toLowerCase();
-        if(el.id === 'btn-layers' || /layers?/.test(txt)){ el.remove(); }
+        if(el.id === 'btn-layers' || /(^|\s)layers?(\s|$)/.test(txt)){ el.remove(); }
       });
     }catch(e){}
 
-    // 3b) Add '🎯 Site' button if missing
+    // 3b) Add '🎯 Site' button
     if(!document.getElementById('btn-center-site')){
       var btnSite = document.createElement('button');
-      btnSite.id = 'btn-center-site';
-      btnSite.className = 'sv-btn';
-      btnSite.title = 'Center on site';
-      btnSite.innerText = '🎯 Site';
+      btnSite.id = 'btn-center-site'; btnSite.className = 'sv-btn'; btnSite.title = 'Center on site'; btnSite.innerText = '🎯 Site';
       btnSite.addEventListener('click', function(){
         try{
           var ll = L.latLng(49.8870, -119.4960);
@@ -64,13 +59,10 @@
       bar.appendChild(btnSite);
     }
 
-    // 3c) Add '📍 Locate' (one-shot, no tracking) if missing
+    // 3c) Add '📍 Locate' (one-shot, no tracking)
     if(!document.getElementById('btn-locate-once')){
       var btnLoc = document.createElement('button');
-      btnLoc.id = 'btn-locate-once';
-      btnLoc.className = 'sv-btn';
-      btnLoc.title = 'Locate me (one time)';
-      btnLoc.innerText = '📍 Locate';
+      btnLoc.id = 'btn-locate-once'; btnLoc.className = 'sv-btn'; btnLoc.title = 'Locate me (one time)'; btnLoc.innerText = '📍 Locate';
       btnLoc.addEventListener('click', function(){
         if(!('geolocation' in navigator)){ return alert('Geolocation not supported'); }
         btnLoc.disabled = true;
@@ -95,34 +87,25 @@
       bar.appendChild(btnLoc);
     }
 
-    // 4) Turn on all overlays except contours at startup (by UI checkbox to preserve handlers)
+    // 4) Auto-enable overlays except contours (UI click to preserve events). Retry until panel exists.
     (function enableOverlaysExceptContours(retries){
       try{
         var panel = document.querySelector('.leaflet-control-layers');
-        // open/expand panel if collapsible
-        if(panel && panel.classList.contains('leaflet-control-layers-collapsed')){
-          panel.classList.remove('leaflet-control-layers-collapsed');
-        }
+        if(panel && panel.classList.contains('leaflet-control-layers-collapsed')){ panel.classList.remove('leaflet-control-layers-collapsed'); }
         var labels = panel ? panel.querySelectorAll('.leaflet-control-layers-overlays label') : [];
-        if(!labels || labels.length===0) throw new Error('no overlay labels found yet');
+        if(!labels || labels.length===0) throw new Error('overlay labels not ready yet');
 
         labels.forEach(function(lb){
           var name = (lb.textContent||'').trim().toLowerCase();
-          var isContour = /contour|contours|cont\./.test(name);
+          var isContour = /(^|\s)(contour|contours|cont\.)(\s|$)/.test(name);
           var input = lb.querySelector('input[type=checkbox]');
           if(!input) return;
-          // Desired state: ON unless contours -> OFF
           var shouldBeOn = !isContour;
-          if(shouldBeOn && !input.checked){ input.click(); }   // turn ON
-          if(!shouldBeOn && input.checked){ input.click(); }   // turn OFF
+          if(shouldBeOn && !input.checked){ input.click(); }
+          if(!shouldBeOn && input.checked){ input.click(); }
         });
-
-        // collapse again (optional)
-        if(panel && !panel.classList.contains('leaflet-control-layers-expanded')){
-          // no-op; modern Leaflet just toggles class
-        }
-      } catch(e){
-        if((retries||0) < 25){ return setTimeout(function(){ enableOverlaysExceptContours((retries||0)+1); }, 200); }
+      }catch(e){
+        if((retries||0) < 60){ return setTimeout(function(){ enableOverlaysExceptContours((retries||0)+1); }, 200); }
         console.warn('Could not toggle overlays by UI:', e);
       }
     })();
