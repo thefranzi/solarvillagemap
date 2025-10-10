@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33470308780672,
+      49.957660310636484
+    ]
+  },
+  "properties": {
+    "title": "asdfas",
+    "description": "",
+    "ts": 1760049695824
+  }
+}

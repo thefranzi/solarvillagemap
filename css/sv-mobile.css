@@ -1,0 +1,21 @@
+﻿/* sv-mobile.css: production mobile polish */
+@media (max-width:1200px){
+  #left-toolbox, .left-toolbox, #sidebar, .sidebar, #toolbox-left, .toolbox-left { display:none !important; }
+}
+@media (max-width:780px){
+  #map{ height: calc(100vh - 112px); }
+  .leaflet-control, .leaflet-bar a, .leaflet-control button {
+    min-width:48px !important; min-height:48px !important; padding:8px !important; border-radius:12px !important;
+  }
+  .leaflet-popup-close-button { width:44px; height:44px; line-height:44px; font-size:18px; }
+}
+.leaflet-control-layers { display:block !important; z-index:1400; }
+#bottom-toolbar-fixed{
+  position:fixed; left:8px; right:8px; bottom:8px; z-index:1500; display:flex; justify-content:center; gap:10px;
+  padding:10px 12px; background:rgba(255,255,255,0.94); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);
+}
+#bottom-toolbar-fixed .sv-btn{
+  min-width:52px; min-height:48px; padding:10px 14px; border-radius:12px; border:1px solid rgba(0,0,0,0.12);
+  font-size:16px; background:#fff; cursor:pointer;
+}
+#btn-center-site, #btn-locate-once{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }

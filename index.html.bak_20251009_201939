@@ -1431,6 +1431,7 @@ ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true 
   // locate once
 <<<<<<< HEAD
   // REMOVED_BY_MOBILE_FIX: old btnLocateOnce handler removed);
+  };
 =======
   ui.btnLocateOnce.onclick = () => {
     if (!navigator.geolocation) return alert('Geolocation not supported.');
@@ -1586,13 +1587,32 @@ const photoModal = document.getElementById('photo-modal');
 const photoModalImg = document.getElementById('photo-modal-img');
 
 // Click anywhere on black background closes modal
-/* SV_OVERRIDE: replace direct onclick with null-safe listener */
-if (typeof photoModal !== "undefined" && photoModal) {
-  photoModal.addEventListener("click", function(){
-    try{ photoModal.style.display = "none"; }catch(e){}
-    try{ if (typeof photoModalImg !== "undefined" && photoModalImg) { photoModalImg.src = ""; } }catch(e){}
-  });
-}
+photoModal.onclick = () => {
+  photoModal.style.display = 'none';
+  photoModalImg.src = '';
+
+</script>
+
+
+<!-- Large image modal (hidden by default) -->
+<div id="photo-modal" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+  <span style="position:absolute; top:20px; right:40px; font-size:40px; color:#fff; cursor:pointer;" onclick="closePhotoModal()">&#10005;</span>
+  <img id="photo-modal-img" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 2px 20px #000;">
+</div>
+
+
+
+
+<<<<<<< HEAD
+    <script>
+// --- Lazy-load Contours (CONT_6) ---
+function loadScriptOnce(url) {
+  return new Promise(function(resolve, reject) {
+    var sel = 'script[data-dyn="' + url + '"]';
+    if (document.querySelector(sel)) { resolve(); return; }
+    var s = document.createElement('script');
+    s.src = url; s.async = true; s.setAttribute('data-dyn', url);
+    s.onload = resolve; s.onerror = function(e){ console.error('Contours script failed', e); reject(e); };
     document.head.appendChild(s);
   });
 }
@@ -1734,4 +1754,3 @@ if (window.map) {
 </body>
 </html>
 >>>>>>> main
-
