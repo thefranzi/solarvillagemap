@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -80,27 +80,27 @@
 		
 		<div id="gpscam-ui">
   <div class="row">
-    <button id="btn-zoom-in"    title="Zoom in"> ï¼‹ </button>
-    <button id="btn-zoom-out"   title="Zoom out"> ï¼ </button>
-    <button id="btn-zoom-extents" title="Zoom to full extent">ðŸ—ºï¸</button>
+    <button id="btn-zoom-in"    title="Zoom in"> Ã¯Â¼â€¹ </button>
+    <button id="btn-zoom-out"   title="Zoom out"> Ã¯Â¼Â </button>
+    <button id="btn-zoom-extents" title="Zoom to full extent">Ã°Å¸â€”ÂºÃ¯Â¸Â</button>
   </div>
 
   <div class="row">
-    <button id="btn-locate-once" title="Center on current location">ðŸ“</button>
-    <button id="btn-drop-pin"    title="Drop a pin on next map click">ðŸ“Œ</button>
-    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">â–¶ï¸</button>
+    <button id="btn-locate-once" title="Center on current location">Ã°Å¸â€œÂ</button>
+    <button id="btn-drop-pin"    title="Drop a pin on next map click">Ã°Å¸â€œÅ’</button>
+    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">Ã¢â€“Â¶Ã¯Â¸Â</button>
     </div>
 
   <div class="row">
-    <button id="btn-measure-dist"  title="Measure distance">ðŸ“</button>
-    <button id="btn-measure-area"  title="Measure area">ðŸ“</button>
-    <button id="btn-measure-clear" title="Clear measurements">ðŸ§¹</button>
+    <button id="btn-measure-dist"  title="Measure distance">Ã°Å¸â€œÂ</button>
+    <button id="btn-measure-area"  title="Measure area">Ã°Å¸â€œÂ</button>
+    <button id="btn-measure-clear" title="Clear measurements">Ã°Å¸Â§Â¹</button>
   </div>
 
   <div class="row">
-    <button id="btn-camera-on"   title="Open device camera">ðŸ“·</button>
-    <button id="btn-camera-shot" title="Take photo" disabled>ðŸ–¼ï¸</button>
-    <button id="btn-camera-off"  title="Stop camera" disabled>â¹ï¸</button>
+    <button id="btn-camera-on"   title="Open device camera">Ã°Å¸â€œÂ·</button>
+    <button id="btn-camera-shot" title="Take photo" disabled>Ã°Å¸â€“Â¼Ã¯Â¸Â</button>
+    <button id="btn-camera-off"  title="Stop camera" disabled>Ã¢ÂÂ¹Ã¯Â¸Â</button>
   </div>
 
   <div class="row">
@@ -1029,7 +1029,7 @@ const BACKEND = {
     chkPhotos: document.getElementById('chk-photos')
   };
 
-  const fmt = n => (n==null ? 'â€”' : Math.round(n*10)/10);
+  const fmt = n => (n==null ? 'Ã¢â‚¬â€' : Math.round(n*10)/10);
   const setStatus = m => ui.status.textContent = 'status: ' + m;
   const download = (name, content, type='application/octet-stream') => {
     const a = document.createElement('a');
@@ -1049,8 +1049,8 @@ function normLngLat(coords) {
 }
 
   // ======= remove native zoom and locate controls so we own them in-panel =======
-  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/âˆ’
-  // If a Leaflet Locate control was present earlier, donâ€™t add it again (we wonâ€™t call L.control.locate at all)
+  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/Ã¢Ë†â€™
+  // If a Leaflet Locate control was present earlier, donÃ¢â‚¬â„¢t add it again (we wonÃ¢â‚¬â„¢t call L.control.locate at all)
 
   // ======= GPS visuals =======
   const gpsIcon = L.icon({
@@ -1150,7 +1150,7 @@ function openPhotoModal(src) {
           setStatus(`area: ${fmtSqMeters(area)}  (click to add, Clear to finish)`);
         } else {
           addTemp(L.circleMarker(ll, { radius:4 }));
-          setStatus('area: add at least 3 pointsâ€¦');
+          setStatus('area: add at least 3 pointsÃ¢â‚¬Â¦');
         }
       }
     };
@@ -1158,8 +1158,8 @@ function openPhotoModal(src) {
     map.getContainer().addEventListener('click', captureHandler, true);
   }
 
-  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add pointsâ€¦'); }
-  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add pointsâ€¦'); }
+  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add pointsÃ¢â‚¬Â¦'); }
+  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add pointsÃ¢â‚¬Â¦'); }
   function stop(){ mode = null; clearTemp(); setStatus('measurements cleared'); }
 
   return { startDist, startArea, stop };
@@ -1177,7 +1177,7 @@ function haversine(a, b) {
   return 2 * R * Math.asin(Math.sqrt(aa));
 }
 
-// Spherical polygon area (mÂ²) from array of LatLngs
+// Spherical polygon area (mÃ‚Â²) from array of LatLngs
 function sphericalArea(latlngs) {
   const R = 6371008.8;
   const toRad = d => d * Math.PI/180;
@@ -1191,7 +1191,7 @@ function sphericalArea(latlngs) {
 }
 
 function fmtMeters(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
-function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e6).toFixed(2)} kmÂ²`; }
+function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÃ‚Â²` : `${(m2/1e6).toFixed(2)} kmÃ‚Â²`; }
 
   function ensureGpsLayers() {
     if (!state.gps.marker) {
@@ -1225,7 +1225,7 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e
     state.lastFix = fix; state.track.push(fix);
     updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
     if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
-    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} Â±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}Â°`);
+    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} Ã‚Â±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}Ã‚Â°`);
   }
   function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message + '\nUse HTTPS or localhost and grant browser permission.'); }
 
@@ -1418,7 +1418,7 @@ async function camOn() {
 }
 
   // ======= UI wiring =======
-  // zoom +/âˆ’
+  // zoom +/Ã¢Ë†â€™
   ui.btnZoomIn.onclick  = () => map.setZoom(map.getZoom()+1);
   ui.btnZoomOut.onclick = () => map.setZoom(map.getZoom()-1);
 ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true });
@@ -1433,10 +1433,10 @@ ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true 
   ui.btnTrackToggle.onclick = () => {
     if (!navigator.geolocation) return alert('Geolocation not supported.');
     if (state.watchId != null) {
-      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = 'â–¶ï¸ Track'; setStatus('tracking stopped');
+      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = 'Ã¢â€“Â¶Ã¯Â¸Â Track'; setStatus('tracking stopped');
     } else {
       state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
-      ui.btnTrackToggle.textContent = 'â¸ï¸ Stop'; setStatus('trackingâ€¦');
+      ui.btnTrackToggle.textContent = 'Ã¢ÂÂ¸Ã¯Â¸Â Stop'; setStatus('trackingÃ¢â‚¬Â¦');
     }
   };
 // --- Drop pin (works even if layers intercept clicks) ---
@@ -1455,7 +1455,7 @@ let dropPinCaptureHandler = null;
 // Arm a one-shot pin placement on next map click
 ui.btnDropPin.onclick = () => {
   state.dropPinArmed = true;
-  setStatus('Click the map to place a pinâ€¦');
+  setStatus('Click the map to place a pinÃ¢â‚¬Â¦');
 
   // Install capture-phase handler once
   if (!dropPinCaptureHandler) {
@@ -1466,7 +1466,7 @@ ui.btnDropPin.onclick = () => {
       const panel = document.getElementById('gpscam-ui');
       if (panel && panel.contains(ev.target)) return;
 
-      // Convert screen point â†’ map lat/lng
+      // Convert screen point Ã¢â€ â€™ map lat/lng
       const rect = map.getContainer().getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
@@ -1532,7 +1532,7 @@ ui.btnCamShot.onclick = async () => {
   ui.canvas.height = h;
   ui.canvas.getContext('2d').drawImage(ui.video, 0, 0, w, h);
 
-  // PNG source â†’ resize/compress to JPEG (~1â€“2 MB)
+  // PNG source Ã¢â€ â€™ resize/compress to JPEG (~1Ã¢â‚¬â€œ2 MB)
   const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
   const jpegBlob = await resizeImageBlob(rawBlob, 1600, 0.8);
 
@@ -1599,3 +1599,4 @@ if (typeof photoModal !== 'undefined' && photoModal) {
       <script src="js/sv-app.js" defer></script>
 </body>
 </html>
+

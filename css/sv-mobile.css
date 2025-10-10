@@ -114,3 +114,34 @@
 }
 #bottom-toolbar-fixed .sv-inline{ display:flex; gap:14px; align-items:center; padding:4px 8px; border-radius:10px; background:rgba(0,0,0,0.04); }
 #bottom-toolbar-fixed .sv-inline label{ display:flex; gap:6px; align-items:center; cursor:pointer; }
+/* === SV mobile delta (toolbar + fixes) === */
+.leaflet-top.leaflet-left{ display:none !important; } /* kill legacy toolbox */
+.leaflet-control-layers{ z-index:1400 !important; margin-bottom:120px; max-height:60vh; overflow:auto; }
+
+#bottom-toolbar-fixed{
+  position:fixed; left:8px; right:8px; bottom:8px; z-index:1500;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px;
+  padding:10px 12px; background:#fff; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+#bottom-toolbar-fixed .sv-btn{
+  min-width:56px; min-height:44px; padding:10px 14px; border-radius:12px;
+  border:1px solid rgba(0,0,0,.15); background:#fff; cursor:pointer; font-size:15px;
+}
+#bottom-toolbar-fixed .sv-inline{ display:flex; gap:16px; align-items:center; padding:6px 10px; border-radius:10px; background:rgba(0,0,0,.04); }
+#bottom-toolbar-fixed .sv-inline label{ display:flex; gap:6px; align-items:center; cursor:pointer; }
+
+/* tiny measure picker */
+#sv-measure-picker{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:78px; z-index:1550;
+  display:none; background:#fff; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.25);
+  padding:8px; gap:8px;
+}
+#sv-measure-picker button{ padding:8px 10px; border-radius:10px; border:1px solid rgba(0,0,0,.15); background:#fff; cursor:pointer; }
+
+/* simple Photo modal */
+#photo-capture{
+  display:none; position:fixed; left:12px; right:12px; bottom:10vh; z-index:1600;
+  background:#fff; border-radius:12px; padding:12px; box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+#photo-capture .row{ display:flex; gap:10px; margin-top:10px; }
+#photo-capture .row .sv-btn{ flex:1; }
