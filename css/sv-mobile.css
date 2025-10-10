@@ -100,3 +100,17 @@
   padding:4px 8px; border-radius:10px; background:rgba(0,0,0,0.04);
 }
 #bottom-toolbar-fixed .sv-inline label { display:flex; gap:6px; align-items:center; cursor:pointer; }
+/* --- SV delta: fully hide Leaflet/QGIS controls on top-left --- */
+.leaflet-top.leaflet-left { display:none !important; }
+
+/* keep layers panel clear of bottom bar (already fixed, re-assert) */
+.leaflet-control-layers { z-index:1400 !important; margin-bottom:110px; max-height:60vh; overflow:auto; }
+
+/* bottom bar unified look */
+#bottom-toolbar-fixed{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; }
+#bottom-toolbar-fixed .sv-btn{
+  min-width:56px; min-height:44px; padding:10px 14px; border-radius:12px;
+  border:1px solid rgba(0,0,0,0.15); background:#fff; cursor:pointer; font-size:15px;
+}
+#bottom-toolbar-fixed .sv-inline{ display:flex; gap:14px; align-items:center; padding:4px 8px; border-radius:10px; background:rgba(0,0,0,0.04); }
+#bottom-toolbar-fixed .sv-inline label{ display:flex; gap:6px; align-items:center; cursor:pointer; }

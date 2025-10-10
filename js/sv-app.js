@@ -260,3 +260,191 @@
     }, 250);
   });
 })();
+
+/* === SV delta: dedupe toolbar, add buttons (Site/Locate/Measure/Pin/Photo) === */
+(function(){
+  function ready(fn){ if(document.readyState!=="loading") fn(); else document.addEventListener("DOMContentLoaded", fn); }
+  function findMap(){
+    try{
+      if(window.map && typeof map.setView==="function" && typeof map.eachLayer==="function") return map;
+      if(window.L && L.Map && document.querySelector(".leaflet-container")) return window.map || null;
+    }catch(e){}
+    return null;
+  }
+  function oneToolbar(){
+    // remove any duplicates by id
+    var bars = Array.prototype.slice.call(document.querySelectorAll("#bottom-toolbar-fixed"));
+    var bar = bars[0];
+    for(var i=1;i<bars.length;i++){ try{ bars[i].parentNode.removeChild(bars[i]); }catch(e){} }
+    if(!bar){
+      bar = document.createElement("div");
+      bar.id = "bottom-toolbar-fixed";
+      // basic container look in case CSS is late
+      bar.style.position="fixed"; bar.style.left="8px"; bar.style.right="8px"; bar.style.bottom="8px";
+      bar.style.zIndex="1500"; bar.style.background="rgba(255,255,255,0.95)";
+      bar.style.padding="10px 12px"; bar.style.borderRadius="14px"; bar.style.boxShadow="0 8px 24px rgba(0,0,0,0.25)";
+      document.body.appendChild(bar);
+    }
+    // ensure the inline switches live inside this bar (and only once)
+    var inline = document.getElementById("sv-inline");
+    if(!inline){
+      inline = document.createElement("div");
+      inline.id = "sv-inline"; inline.className = "sv-inline";
+      inline.innerHTML = "<label><input type='checkbox' id='sv-tog-photos' checked> Photos</label>"
+                       + " <label><input type='checkbox' id='sv-tog-pins' checked> Pins</label>";
+      bar.appendChild(inline);
+    }else{
+      if(inline.parentNode !== bar){ try{ bar.appendChild(inline); }catch(e){} }
+    }
+    function mk(id, text, onClick){
+      var b = document.getElementById(id);
+      if(!b){
+        b = document.createElement("button");
+        b.id = id; b.className = "sv-btn"; b.textContent = text;
+        b.onclick = onClick;
+        // insert buttons before switches
+        bar.insertBefore(b, inline);
+      }
+      return b;
+    }
+    return {bar:bar, inline:inline, mk:mk};
+  }
+  function killTopLeft(){
+    // we now hide via CSS, but also remove to be 100% sure
+    var tl = document.querySelector(".leaflet-top.leaflet-left");
+    if(tl && tl.parentNode){ try{ tl.parentNode.removeChild(tl); }catch(e){} }
+  }
+  function ensureGroups(map){
+    window.SV = window.SV || {};
+    SV.pins   = SV.pins   || L.layerGroup().addTo(map);
+    SV.photos = SV.photos || L.layerGroup().addTo(map);
+  }
+  function wireSwitches(map){
+    function bind(id, grp){
+      var cb = document.getElementById(id);
+      if(!cb || !grp) return;
+      cb.addEventListener("change", function(){
+        try{ this.checked ? map.addLayer(grp) : map.removeLayer(grp); }catch(e){}
+      });
+      try{
+        if(cb.checked && !map.hasLayer(grp)) map.addLayer(grp);
+        if(!cb.checked && map.hasLayer(grp)) map.removeLayer(grp);
+      }catch(e){}
+    }
+    if(window.SV){ bind("sv-tog-photos", SV.photos); bind("sv-tog-pins", SV.pins); }
+  }
+  function overlaysOnExceptContours(){
+    var panel = document.querySelector(".leaflet-control-layers-overlays") || document.querySelector(".leaflet-control-layers-list");
+    if(!panel) return;
+    var labels = panel.querySelectorAll("label");
+    labels.forEach(function(lb){
+      var name = (lb.textContent||"").toLowerCase();
+      var cb = lb.querySelector('input[type="checkbox"]');
+      if(!cb) return;
+      var isContour = /(^|\W)cont(ours?)?(\W|$)|cont\./i.test(name);
+      var shouldOn = !isContour;
+      if(shouldOn && !cb.checked) cb.click();
+      if(!shouldOn && cb.checked) cb.click();
+    });
+  }
+  function addButtons(UI, map){
+    // 1) Site (Project) — centers on current map bounds center as fallback
+    UI.mk("btn-center-site","🎯 Site", function(){
+      try{
+        var c = (map.getBounds && map.getBounds().getCenter()) || map.getCenter();
+        var z = (map.getZoom && map.getZoom()) || 15; if(z<15) z=15;
+        map.setView(c, z);
+      }catch(e){}
+    });
+
+    // 2) Locate (current position)
+    UI.mk("btn-locate-once","📍 Locate", function(){
+      if(!("geolocation" in navigator)) return alert("Geolocation unsupported");
+      navigator.geolocation.getCurrentPosition(function(pos){
+        var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        var z  = (map.getZoom && map.getZoom()) || 15; if(z<15) z=15;
+        map.setView(ll, z);
+        try{
+          var mk=L.marker(ll);
+          var acc=pos.coords.accuracy||0;
+          var c = acc? L.circle(ll,{radius:acc}) : null;
+          var g=L.layerGroup(c?[mk,c]:[mk]).addTo(map);
+          setTimeout(function(){ try{ map.removeLayer(g);}catch(e){} }, 4000);
+        }catch(e){}
+      }, function(){ alert("Locate failed"); }, {timeout:8000, maximumAge:300000});
+    });
+
+    // 3) Measure (simple linear toggle; area mode can be added later)
+    (function(){
+      var state = { on:false, pts:[], line:null };
+      function fmt(m){ return m<1000? (m.toFixed(0)+" m") : ((m/1000).toFixed(2)+" km"); }
+      function total(){
+        var d=0; for(var i=1;i<state.pts.length;i++){ d += state.pts[i-1].distanceTo(state.pts[i]); } return d;
+      }
+      function click(ev){
+        state.pts.push(ev.latlng);
+        if(!state.line){ state.line=L.polyline(state.pts,{color:"#222",weight:3,dashArray:"6,4"}).addTo(map); }
+        else { state.line.setLatLngs(state.pts); }
+        try{ map.closePopup(); }catch(e){}
+      }
+      function off(){
+        map.off("click", click);
+        state.on=false;
+        state.pts=[];
+        try{ if(state.line){ map.removeLayer(state.line); state.line=null; } }catch(e){}
+      }
+      UI.mk("btn-measure","📏 Measure", function(){
+        if(!state.on){
+          state.on=true; state.pts=[];
+          map.on("click", click);
+          alert("Measuring on: click points; reload or click Measure again to clear.");
+        } else {
+          off();
+          alert("Measuring cleared.");
+        }
+      });
+    })();
+
+    // 4) Pin (place one pin & store only in memory for now)
+    (function(){
+      UI.mk("btn-pin","📌 Pin", function(){
+        alert("Tap the map to drop a pin.");
+        var once = function(ev){
+          map.off("click", once);
+          try{
+            L.marker(ev.latlng).addTo(map).bindPopup("<b>New pin</b>").openPopup();
+          }catch(e){}
+        };
+        map.once("click", once);
+      });
+    })();
+
+    // 5) Photo (opens lightweight capture UI; you can wire your function later)
+    (function(){
+      UI.mk("btn-photo","📷 Photo", function(){
+        alert("Photo UI stub — plug in your capture/upload flow here.");
+      });
+    })();
+  }
+
+  ready(function(){
+    var tries=0, t=setInterval(function(){
+      var map = findMap();
+      if(!map){ if(++tries>80){ clearInterval(t); } return; }
+      clearInterval(t);
+
+      // remove any legacy left stack and relax minZoom
+      try{ var mz = (map.options && map.options.minZoom); if(mz>2) map.options.minZoom = 2; if(map.setMinZoom) map.setMinZoom(2); }catch(e){}
+      killTopLeft();
+
+      // single toolbar
+      var UI = oneToolbar();
+
+      // groups + switches + overlays
+      ensureGroups(map);
+      overlaysOnExceptContours();
+      addButtons(UI, map);
+      wireSwitches(map);
+    }, 250);
+  });
+})();
