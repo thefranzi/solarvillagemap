@@ -1,0 +1,24 @@
+# css/mobile-buttons.css
+@"
+@media (max-width:720px){
+  #map { height: calc(100vh - 112px); }
+}
+.leaflet-control-locate,
+.leaflet-control-geolocate,
+.leaflet-control-locate a,
+.leaflet-control-geolocate a {
+  display:none !important;
+  pointer-events:none !important;
+  opacity:0 !important;
+}
+@media (max-width:720px){
+  .leaflet-control, .leaflet-bar a, .leaflet-control button {
+    min-width:48px !important;
+    min-height:48px !important;
+    padding:8px !important;
+    border-radius:10px !important;
+    box-sizing:border-box;
+  }
+  .leaflet-popup-close-button { width:44px; height:44px; line-height:44px; font-size:18px; }
+}
+"@ | Set-Content .\css\mobile-buttons.css -Encoding utf8

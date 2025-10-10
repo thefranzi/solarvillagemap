@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -73,34 +73,33 @@
 </style>
 
         <title></title>
-      <link rel="stylesheet" href="css/sv-mobile.css">
-</head>
+    </head>
     <body>
         <div id="map">
 		
 		<div id="gpscam-ui">
   <div class="row">
-    <button id="btn-zoom-in"    title="Zoom in"> ï¼‹ </button>
-    <button id="btn-zoom-out"   title="Zoom out"> ï¼ </button>
-    <button id="btn-zoom-extents" title="Zoom to full extent">ðŸ—ºï¸</button>
+    <button id="btn-zoom-in"    title="Zoom in"> ＋ </button>
+    <button id="btn-zoom-out"   title="Zoom out"> － </button>
+    <button id="btn-zoom-extents" title="Zoom to full extent">🗺️</button>
   </div>
 
   <div class="row">
-    <button id="btn-locate-once" title="Center on current location">ðŸ“</button>
-    <button id="btn-drop-pin"    title="Drop a pin on next map click">ðŸ“Œ</button>
-    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">â–¶ï¸</button>
+    <button id="btn-locate-once" title="Center on current location">📍</button>
+    <button id="btn-drop-pin"    title="Drop a pin on next map click">📌</button>
+    <button id="btn-track-toggle" title="Start/stop continuous GPS tracking">▶️</button>
     </div>
 
   <div class="row">
-    <button id="btn-measure-dist"  title="Measure distance">ðŸ“</button>
-    <button id="btn-measure-area"  title="Measure area">ðŸ“</button>
-    <button id="btn-measure-clear" title="Clear measurements">ðŸ§¹</button>
+    <button id="btn-measure-dist"  title="Measure distance">📏</button>
+    <button id="btn-measure-area"  title="Measure area">📐</button>
+    <button id="btn-measure-clear" title="Clear measurements">🧹</button>
   </div>
 
   <div class="row">
-    <button id="btn-camera-on"   title="Open device camera">ðŸ“·</button>
-    <button id="btn-camera-shot" title="Take photo" disabled>ðŸ–¼ï¸</button>
-    <button id="btn-camera-off"  title="Stop camera" disabled>â¹ï¸</button>
+    <button id="btn-camera-on"   title="Open device camera">📷</button>
+    <button id="btn-camera-shot" title="Take photo" disabled>🖼️</button>
+    <button id="btn-camera-off"  title="Stop camera" disabled>⏹️</button>
   </div>
 
   <div class="row">
@@ -952,6 +951,7 @@
             var context = {
                 feature: layer.feature,
                 variables: {}
+            };
             layer.bindTooltip((layer.feature.properties['Text'] !== null?String('<div style="color: #323232; font-size: 10pt; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Text']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_LOTS_5'});
             labels.push(layer);
             totalMarkers += 1;
@@ -979,6 +979,7 @@ const BACKEND = {
   pinsPost:   '/.netlify/functions/pins',
   photosGet:  '/.netlify/functions/photos',
   photoUpload:'/.netlify/functions/uploadPhoto'
+};
 
   // ======= state + helpers =======
   const state = {
@@ -997,6 +998,7 @@ const BACKEND = {
       tempLayer: L.featureGroup().addTo(map),
       tooltip: null
     }
+  };
 
   const ui = {
     status: document.getElementById('gps-status'),
@@ -1024,13 +1026,15 @@ const BACKEND = {
     // toggles (in-panel)
     chkPins:   document.getElementById('chk-pins'),
     chkPhotos: document.getElementById('chk-photos')
+  };
 
-  const fmt = n => (n==null ? 'â€”' : Math.round(n*10)/10);
+  const fmt = n => (n==null ? '—' : Math.round(n*10)/10);
   const setStatus = m => ui.status.textContent = 'status: ' + m;
   const download = (name, content, type='application/octet-stream') => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([content], {type}));
     a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  };
 // Normalize coordinates to [lng, lat]; auto-fix if reversed.
 // Accepts strings or numbers.
 function normLngLat(coords) {
@@ -1044,8 +1048,8 @@ function normLngLat(coords) {
 }
 
   // ======= remove native zoom and locate controls so we own them in-panel =======
-  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/âˆ’
-  // If a Leaflet Locate control was present earlier, donâ€™t add it again (we wonâ€™t call L.control.locate at all)
+  if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/−
+  // If a Leaflet Locate control was present earlier, don’t add it again (we won’t call L.control.locate at all)
 
   // ======= GPS visuals =======
   const gpsIcon = L.icon({
@@ -1145,15 +1149,16 @@ function openPhotoModal(src) {
           setStatus(`area: ${fmtSqMeters(area)}  (click to add, Clear to finish)`);
         } else {
           addTemp(L.circleMarker(ll, { radius:4 }));
-          setStatus('area: add at least 3 pointsâ€¦');
+          setStatus('area: add at least 3 points…');
         }
       }
+    };
     // true = capture phase
     map.getContainer().addEventListener('click', captureHandler, true);
   }
 
-  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add pointsâ€¦'); }
-  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add pointsâ€¦'); }
+  function startDist(){ clearTemp(); mode = 'dist'; ensureCapture(); setStatus('distance: click to add points…'); }
+  function startArea(){ clearTemp(); mode = 'area'; ensureCapture(); setStatus('area: click to add points…'); }
   function stop(){ mode = null; clearTemp(); setStatus('measurements cleared'); }
 
   return { startDist, startArea, stop };
@@ -1171,7 +1176,7 @@ function haversine(a, b) {
   return 2 * R * Math.asin(Math.sqrt(aa));
 }
 
-// Spherical polygon area (mÂ²) from array of LatLngs
+// Spherical polygon area (m²) from array of LatLngs
 function sphericalArea(latlngs) {
   const R = 6371008.8;
   const toRad = d => d * Math.PI/180;
@@ -1185,7 +1190,7 @@ function sphericalArea(latlngs) {
 }
 
 function fmtMeters(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
-function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e6).toFixed(2)} kmÂ²`; }
+function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} m²` : `${(m2/1e6).toFixed(2)} km²`; }
 
   function ensureGpsLayers() {
     if (!state.gps.marker) {
@@ -1219,7 +1224,7 @@ function fmtSqMeters(m2){ return m2 < 1e6 ? `${m2.toFixed(0)} mÂ²` : `${(m2/1e
     state.lastFix = fix; state.track.push(fix);
     updateGps(fix.lat, fix.lng, fix.accuracy, fix.heading);
     if (recenter) map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 18));
-    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} Â±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}Â°`);
+    setStatus(`fix lat:${fmt(fix.lat)} lon:${fmt(fix.lng)} ±${fmt(fix.accuracy)}m spd:${fmt(fix.speed)}m/s brg:${fmt(fix.heading)}°`);
   }
   function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message + '\nUse HTTPS or localhost and grant browser permission.'); }
 
@@ -1254,6 +1259,7 @@ async function savePin(lng, lat, title, description) {
     type: 'Feature',
     geometry: { type: 'Point', coordinates: [lng, lat] },
     properties: { title, description, ts: Date.now() }
+  };
   
   // This will now throw an error if the network request fails, which is what we want.
   const response = await fetch(BACKEND.pinsPost, {
@@ -1411,7 +1417,7 @@ async function camOn() {
 }
 
   // ======= UI wiring =======
-  // zoom +/âˆ’
+  // zoom +/−
   ui.btnZoomIn.onclick  = () => map.setZoom(map.getZoom()+1);
   ui.btnZoomOut.onclick = () => map.setZoom(map.getZoom()-1);
 ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true });
@@ -1420,16 +1426,18 @@ ui.btnZoomExtents.onclick = () => map.fitBounds(INITIAL_BOUNDS, { animate: true 
   ui.btnLocateOnce.onclick = () => {
     if (!navigator.geolocation) return alert('Geolocation not supported.');
     navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
+  };
 
   // tracking
   ui.btnTrackToggle.onclick = () => {
     if (!navigator.geolocation) return alert('Geolocation not supported.');
     if (state.watchId != null) {
-      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = 'â–¶ï¸ Track'; setStatus('tracking stopped');
+      navigator.geolocation.clearWatch(state.watchId); state.watchId = null; ui.btnTrackToggle.textContent = '▶️ Track'; setStatus('tracking stopped');
     } else {
       state.track = []; state.watchId = navigator.geolocation.watchPosition(p => onFix(p, false), onGeoError, { enableHighAccuracy:true, maximumAge:0, timeout:10000 });
-      ui.btnTrackToggle.textContent = 'â¸ï¸ Stop'; setStatus('trackingâ€¦');
+      ui.btnTrackToggle.textContent = '⏸️ Stop'; setStatus('tracking…');
     }
+  };
 // --- Drop pin (works even if layers intercept clicks) ---
 
 // helper to save a pin at a given latlng
@@ -1446,7 +1454,7 @@ let dropPinCaptureHandler = null;
 // Arm a one-shot pin placement on next map click
 ui.btnDropPin.onclick = () => {
   state.dropPinArmed = true;
-  setStatus('Click the map to place a pinâ€¦');
+  setStatus('Click the map to place a pin…');
 
   // Install capture-phase handler once
   if (!dropPinCaptureHandler) {
@@ -1457,7 +1465,7 @@ ui.btnDropPin.onclick = () => {
       const panel = document.getElementById('gpscam-ui');
       if (panel && panel.contains(ev.target)) return;
 
-      // Convert screen point â†’ map lat/lng
+      // Convert screen point → map lat/lng
       const rect = map.getContainer().getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
@@ -1469,10 +1477,12 @@ ui.btnDropPin.onclick = () => {
 
       state.dropPinArmed = false;
       await placePinAt(latlng);
+    };
 
     // true = capture phase (runs before layer handlers)
     map.getContainer().addEventListener('click', dropPinCaptureHandler, true);
   }
+};
 
   // in-panel toggles control layer visibility
   ui.chkPins.onchange   = () => ui.chkPins.checked   ? map.addLayer(state.pinsLayer)   : map.removeLayer(state.pinsLayer);
@@ -1490,6 +1500,7 @@ ui.btnMeasureClear.onclick = () => Measure.stop();
         if (!state.track.length) return alert('No positions logged yet.');
         const fc = { type:'FeatureCollection', features: state.track.map(f => ({ type:'Feature', geometry:{ type:'Point', coordinates:[f.lng, f.lat] }, properties:{ time:new Date(f.time).toISOString(), accuracy:f.accuracy, speed:f.speed, heading:f.heading } })) };
         download('qgis2web_track.geojson', JSON.stringify(fc, null, 2), 'application/geo+json');
+      };
   }
 
   // camera
@@ -1498,6 +1509,7 @@ ui.btnCamOn.onclick = camOn;
   ui.btnCamOff.onclick = () => {
     if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop());
     state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.style.display = 'none'; ui.btnCamShot.disabled = true; ui.btnCamOff.disabled = true; setStatus('camera off');
+  };
 ui.btnCamShot.onclick = async () => {
   if (!state.cam.stream) return;
 
@@ -1519,7 +1531,7 @@ ui.btnCamShot.onclick = async () => {
   ui.canvas.height = h;
   ui.canvas.getContext('2d').drawImage(ui.video, 0, 0, w, h);
 
-  // PNG source â†’ resize/compress to JPEG (~1â€“2 MB)
+  // PNG source → resize/compress to JPEG (~1–2 MB)
   const rawBlob = await new Promise(res => ui.canvas.toBlob(res, 'image/png'));
   const jpegBlob = await resizeImageBlob(rawBlob, 1600, 0.8);
 
@@ -1535,6 +1547,7 @@ ui.btnCamShot.onclick = async () => {
 
   await uploadPhoto(jpegBlob, filename, lat, lng, title, description);
   setStatus('photo saved');
+};
 
   // ======= initial load =======
   (async () => {
@@ -1566,6 +1579,7 @@ const photoModalImg = document.getElementById('photo-modal-img');
 photoModal.onclick = () => {
   photoModal.style.display = 'none';
   photoModalImg.src = '';
+};
 
 </script>
 
@@ -1579,7 +1593,5 @@ photoModal.onclick = () => {
 
 
 
-      <script src="js/mobile-controls.js" defer></script>
-  <script src="js/photo-ui.js" defer></script>
-</body>
+    </body>
 </html>
