@@ -314,4 +314,28 @@
   }
 
   ready(boot);
+try{ svHideTopLeftForever(); }catch(e){}
 })();
+(function(){
+  function svKillTopLeftOnce(){
+    try{
+      var nodes = document.querySelectorAll('.leaflet-top.leaflet-left');
+      for(var i=0;i<nodes.length;i++){
+        var n = nodes[i];
+        // try remove the whole column
+        if(n && n.parentNode){ n.parentNode.removeChild(n); }
+      }
+    }catch(e){}
+  }
+  window.svHideTopLeftForever = function(){
+    // run immediately and then a few times to catch re-renders
+    var count = 0;
+    var max = 40; // ~10s at 250ms
+    svKillTopLeftOnce();
+    var t = setInterval(function(){
+      svKillTopLeftOnce();
+      if(++count >= max){ clearInterval(t); }
+    }, 250);
+  };
+})();
+

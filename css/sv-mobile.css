@@ -145,3 +145,13 @@
 }
 #photo-capture .row{ display:flex; gap:10px; margin-top:10px; }
 #photo-capture .row .sv-btn{ flex:1; }
+/* HARD HIDE legacy top-left toolbox */
+#map .leaflet-top.leaflet-left,
+.leaflet-top.leaflet-left,
+.leaflet-control-container .leaflet-top.leaflet-left,
+.leaflet-top.leaflet-left .leaflet-control,
+.leaflet-top.leaflet-left * {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
