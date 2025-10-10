@@ -1,4 +1,4 @@
-[build]
+﻿[build]
   command = "echo 'No build step'"
   publish = "."
 
@@ -10,5 +10,6 @@
   [headers.values]
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
-// REMOVED_BY_MOBILE_FIX:     Permissions-Policy = "geolocation=(self), camera=(self), microphone=()"
+# REMOVED_BY_MOBILE_FIX:     Permissions-Policy = "geolocation=(self), camera=(self), microphone=()"
     Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: data:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+
