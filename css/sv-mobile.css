@@ -57,3 +57,46 @@
   padding:6px 10px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.18);
 }
 #sv-switches label { display:flex; gap:6px; align-items:center; cursor:pointer; }
+/* --- SV patch: legacy toolbox hide, layers z-index, unified toolbar --- */
+
+/* Hide a wide set of possible toolbox selectors on top-left */
+#left-toolbox, .left-toolbox, #toolbox-left, .toolbox-left,
+#sidebar, .sidebar,
+[id*="toolbox"][class*="left"], [class*="toolbox"][class*="left"],
+.leaflet-top.leaflet-left > .leaflet-control:not(.leaflet-control-layers) {
+  display: none !important;
+}
+
+/* Layers control stays visible and scrollable, top-right */
+.leaflet-control-layers {
+  z-index: 1400 !important;
+  max-height: 60vh;
+  overflow: auto;
+  margin-bottom: 110px; /* keep clear of bottom toolbar */
+}
+
+/* Ensure map bottom space so toolbar doesn't overlap content */
+#map, .leaflet-container {
+  margin-bottom: 110px !important;
+}
+
+/* Bottom toolbar container */
+#bottom-toolbar-fixed{
+  position:fixed; left:8px; right:8px; bottom:8px; z-index:1500;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px;
+  padding:10px 12px; background:rgba(255,255,255,0.95);
+  border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* Buttons */
+#bottom-toolbar-fixed .sv-btn{
+  min-width:56px; min-height:44px; padding:10px 14px; border-radius:12px;
+  border:1px solid rgba(0,0,0,0.15); background:#fff; cursor:pointer; font-size:15px;
+}
+
+/* Inline switches group INSIDE the same toolbar */
+#bottom-toolbar-fixed .sv-inline {
+  display:flex; gap:14px; align-items:center; font-size:14px;
+  padding:4px 8px; border-radius:10px; background:rgba(0,0,0,0.04);
+}
+#bottom-toolbar-fixed .sv-inline label { display:flex; gap:6px; align-items:center; cursor:pointer; }
