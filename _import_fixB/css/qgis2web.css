@@ -65,7 +65,7 @@
             color: #444444 !important;
         }
         .leaflet-control-zoom-in, .leaflet-control-zoom-out,
-        .leaflet-control-locate a,
+// REMOVED_BY_MOBILE_FIX:         .leaflet-control-locate a,
         .leaflet-touch .leaflet-control-geocoder-icon,
         .leaflet-control-search .search-button,
          .leaflet-control-measure {

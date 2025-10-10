@@ -1,0 +1,37 @@
+﻿*** Begin Patch
+*** Update File: index.html
+@@
+-</head>
++  <!-- mobile controls + larger touch targets -->
++  <link rel="stylesheet" href="css/mobile-buttons.css">
++</head>
+@@
+-</body>
++  <!-- Camera-first photo UI -->
++  <div id="photo-capture" style="display:none; position:fixed; left:8px; right:8px; bottom:8vh; z-index:1500; background:#fff; border-radius:10px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
++    <form id="photoForm">
++      <label for="photoInput" class="touch-btn" style="display:inline-block; padding:12px 14px; font-size:16px; cursor:pointer;">
++        Take Photo
++        <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment" style="display:none;">
++      </label>
++      <div id="photoPreview" style="margin-top:10px;"></div>
++      <div style="display:flex; gap:8px; margin-top:10px;">
++        <button id="photoUpload" type="button" class="touch-btn" style="display:none;">Upload</button>
++        <button id="photoCancel" type="button" class="touch-btn">Cancel</button>
++      </div>
++      <small id="photoHelp" style="display:block; margin-top:6px; font-size:12px;">Tap Take Photo → preview → Upload</small>
++    </form>
++  </div>
++
++  <!-- camera logic -->
++  <script src="js/photo-ui.js" defer></script>
++
++  <!-- Global fallback: tap anywhere on map opens camera UI at clicked lat/lng -->
++  <script>
++  (function waitMap(){
++    if(!window.map){ return setTimeout(waitMap, 200); }
++    map.on('click', function(e){ window.openPhotoUI({ lat: e.latlng.lat, lng: e.latlng.lng }); });
++  })();
++  </script>
++</body>
+*** End Patch

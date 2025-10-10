@@ -8,11 +8,12 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="stylesheet" href="css/leaflet.css">
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
-// REMOVED_BY_MOBILE_FIX:         <link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
+		<link rel="stylesheet" href="css/mobile-buttons.css">
+
         <style>
         html, body, #map {
             width: 100%;
@@ -131,11 +132,14 @@
 </div>
 
         </div>
+		<script src="js/mobile-controls.js" defer></script>
+		<script src="js/photo-ui.js" defer></script>
+
+
         <script src="js/qgis2web_expressions.js"></script>
         <script src="js/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
         <script src="js/L.Control.Layers.Tree.min.js"></script>
-// REMOVED_BY_MOBILE_FIX:         <script src="js/L.Control.Locate.min.js"></script>
         <script src="js/multi-style-layer.js"></script>
         <script src="js/leaflet.rotatedMarker.js"></script>
         <script src="js/leaflet.pattern.js"></script>
@@ -217,7 +221,6 @@
         var zoomControl = L.control.zoom({
             position: 'topleft'
         }).addTo(map);
-// REMOVED_BY_MOBILE_FIX:         L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
         var measureControl = new L.Control.Measure({
             position: 'topleft',
             primaryLengthUnit: 'meters',
@@ -1052,7 +1055,6 @@ function normLngLat(coords) {
 
   // ======= remove native zoom and locate controls so we own them in-panel =======
   if (map.zoomControl) map.removeControl(map.zoomControl);  // hide Leaflet +/−
-// REMOVED_BY_MOBILE_FIX:   // If a Leaflet Locate control was present earlier, don’t add it again (we won’t call L.control.locate at all)
 
   // ======= GPS visuals =======
   const gpsIcon = L.icon({
@@ -1497,6 +1499,7 @@ ui.btnMeasureArea.onclick  = () => Measure.startArea();
 ui.btnMeasureClear.onclick = () => Measure.stop();
 
 
+
   // export (Note: btn-dl-geojson is commented out in your HTML, so this won't run)
   if (ui.btnGeoJSON) {
       ui.btnGeoJSON.onclick = () => {
@@ -1686,5 +1689,24 @@ if (window.map) {
   if(moved){ map.addLayer(cluster); }
 })();
 </script>
+<!-- Camera-first photo UI -->
+<div id="photo-capture" style="display:none; position:fixed; left:8px; right:8px; bottom:8vh; z-index:1500; background:#fff; border-radius:10px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+  <form id="photoForm">
+    <label for="photoInput" class="touch-btn" style="display:inline-block; padding:12px 14px; font-size:16px; cursor:pointer;">
+      Take Photo
+      <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment" style="display:none;">
+    </label>
+
+    <div id="photoPreview" style="margin-top:10px;"></div>
+
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button id="photoUpload" type="button" class="touch-btn" style="display:none;">Upload</button>
+      <button id="photoCancel" type="button" class="touch-btn">Cancel</button>
+    </div>
+
+    <small id="photoHelp" style="display:block; margin-top:6px; font-size:12px; color:#333;">Tap Take Photo → preview → Upload</small>
+  </form>
+</div>
+
 </body>
 </html>
