@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3340313,
+      49.9587712
+    ]
+  },
+  "properties": {
+    "title": "e",
+    "description": "aer",
+    "imageUrl": "/.netlify/functions/photo/photo_1759449607869.jpg",
+    "ts": 1759449607869
+  }
+}
