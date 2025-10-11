@@ -286,61 +286,17 @@
         map.on("zoomend layeradd layerremove", function(){
             resetLabels([layer_LOTS_5]);
         });
-        </script><!-- Bottom Action Bar -->
-<div id="actionbar" class="sv-actionbar">
-  <button id="btn-locate" class="sv-act" title="Locate"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
-  <button id="btn-add-pin" class="sv-act" title="Add Pin"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
-  <button id="btn-camera" class="sv-act" title="Photo"><i class="fas fa-camera"></i><span>Photo</span></button>
-  <button id="btn-measure" class="sv-act" title="Measure"><i class="fas fa-ruler-combined"></i><span>Measure</span></button>
-  <button id="btn-layers" class="sv-act" title="Layers"><i class="fas fa-layer-group"></i><span>Layers</span></button>
-</div>
-<script>
+        </script><script>
 document.addEventListener('DOMContentLoaded', function () {
-  // Keep CSS var synced with actual bar height
-  (function keepBottomSpace(){
-    const bar = document.getElementById('actionbar');
-    function upd(){ if (bar) document.documentElement.style.setProperty('--sv-actionbar-h', bar.offsetHeight + 'px'); }
-    if ('ResizeObserver' in window && bar) { new ResizeObserver(upd).observe(bar); upd(); }
-    else { upd(); window.addEventListener('resize', upd); }
-  })();
-
-  // MEASURE -> toggle original Leaflet.Measure UI
-  const btnMeasure = document.getElementById('btn-measure');
-  if (btnMeasure) btnMeasure.onclick = function (e) {
+  var btn = document.getElementById('btn-measure');
+  if (!btn) return;
+  btn.onclick = function (e) {
     e.stopPropagation();
-    const t = document.querySelector('.leaflet-control-measure-toggle');
-    if (t) t.click();
+    var t = document.querySelector('.leaflet-control-measure-toggle');
+    if (t) t.click();         // open/close the original Leaflet.Measure UI
   };
-
-  // LAYERS -> expand/collapse panel
-  const btnLayers = document.getElementById('btn-layers');
-  if (btnLayers) btnLayers.onclick = function (e) {
-    e.stopPropagation();
-    const ctl = document.querySelector('.leaflet-control-layers');
-    if (ctl) ctl.classList.toggle('leaflet-control-layers-expanded');
-  };
-
-  // LOCATE -> blue dot + accuracy ring
-  const btnLocate = document.getElementById('btn-locate');
-  if (btnLocate && window.map && window.L) {
-    let gpsMarker=null, gpsCircle=null;
-    function drawFix(latlng, acc) {
-      if (gpsMarker) map.removeLayer(gpsMarker);
-      gpsMarker = L.circleMarker(latlng, { radius:6, color:'#0078ff', fillColor:'#0078ff', fillOpacity:1 }).addTo(map).bindPopup('You are here');
-      if (gpsCircle) map.removeLayer(gpsCircle);
-      gpsCircle = L.circle(latlng, { radius: Math.max(acc||0, 0), color:'#0078ff', weight:1, fillOpacity:0.10 }).addTo(map);
-    }
-    map.on('locationfound', (e)=>{ drawFix(e.latlng, e.accuracy); map.setView(e.latlng, Math.max(map.getZoom(), 18)); });
-    map.on('locationerror', (e)=>{ console.error('Location error:', e.message); alert('Location error: ' + e.message); });
-    btnLocate.onclick = function (e) {
-      e.stopPropagation();
-      try { map.locate({ setView:false, enableHighAccuracy:true, timeout:10000, watch:false }); }
-      catch(err){ console.error('map.locate failed', err); }
-    };
-  }
 });
 </script>
 </body>
 </html>
-
 
