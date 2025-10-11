@@ -257,3 +257,8 @@ html, body, #map {
     display: inline-block !important;
     color: #444 !important;
 }
+/* --- Pin Logo to Top-Left Corner --- */
+.leaflet-control-logo.leaflet-control {
+    order: -1; /* This makes it the first item in the top-left stack */
+    margin-bottom: 10px; /* This adds a nice space below the logo */
+}

@@ -38,8 +38,7 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-    <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
-</head>
+    </head>
     <body>
         <div id="map">
             <div id="camera-wrap">
@@ -411,23 +410,5 @@ document.addEventListener('DOMContentLoaded', function () {
   if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
 });
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  function clickMenuItem(label) {
-    const toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!toggle) return;
-    if (!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction')) { toggle.click(); }
-    const panel = document.querySelector('.leaflet-control-measure'); if (!panel) return;
-    const target = Array.from(panel.querySelectorAll('a,button,span,div'))
-      .find(el => (el.textContent||'').trim().toLowerCase().includes(label));
-    if (target) target.click();
-  }
-  const btn = document.getElementById('btn-measure');
-  if (btn) { btn.onclick = (e) => { e.stopPropagation(); clickMenuItem('distance'); }; }
-  const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
-});
-</script>
 </body>
 </html>
-

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -38,8 +38,7 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-    <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
-</head>
+    </head>
     <body>
         <div id="map">
             <div id="camera-wrap">
@@ -347,13 +346,20 @@ function onFix(p, recenter=false) {
             function disarmPinDrop() { if(state.dropPinArmed) { state.dropPinArmed = false; setStatus('Pin drop cancelled.'); if (dropPinCaptureHandler) { map.getContainer().removeEventListener('click', dropPinCaptureHandler, true); dropPinCaptureHandler = null; } } }
             
             ui.btnLocate.onclick = () => { disarmPinDrop(); if (!navigator.geolocation) return alert('Geolocation not supported.'); setStatus('locating...'); navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 }); };
-            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pinâ€¦'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
+            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pin…'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
             ui.btnCamera.onclick = () => { disarmPinDrop(); camOn(); };
             ui.btnLayers.onclick = () => { disarmPinDrop(); document.querySelector('.leaflet-control-layers').classList.toggle('leaflet-control-layers-expanded'); };
             ui.btnCamOff.onclick = () => { if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop()); state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.classList.remove('show'); setStatus('camera off'); };
 			ui.btnCamShot.onclick = async () => { if (!state.cam.stream) return; const [w,h]=[ui.video.videoWidth,ui.video.videoHeight]; if (!w||!h) return; ui.canvas.width=w;ui.canvas.height=h; ui.canvas.getContext('2d').drawImage(ui.video,0,0,w,h); const blob = await new Promise(res=>ui.canvas.toBlob(res,'image/jpeg',0.8)); const fix=state.lastFix; const {lat,lng}=fix?fix:map.getCenter(); const title=prompt('Photo title (optional):','')||'Photo'; const description=prompt('Photo description (optional):','')||''; const filename=`photo_${Date.now()}.jpg`; setStatus('saving photo...'); try { await uploadPhoto(blob,filename,lat,lng,title,description); setStatus('photo saved'); } catch(e) { console.error("Failed to upload photo:",e); setStatus('photo save failed'); alert("Error: Could not upload photo."); } finally { ui.btnCamOff.onclick(); } };
 
-
+ui.btnMeasure.onclick = (e) => {
+    e.stopPropagation();
+    disarmPinDrop();
+    const measureButton = document.querySelector('.leaflet-control-measure-toggle');
+    if (measureButton) {
+        measureButton.click();
+    }
+};
             loadData(BACKEND.pinsGet, addPinFeature);
             loadData(BACKEND.photosGet, addPhotoFeature).then(() => setStatus('ready'));
             try { if(!localStorage.getItem('sv_toast_seen')){ const el=document.getElementById('sv-toast'); if(el){ el.style.display='block'; setTimeout(() => { el.style.display='none'; localStorage.setItem('sv_toast_seen','1'); }, 4200); } } } catch(e){}
@@ -394,40 +400,5 @@ function onFix(p, recenter=false) {
                 Tip: tap <i class="fas fa-crosshairs"></i> to center on your location, and <i class="fas fa-layer-group"></i> to manage layers.
             </div>
         </div>
-    <script>
-document.addEventListener('DOMContentLoaded', function () {
-  function clickMenuItem(label) {
-    const toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!toggle) return;
-    if (!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction')) { toggle.click(); }
-    const panel = document.querySelector('.leaflet-control-measure'); if (!panel) return;
-    const target = Array.from(panel.querySelectorAll('a,button,span,div'))
-      .find(el => (el.textContent||'').trim().toLowerCase().includes(label));
-    if (target) target.click();
-  }
-  const btn = document.getElementById('btn-measure');
-  if (btn) { btn.onclick = (e) => { e.stopPropagation(); clickMenuItem('distance'); }; }
-  const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  function clickMenuItem(label) {
-    const toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!toggle) return;
-    if (!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction')) { toggle.click(); }
-    const panel = document.querySelector('.leaflet-control-measure'); if (!panel) return;
-    const target = Array.from(panel.querySelectorAll('a,button,span,div'))
-      .find(el => (el.textContent||'').trim().toLowerCase().includes(label));
-    if (target) target.click();
-  }
-  const btn = document.getElementById('btn-measure');
-  if (btn) { btn.onclick = (e) => { e.stopPropagation(); clickMenuItem('distance'); }; }
-  const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
-});
-</script>
-</body>
+    </body>
 </html>
-
