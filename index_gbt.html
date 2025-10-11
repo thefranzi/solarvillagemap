@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="css/leaflet.photon.css">
+    <link rel="stylesheet" href="css/leaflet-measure.css">
+    <link rel="stylesheet" href="css/MarkerCluster.css">
+    <link rel="stylesheet" href="css/MarkerCluster.Default.css">
+    <script src="https://unpkg.com/exifr/dist/full.umd.js"></script>
+
+    <style>
+      html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; }
+
+      /* Camera mini-pane (unchanged, just tidied) */
+      #camera-wrap { display:none; z-index: 10000; position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+      #camera-wrap.show { display:block; }
+      #cam-video { width: 100%; max-width: 280px; aspect-ratio: 3 / 4; background: #000; object-fit: cover; border-radius: 6px; }
+      #cam-canvas { display:none; }
+
+      /* Status pill */
+      #gps-status { position: absolute; top: 12px; right: 50px; z-index: 999; background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 4px; font-family: sans-serif; font-size: 12px; box-shadow: 0 1px 5px rgba(0,0,0,.2); pointer-events: none; }
+
+      /* Bottom action bar */
+      .sv-actionbar {
+        position: fixed;
+        left: 8px; right: 8px;
+        bottom: env(safe-area-inset-bottom,8px);
+        display: grid; grid-template-columns: repeat(5,1fr);
+        gap: 10px; background: rgba(255,255,255,.9);
+        padding: 8px; border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        z-index: 1000;
+      }
+      .sv-act { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:6px 4px; border:none; border-radius:12px; background:#fff; cursor:pointer; }
+      .sv-act i { font-size:18px; line-height:1; }
+      .sv-act span { font-size:11px; margin-top:4px; }
+      @media (max-width:420px){ .sv-act span{ display:none; } }
+
+      /* Give bottom-left default controls breathing room */
+      .leaflet-bottom.leaflet-left { margin-bottom: 68px; }
+
+      /* --- Never overlap layers panel with bottom bar --- */
+      :root { --sv-actionbar-h: 68px; } /* JS will keep this current */
+      .leaflet-control-layers { margin-bottom: calc(var(--sv-actionbar-h) + 8px); z-index: 1001; }
+      .leaflet-right .leaflet-control-layers-expanded {
+        max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
+        overflow: auto;
+      }
+
+      /* Keep measure UI above everything */
+      .leaflet-control-measure,
+      .leaflet-measure-resultpopup,
+      .leaflet-control-measure .results { z-index: 1002; }
+
+      /* Measure dropdown (right above the bar, right side) */
+      #measure-menu {
+        position: fixed;
+        right: 12px;
+        bottom: calc(var(--sv-actionbar-h) + 12px);
+        background: #101216; color: #fff;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 8px; display: none; z-index: 1001;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      }
+      #measure-menu.show { display: block; }
+      #measure-menu button {
+        display:block; width:100%; margin:4px 0; padding:8px 10px;
+        background:#1a1d24; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:10px; cursor:pointer;
+      }
+    </style>
+
+    <title>Solar Village Map</title>
+  </head>
+  <body>
+    <div id="map">
+      <div id="camera-wrap">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <canvas id="cam-canvas"></canvas>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+          <button id="btn-camera-shot" title="Take photo" style="padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;">Take Photo</button>
+          <button id="btn-camera-off"  title="Stop camera" style="padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;">Close</button>
+        </div>
+      </div>
+      <div id="gps-status">status: ready</div>
+    </div>
+
+    <!-- Core libs (order matters) -->
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/leaflet.markercluster.js"></script>
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+    <script src="js/L.Control.Locate.min.js"></script>
+    <script src="js/multi-style-layer.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <!-- NOTE: leaflet.pattern.js removed to avoid Mixin deprecation warning; re-add only if you actually use pattern fills -->
+    <!-- <script src="js/leaflet.pattern.js"></script> -->
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="js/leaflet.photon.js"></script>
+    <script src="js/leaflet-measure.js"></script>
+
+    <!-- Data layers (unchanged) -->
+    <script src="data/BNDRY_4.js"></script>
+    <script src="data/LOTS_5.js"></script>
+    <script src="data/ESA_7.js"></script>
+    <script src="data/DW_8.js"></script>
+    <script src="data/SBE_9.js"></script>
+    <script src="data/EX_BLD_10.js"></script>
+    <script src="data/CRK_COV_11.js"></script>
+    <script src="data/ENV_RST_12.js"></script>
+    <script src="data/SRW_MOTI_13.js"></script>
+    <script src="data/CE_14.js"></script>
+    <script src="data/BA_15.js"></script>
+    <script src="data/ALR_16.js"></script>
+    <script src="data/AOI_17.js"></script>
+    <script src="data/SEPTIC_18.js"></script>
+    <script src="data/WELLS_19.js"></script>
+    <script src="data/FENCE_20.js"></script>
+    <script src="data/EX_FENCE_21.js"></script>
+
+    <script>
+      // --- Map init (unchanged baseline) ---
+      var map = L.map('map', { zoomControl:false, maxZoom:21, minZoom:15 })
+        .fitBounds([[49.954011553509815,-119.33922884315004],[49.961783579330934,-119.32957344118267]]);
+
+      var pinsLayer = L.featureGroup().addTo(map);
+      var photosLayer = L.featureGroup().addTo(map);
+
+      var hash = new L.Hash(map);
+      map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> · <a href="https://leafletjs.com">Leaflet</a> · <a href="https://qgis.org">QGIS</a>');
+      var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+
+      function removeEmptyRowsFromPopupContent(content, feature) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        var rows = tempDiv.querySelectorAll('tr');
+        for (var i = 0; i < rows.length; i++) {
+          var td = rows[i].querySelector('td.visible-with-data');
+          var key = td ? td.id : '';
+          if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+            rows[i].parentNode.removeChild(rows[i]);
+          }
+        }
+        return tempDiv.innerHTML;
+      }
+      function addClassToPopupIfMedia(content, popup) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        if (tempDiv.querySelector('td img')) {
+          popup._contentNode.classList.add('media');
+          setTimeout(function(){ popup.update(); }, 10);
+        } else {
+          popup._contentNode.classList.remove('media');
+        }
+      }
+
+      // Measure control
+      var measureControl = new L.Control.Measure({
+        position: 'topleft',
+        primaryLengthUnit: 'meters',
+        secondaryLengthUnit: 'kilometers',
+        primaryAreaUnit: 'sqmeters',
+        secondaryAreaUnit: 'hectares'
+      });
+      measureControl.addTo(map);
+
+      // --- Base layers & vectors (unchanged) ---
+      map.createPane('pane_GoogleMaps_0'); map.getPane('pane_GoogleMaps_0').style.zIndex = 400;
+      var layer_GoogleMaps_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { pane: 'pane_GoogleMaps_0', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21 });
+
+      map.createPane('pane_OSM_1'); map.getPane('pane_OSM_1').style.zIndex = 401;
+      var layer_OSM_1 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { pane: 'pane_OSM_1', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21, minNativeZoom: 0, maxNativeZoom: 19 });
+
+      map.createPane('pane_GoogleSatellite_2'); map.getPane('pane_GoogleSatellite_2').style.zIndex = 402;
+      var layer_GoogleSatellite_2 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { pane: 'pane_GoogleSatellite_2', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21 });
+
+      map.createPane('pane_WorldImagery_3'); map.getPane('pane_WorldImagery_3').style.zIndex = 403;
+      var layer_WorldImagery_3 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { pane: 'pane_WorldImagery_3', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21 });
+      map.addLayer(layer_WorldImagery_3);
+
+      function pop_BNDRY_4(feature, layer) {}
+      function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,0,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false } }
+      map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404;
+      var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); map.addLayer(layer_BNDRY_4);
+
+      function pop_LOTS_5(feature, layer) {}
+      function style_LOTS_5_0() { return { pane: 'pane_LOTS_5', opacity: 1, color: 'rgba(35,35,35,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 6.0, fillOpacity: 0, interactive: true } }
+      map.createPane('pane_LOTS_5'); map.getPane('pane_LOTS_5').style.zIndex = 405;
+      var layer_LOTS_5 = new L.geoJson(json_LOTS_5,{attribution:'',interactive:true,dataVar:'json_LOTS_5',layerName:'layer_LOTS_5',pane:'pane_LOTS_5',onEachFeature:pop_LOTS_5,style:style_LOTS_5_0}); map.addLayer(layer_LOTS_5);
+
+      function pop_CONT_6(feature, layer) {}
+      function style_CONT_6_0() { return { pane: 'pane_CONT_6', opacity: 1, color: 'rgba(243,166,178,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 1.0, fillOpacity: 0, interactive: true } }
+      map.createPane('pane_CONT_6'); map.getPane('pane_CONT_6').style.zIndex = 406; var layer_CONT_6 = L.layerGroup(); layer_CONT_6.__loaded=false;
+
+      function pop_ESA_7(feature, layer) {}
+      function style_ESA_7_0(feature) {
+        switch(String(feature.properties['ESA_ZONE'])) {
+          case '1': return { pane: 'pane_ESA_7', opacity: 1, color: 'rgba(0,0,0,0.55)', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(150,0,0,0.431)', interactive: true };
+          case '2': return { pane: 'pane_ESA_7', opacity: 1, color: 'rgba(0,0,0,0.55)', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(200,50,0,0.431)', interactive: true };
+          case '3': return { pane: 'pane_ESA_7', opacity: 1, color: 'rgba(0,0,0,0.55)', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(255,165,0,0.431)', interactive: true };
+          case '4': return { pane: 'pane_ESA_7', opacity: 1, color: 'rgba(0,0,0,0.55)', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(255,255,0,0.431)', interactive: true };
+        }
+      }
+      map.createPane('pane_ESA_7'); map.getPane('pane_ESA_7').style.zIndex = 407;
+      var layer_ESA_7 = new L.geoJson(json_ESA_7,{attribution:'',interactive:true,dataVar:'json_ESA_7',layerName:'layer_ESA_7',pane:'pane_ESA_7',onEachFeature: pop_ESA_7, style:style_ESA_7_0});
+
+      function pop_DW_8(feature, layer) {}
+      function style_DW_8_0() { return { pane: 'pane_DW_8', opacity: 1, color: 'rgba(229,182,54,1.0)', weight: 1.0, fillOpacity: 0, interactive: false } }
+      map.createPane('pane_DW_8'); map.getPane('pane_DW_8').style.zIndex = 408;
+      var layer_DW_8 = new L.geoJson(json_DW_8,{attribution:'',interactive:false,dataVar:'json_DW_8',layerName:'layer_DW_8',pane:'pane_DW_8',onEachFeature:pop_DW_8,style:style_DW_8_0}); map.addLayer(layer_DW_8);
+
+      function pop_SBE_9(feature, layer) {}
+      function style_SBE_9_0() { return { pane: 'pane_SBE_9', opacity: 1, color: 'rgba(203,0,255,0.39)', dashArray: '8.0,4.0,2.0,4.0', weight: 2.0, fillOpacity: 0, interactive: false } }
+      function style_SBE_9_1() { return { pane: 'pane_SBE_9', opacity: 1, color: 'rgba(35,35,35,0.39)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(251,230,255,0.39)', interactive: false } }
+      map.createPane('pane_SBE_9'); map.getPane('pane_SBE_9').style.zIndex = 409;
+      var layer_SBE_9 = new L.geoJson.multiStyle(json_SBE_9,{attribution:'',interactive:false,dataVar:'json_SBE_9',layerName:'layer_SBE_9',pane:'pane_SBE_9',onEachFeature:pop_SBE_9,styles:[style_SBE_9_0,style_SBE_9_1]}); map.addLayer(layer_SBE_9);
+
+      function pop_EX_BLD_10(feature, layer) {}
+      function style_EX_BLD_10_0() { return { pane: 'pane_EX_BLD_10', opacity: 1, color: 'rgba(203,0,255,0.573)', weight: 3.0, fillOpacity: 0, interactive: false } }
+      function style_EX_BLD_10_1() { return { pane: 'pane_EX_BLD_10', opacity: 1, color: 'rgba(35,35,35,0.573)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(251,230,255,0.573)', interactive: false } }
+      map.createPane('pane_EX_BLD_10'); map.getPane('pane_EX_BLD_10').style.zIndex = 410;
+      var layer_EX_BLD_10 = new L.geoJson.multiStyle(json_EX_BLD_10,{attribution:'',interactive:false,dataVar:'json_EX_BLD_10',layerName:'layer_EX_BLD_10',pane:'pane_EX_BLD_10',onEachFeature:pop_EX_BLD_10,styles:[style_EX_BLD_10_0,style_EX_BLD_10_1]}); map.addLayer(layer_EX_BLD_10);
+
+      function pop_CRK_COV_11(feature, layer) {}
+      function style_CRK_COV_11_0() { return { pane: 'pane_CRK_COV_11', opacity: 1, color: 'rgba(169,0,0,0.41)', weight: 3.0, fill: true, fillOpacity: 1, fillColor: 'rgba(60,146,155,0.41)', interactive: false } }
+      map.createPane('pane_CRK_COV_11'); map.getPane('pane_CRK_COV_11').style.zIndex = 411;
+      var layer_CRK_COV_11 = new L.geoJson(json_CRK_COV_11,{attribution:'',interactive:false,dataVar:'json_CRK_COV_11',layerName:'layer_CRK_COV_11',pane:'pane_CRK_COV_11',onEachFeature:pop_CRK_COV_11,style:style_CRK_COV_11_0}); map.addLayer(layer_CRK_COV_11);
+
+      function pop_ENV_RST_12(feature, layer) {}
+      function style_ENV_RST_12_0() { return { pane: 'pane_ENV_RST_12', opacity: 1, color: 'rgba(255,87,33,0.389)', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(188,240,183,0.389)', interactive: false } }
+      map.createPane('pane_ENV_RST_12'); map.getPane('pane_ENV_RST_12').style.zIndex = 412;
+      var layer_ENV_RST_12 = new L.geoJson(json_ENV_RST_12,{attribution:'',interactive:false,dataVar:'json_ENV_RST_12',layerName:'layer_ENV_RST_12',pane:'pane_ENV_RST_12',onEachFeature:pop_ENV_RST_12,style:style_ENV_RST_12_0}); map.addLayer(layer_ENV_RST_12);
+
+      function pop_SRW_MOTI_13(feature, layer) {}
+      function style_SRW_MOTI_13_0() { return { pane: 'pane_SRW_MOTI_13', opacity: 1, color: 'rgba(35,35,35,0.383)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(255,157,157,0.383)', interactive: false } }
+      map.createPane('pane_SRW_MOTI_13'); map.getPane('pane_SRW_MOTI_13').style.zIndex = 413;
+      var layer_SRW_MOTI_13 = new L.geoJson(json_SRW_MOTI_13,{attribution:'',interactive:false,dataVar:'json_SRW_MOTI_13',layerName:'layer_SRW_MOTI_13',pane:'pane_SRW_MOTI_13',onEachFeature:pop_SRW_MOTI_13,style:style_SRW_MOTI_13_0}); map.addLayer(layer_SRW_MOTI_13);
+
+      function pop_CE_14(feature, layer) {}
+      function style_CE_14_0() { return { pane: 'pane_CE_14', opacity: 1, color: 'rgba(35,35,229,0.199)', weight: 8.0, fill: true, fillOpacity: 1, fillColor: 'rgba(206,252,255,0.199)', interactive: true } }
+      map.createPane('pane_CE_14'); map.getPane('pane_CE_14').style.zIndex = 414;
+      var layer_CE_14 = new L.geoJson(json_CE_14,{attribution:'',interactive:true,dataVar:'json_CE_14',layerName:'layer_CE_14',pane:'pane_CE_14',onEachFeature:pop_CE_14,style:style_CE_14_0}); map.addLayer(layer_CE_14);
+
+      function pop_BA_15(feature, layer) {}
+      function style_BA_15_0() { return { pane: 'pane_BA_15', opacity: 1, color: 'rgba(0,255,155,0.843)', weight: 2.0, fillOpacity: 0, interactive: false } }
+      map.createPane('pane_BA_15'); map.getPane('pane_BA_15').style.zIndex = 415;
+      var layer_BA_15 = new L.geoJson(json_BA_15,{attribution:'',interactive:false,dataVar:'json_BA_15',layerName:'layer_BA_15',pane:'pane_BA_15',onEachFeature:pop_BA_15,style:style_BA_15_0}); map.addLayer(layer_BA_15);
+
+      function pop_ALR_16(feature, layer) {}
+      function style_ALR_16_0() { return { pane: 'pane_ALR_16', opacity: 1, color: 'rgba(35,83,35,0.376)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(207,0,0,0.376)', interactive: false } }
+      map.createPane('pane_ALR_16'); map.getPane('pane_ALR_16').style.zIndex = 416;
+      var layer_ALR_16 = new L.geoJson(json_ALR_16,{attribution:'',interactive:false,dataVar:'json_ALR_16',layerName:'layer_ALR_16',pane:'pane_ALR_16',onEachFeature:pop_ALR_16,style:style_ALR_16_0}); map.addLayer(layer_ALR_16);
+
+      function pop_AOI_17(feature, layer) {}
+      function style_AOI_17_0(feature) {
+        switch(String(feature.properties['AOI_STATUS'])) {
+          case 'Cleared': return { pane: 'pane_AOI_17', opacity: 1, color: 'rgba(0,0,0,0.535)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(0,170,0,0.357)', interactive: true };
+          case 'Not Cleared': return { pane: 'pane_AOI_17', opacity: 1, color: 'rgba(0,0,0,0.535)', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(200,0,0,0.357)', interactive: true };
+        }
+      }
+      map.createPane('pane_AOI_17'); map.getPane('pane_AOI_17').style.zIndex = 417;
+      var layer_AOI_17 = new L.geoJson(json_AOI_17,{attribution:'',interactive:true,dataVar:'json_AOI_17',layerName:'layer_AOI_17',pane:'pane_AOI_17',onEachFeature:pop_AOI_17,style:style_AOI_17_0}); map.addLayer(layer_AOI_17);
+
+      function pop_SEPTIC_18(feature, layer) {}
+      function style_SEPTIC_18_0() { return { pane: 'pane_SEPTIC_18', opacity: 1, color: 'rgba(35,35,35,0.9)', weight: 1, fill: true, fillOpacity: 1, fillColor: 'rgba(122,115,93,0.9)', interactive: true } }
+      map.createPane('pane_SEPTIC_18'); map.getPane('pane_SEPTIC_18').style.zIndex = 418;
+      var layer_SEPTIC_18 = new L.geoJson(json_SEPTIC_18,{attribution:'',interactive:true,dataVar:'json_SEPTIC_18',layerName:'layer_SEPTIC_18',pane:'pane_SEPTIC_18',onEachFeature:pop_SEPTIC_18,style:style_SEPTIC_18_0}); map.addLayer(layer_SEPTIC_18);
+
+      function pop_WELLS_19(feature, layer) {}
+      function style_WELLS_19_0() { return { pane: 'pane_WELLS_19', opacity: 1, color: 'rgba(35,35,255,1.0)', weight: 6.0, fill: true, fillOpacity: 1, fillColor: 'rgba(53,0,255,1.0)', interactive: true } }
+      map.createPane('pane_WELLS_19'); map.getPane('pane_WELLS_19').style.zIndex = 419;
+      var layer_WELLS_19 = new L.geoJson(json_WELLS_19,{attribution:'',interactive:true,dataVar:'json_WELLS_19',layerName:'layer_WELLS_19',pane:'pane_WELLS_19',onEachFeature:pop_WELLS_19,style:style_WELLS_19_0}); map.addLayer(layer_WELLS_19);
+
+      function pop_FENCE_20(feature, layer) {}
+      function style_FENCE_20_0() { return { pane: 'pane_FENCE_20', opacity: 1, color: 'rgba(234,255,35,0.647)', dashArray: '3.0,6.0', weight: 3.0, fillOpacity: 0, interactive: true } }
+      map.createPane('pane_FENCE_20'); map.getPane('pane_FENCE_20').style.zIndex = 420;
+      var layer_FENCE_20 = new L.geoJson(json_FENCE_20,{attribution:'',interactive:true,dataVar:'json_FENCE_20',layerName:'layer_FENCE_20',pane:'pane_FENCE_20',onEachFeature:pop_FENCE_20,style:style_FENCE_20_0}); map.addLayer(layer_FENCE_20);
+
+      function pop_EX_FENCE_21(feature, layer) {}
+      function style_EX_FENCE_21_0() { return { pane: 'pane_EX_FENCE_21', opacity: 1, color: 'rgba(185,202,28,0.728)', dashArray: '3.0,6.0', weight: 3.0, fillOpacity: 0, interactive: true } }
+      map.createPane('pane_EX_FENCE_21'); map.getPane('pane_EX_FENCE_21').style.zIndex = 421;
+      var layer_EX_FENCE_21 = new L.geoJson(json_EX_FENCE_21,{attribution:'',interactive:true,dataVar:'json_EX_FENCE_21',layerName:'layer_EX_FENCE_21',pane:'pane_EX_FENCE_21',onEachFeature:pop_EX_FENCE_21,style:style_EX_FENCE_21_0}); map.addLayer(layer_EX_FENCE_21);
+
+      // Layer tree (unchanged, with user layers at top)
+      var overlaysTree = [
+        {label: '<b>User Content</b>', selectAllCheckbox: true, children: [
+          {label: '<i class="fas fa-map-pin" style="color:#ff8c00; margin-right: 5px;"></i> User Pins', layer: pinsLayer},
+          {label: '<i class="fas fa-camera" style="color:#7e57c2; margin-right: 5px;"></i> User Photos', layer: photosLayer}
+        ]},
+        {label: '<b>Solar Village v22</b>', selectAllCheckbox: true, children: [
+          {label: '<img src="legend/EX_FENCE_21.png" /> EX_FENCE', layer: layer_EX_FENCE_21},
+          {label: '<img src="legend/FENCE_20.png" /> FENCE', layer: layer_FENCE_20},
+          {label: '<img src="legend/WELLS_19.png" /> WELLS', layer: layer_WELLS_19},
+          {label: '<img src="legend/SEPTIC_18.png" /> SEPTIC', layer: layer_SEPTIC_18},
+          {label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
+          {label: '<img src="legend/ALR_16.png" /> ALR', layer: layer_ALR_16},
+          {label: '<img src="legend/BA_15.png" /> BA', layer: layer_BA_15},
+          {label: '<img src="legend/CE_14.png" /> CE', layer: layer_CE_14},
+          {label: '<img src="legend/SRW_MOTI_13.png" /> SRW_MOTI', layer: layer_SRW_MOTI_13},
+          {label: '<img src="legend/ENV_RST_12.png" /> ENV_RST', layer: layer_ENV_RST_12},
+          {label: '<img src="legend/CRK_COV_11.png" /> CRK_COV', layer: layer_CRK_COV_11},
+          {label: '<img src="legend/EX_BLD_10.png" /> EX_BLD', layer: layer_EX_BLD_10},
+          {label: '<img src="legend/SBE_9.png" /> SBE', layer: layer_SBE_9},
+          {label: '<img src="legend/DW_8.png" /> DW', layer: layer_DW_8},
+          {label: 'ESA<br /><table><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone10.png" /></td><td>Zone 1</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone21.png" /></td><td>Zone 2</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone32.png" /></td><td>Zone 3</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone43.png" /></td><td>Zone 4</td></tr></table>', layer: layer_ESA_7},
+          {label: '<img src="legend/CONT_6.png" /> CONT', layer: layer_CONT_6},
+          {label: '<img src="legend/LOTS_5.png" /> LOTS', layer: layer_LOTS_5},
+          {label: '<img src="legend/BNDRY_4.png" /> BNDRY', layer: layer_BNDRY_4}
+        ]},
+        {label: '<b>Baselayers</b>', selectAllCheckbox: true, children: [
+          {label: "World Imagery", layer: layer_WorldImagery_3, radioGroup: 'bm' },
+          {label: "Google Satellite", layer: layer_GoogleSatellite_2, radioGroup: 'bm' },
+          {label: "OSM", layer: layer_OSM_1, radioGroup: 'bm' },
+          {label: "Google Maps", layer: layer_GoogleMaps_0, radioGroup: 'bm' }
+        ]}
+      ];
+      var lay = L.control.layers.tree(null, overlaysTree,{ collapsed: true }).addTo(map);
+
+      // Logo (unchanged)
+      L.Control.Logo = L.Control.extend({
+        onAdd: function(map) {
+          var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
+          container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo"></a>';
+          L.DomEvent.disableClickPropagation(container);
+          return container;
+        }
+      });
+      new L.Control.Logo({ position: 'topleft' }).addTo(map);
+
+      // LOT labels (unchanged)
+      var i = 0;
+      layer_LOTS_5.eachLayer(function(layer) {
+        layer.bindTooltip((layer.feature.properties['Text'] || ''), {permanent: true, offset: [-0, -16], className: 'css_LOTS_5'});
+        labels.push(layer); totalMarkers += 1; layer.added = true; addLabel(layer, i++);
+      });
+      resetLabels([layer_LOTS_5]);
+      map.on("zoomend layeradd layerremove", function(){ resetLabels([layer_LOTS_5]); });
+    </script>
+
+    <!-- APP LOGIC: buttons, locate, measure, photos/pins -->
+    <script>
+      // Make shared objects global so later blocks can safely access
+      window.state = { lastFix: null, dropPinArmed: false, cam: { stream:null }, gpsMarker: null, gpsCircle: null };
+      window.ui = {}; // filled on DOMContentLoaded
+      window.setStatus = (m)=>{ try{ ui.status.textContent = 'status: ' + m; }catch(e){} };
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const BACKEND = {
+          pinsGet:'/.netlify/functions/pins',
+          pinsPost:'/.netlify/functions/pins',
+          photosGet:'/.netlify/functions/photos',
+          photoUpload:'/.netlify/functions/uploadPhoto'
+        };
+
+        // Hook up UI elements
+        ui = {
+          status: document.getElementById('gps-status'),
+          btnLocate: document.getElementById('btn-locate'),
+          btnAddPin: document.getElementById('btn-add-pin'),
+          btnCamera: document.getElementById('btn-camera'),
+          btnMeasure: document.getElementById('btn-measure'),
+          btnLayers: document.getElementById('btn-layers'),
+          btnCamShot: document.getElementById('btn-camera-shot'),
+          btnCamOff: document.getElementById('btn-camera-off'),
+          camWrap: document.getElementById('camera-wrap'),
+          video: document.getElementById('cam-video'),
+          canvas: document.getElementById('cam-canvas'),
+          measureMenu: document.getElementById('measure-menu'),
+          measureDist: document.getElementById('btn-measure-dist'),
+          measureArea: document.getElementById('btn-measure-area'),
+          measureClear: document.getElementById('btn-measure-clear'),
+        };
+
+        const normLngLat = c => { let [x,y]=c.map(Number); if(Math.abs(x)<=90&&Math.abs(y)>90)[x,y]=[y,x]; return [x,y]; };
+
+        // --- Blue dot + accuracy ring using map.locate() ---
+        function drawFix(latlng, acc) {
+          if (state.gpsMarker) map.removeLayer(state.gpsMarker);
+          state.gpsMarker = L.circleMarker(latlng, { radius:6, color:'#0078ff', fillColor:'#0078ff', fillOpacity:1 }).addTo(map).bindPopup('You are here');
+          if (state.gpsCircle) map.removeLayer(state.gpsCircle);
+          state.gpsCircle = L.circle(latlng, { radius: Math.max(acc || 0, 0), color:'#0078ff', weight:1, fillOpacity: 0.10 }).addTo(map);
+        }
+        map.on('locationfound', (e) => {
+          drawFix(e.latlng, e.accuracy);
+          state.lastFix = { time: Date.now(), lat: e.latlng.lat, lng: e.latlng.lng, acc: e.accuracy };
+          setStatus(`fix @ ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)} (±${Math.round(e.accuracy)} m)`);
+        });
+        map.on('locationerror', (e) => { setStatus('error: ' + e.message); alert('Location error: ' + e.message); });
+        ui.btnLocate.onclick = () => {
+          disarmPinDrop();
+          map.locate({ setView:true, maxZoom:18, enableHighAccuracy:true, timeout:10000, watch:false });
+        };
+
+        // --- Pins / Photos helpers (unchanged behavior) ---
+        const pinIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32] });
+        const photoIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/><circle cx="20" cy="22" r="6.5" fill="#fff"/><circle cx="20" cy="22" r="3.5" fill="#7e57c2"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -30] });
+
+        async function loadData(url, addFeatureFunc) {
+          try {
+            (await (await fetch(`${url}?t=${Date.now()}`, { cache:'no-store' })).json()).features.forEach(addFeatureFunc);
+          } catch(e) { console.error('Data load error', e); }
+        }
+        function addPinFeature(feat) {
+          if (!feat?.geometry?.coordinates) return;
+          const [lng, lat] = normLngLat(feat.geometry.coordinates);
+          const {title,description} = feat.properties||{};
+          L.marker([lat, lng], {icon:pinIcon}).addTo(pinsLayer).bindPopup(`<b>${title||'Pin'}</b><br>${description||''}`);
+        }
+        async function savePin(lng, lat, title, description) {
+          const f = {type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},properties:{title,description,ts:Date.now()}};
+          const r = await fetch(BACKEND.pinsPost,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)});
+          if(!r.ok) throw new Error('Failed to save pin.');
+          addPinFeature(await r.json());
+        }
+        function addPhotoFeature(feat) {
+          if (!feat?.geometry?.coordinates) return;
+          const [lng, lat] = normLngLat(feat.geometry.coordinates);
+          const {title,description,imageUrl} = feat.properties||{};
+          const h = `<div style="max-width:220px"><b>${title||'Photo'}</b>${description?`<br>${description}`:''}${imageUrl?`<div style="margin-top:6px"><img src="${imageUrl}" alt style="width:100px;max-height:80px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="openPhotoModal('${imageUrl}')"></div>`:''}</div>`;
+          L.marker([lat,lng],{icon:photoIcon}).addTo(photosLayer).bindPopup(h);
+        }
+        async function uploadPhoto(blob, filename, lat, lng, title, description) {
+          const fd = new FormData();
+          fd.append('file', new File([blob], filename, {type:blob.type||'image/jpeg'}));
+          fd.append('lat', String(lat)); fd.append('lng', String(lng));
+          fd.append('title', title||''); fd.append('description', description||'');
+          const r = await fetch(BACKEND.photoUpload,{method:'POST',body:fd});
+          if(!r.ok) throw new Error('Photo upload failed.');
+          addPhotoFeature((await r.json()).feature);
+        }
+
+        // Camera
+        async function camOn() {
+          try {
+            const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+            state.cam.stream=s; ui.video.srcObject=s; await ui.video.play();
+            ui.camWrap.classList.add('show'); setStatus('camera on');
+          } catch(e){ alert('Camera error: '+e.message); setStatus('camera error'); }
+        }
+
+        // Pin drop (armed click capture + cancel)
+        let dropPinCaptureHandler = null;
+        function disarmPinDrop() {
+          if(state.dropPinArmed) {
+            state.dropPinArmed = false; setStatus('Pin drop cancelled.');
+            if (dropPinCaptureHandler) { map.getContainer().removeEventListener('click', dropPinCaptureHandler, true); dropPinCaptureHandler = null; }
+          }
+        }
+        window.disarmPinDrop = disarmPinDrop; // used by Locate
+
+        ui.btnAddPin.onclick = () => {
+          if (state.dropPinArmed) return disarmPinDrop();
+          state.dropPinArmed = true; setStatus('Click the map to place a pin…');
+          map.getContainer().addEventListener('click', (dropPinCaptureHandler = async (ev) => {
+            if (!state.dropPinArmed) return;
+            const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')];
+            if (els.some(el => el && el.contains(ev.target))) return;
+            ev.stopPropagation(); ev.preventDefault();
+            const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]);
+            disarmPinDrop();
+            const title = prompt('Pin title:', 'Pin') || 'Pin';
+            const description = prompt('Pin description (optional):', '') || '';
+            try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); }
+            catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); }
+          }), {capture: true, once: true});
+        };
+
+        ui.btnCamera.onclick = () => { disarmPinDrop(); camOn(); };
+        ui.btnCamOff.onclick = () => {
+          if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop());
+          state.cam.stream = null; ui.video.srcObject = null;
+          ui.camWrap.classList.remove('show'); setStatus('camera off');
+        };
+        ui.btnCamShot.onclick = async () => {
+          if (!state.cam.stream) return;
+          const [w,h]=[ui.video.videoWidth,ui.video.videoHeight]; if (!w||!h) return;
+          ui.canvas.width=w; ui.canvas.height=h; ui.canvas.getContext('2d').drawImage(ui.video,0,0,w,h);
+          const blob = await new Promise(res=>ui.canvas.toBlob(res,'image/jpeg',0.8));
+          const fix=state.lastFix; const {lat,lng}=fix?fix:map.getCenter();
+          const title=prompt('Photo title (optional):','')||'Photo';
+          const description=prompt('Photo description (optional):','')||'';
+          const filename=`photo_${Date.now()}.jpg`;
+          setStatus('saving photo...');
+          try { await uploadPhoto(blob,filename,lat,lng,title,description); setStatus('photo saved'); }
+          catch(e) { console.error("Failed to upload photo:",e); setStatus('photo save failed'); alert("Error: Could not upload photo."); }
+          finally { ui.btnCamOff.onclick(); }
+        };
+
+        // Layers toggle button
+        ui.btnLayers.onclick = () => {
+          disarmPinDrop();
+          const ctl = document.querySelector('.leaflet-control-layers');
+          if (!ctl) return;
+          ctl.classList.toggle('leaflet-control-layers-expanded');
+        };
+
+        // Measure dropdown + robust toggles
+        ui.btnMeasure.onclick = (e) => { e.stopPropagation(); disarmPinDrop(); ui.measureMenu.classList.toggle('show'); };
+        document.addEventListener('click', (e) => { if (!ui.measureMenu.contains(e.target) && !ui.btnMeasure.contains(e.target)) ui.measureMenu.classList.remove('show'); });
+
+        function ensureMeasureReady() {
+          if (!window.measureControl) return false;
+          if (!measureControl._toolbars || !measureControl._toolbars.distance) {
+            try { if (typeof measureControl._toggleMeasure === 'function') { measureControl._toggleMeasure(); measureControl._toggleMeasure(); } } catch(e){}
+          }
+          return !!(measureControl._toolbars && measureControl._toolbars.distance);
+        }
+        function triggerMeasure(action) {
+          if (!ensureMeasureReady()) { console.warn('Measure not ready'); return; }
+          const tb = measureControl._toolbars[action];
+          if (!tb) return;
+          if (tb._active) tb.disable(); else tb.enable();
+          ui.measureMenu.classList.remove('show');
+        }
+        ui.measureDist.onclick  = ()=> triggerMeasure('distance');
+        ui.measureArea.onclick  = ()=> triggerMeasure('area');
+        ui.measureClear.onclick = ()=> {
+          if (!ensureMeasureReady()) return;
+          const clearer = (measureControl.clearAllMeasurements || measureControl._clearAllMeasurements || function(){});
+          try { clearer.call(measureControl); } catch(e){}
+          ui.measureMenu.classList.remove('show');
+        };
+
+        // Dynamic bottom spacing so layers panel never overlaps the bar
+        (function(){
+          const bar = document.getElementById('actionbar');
+          function updateSpace() {
+            const h = bar ? bar.offsetHeight : 68;
+            document.documentElement.style.setProperty('--sv-actionbar-h', h + 'px');
+          }
+          if ('ResizeObserver' in window && bar) { new ResizeObserver(updateSpace).observe(bar); updateSpace(); }
+          else { updateSpace(); window.addEventListener('resize', updateSpace); }
+        })();
+
+        // Load user content
+        async function addPhotoFeature(feat) { /* redefined above */ }
+        loadData(BACKEND.pinsGet, addPinFeature);
+        loadData(BACKEND.photosGet, addPhotoFeature).then(() => setStatus('ready'));
+
+        try {
+          if(!localStorage.getItem('sv_toast_seen')){
+            const el=document.getElementById('sv-toast');
+            if(el){ el.style.display='block'; setTimeout(() => { el.style.display='none'; localStorage.setItem('sv_toast_seen','1'); }, 4200); }
+          }
+        } catch(e){}
+      });
+    </script>
+
+    <!-- Lazy-load contours on demand (unchanged) -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        function loadScriptOnce(url) {
+          return new Promise(function(resolve, reject) {
+            if (document.querySelector(`script[src="${url}"]`)) return resolve();
+            var s=document.createElement('script'); s.src=url; s.async=true; s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
+          });
+        }
+        async function ensureContoursLoaded() {
+          if(!window.layer_CONT_6 || layer_CONT_6.__loaded) return;
+          try {
+            await loadScriptOnce('data/CONT_6.js');
+            if(typeof json_CONT_6 === 'undefined') return;
+            var nl=new L.geoJson(json_CONT_6,{attribution:'',interactive:true,dataVar:'json_CONT_6',layerName:'layer_CONT_6',pane:'pane_CONT_6',onEachFeature:pop_CONT_6,style:style_CONT_6_0});
+            nl.eachLayer(ly=>layer_CONT_6.addLayer(ly)); layer_CONT_6.__loaded=true;
+          } catch(e) { console.error('[contours] load error', e); }
+        }
+        map.on('overlayadd', e => { if (e.layer === layer_CONT_6) ensureContoursLoaded(); });
+      });
+    </script>
+
+    <!-- Action bar -->
+    <div id="actionbar" class="sv-actionbar">
+      <button id="btn-locate" class="sv-act"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
+      <button id="btn-add-pin" class="sv-act"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
+      <button id="btn-camera" class="sv-act"><i class="fas fa-camera"></i><span>Photo</span></button>
+      <button id="btn-measure" class="sv-act"><i class="fas fa-ruler-combined"></i><span>Measure</span></button>
+      <button id="btn-layers" class="sv-act"><i class="fas fa-layer-group" style="color: #444444;"></i><span>Layers</span></button>
+    </div>
+
+    <!-- Measure dropdown -->
+    <div id="measure-menu">
+      <button id="btn-measure-dist"><i class="fas fa-ruler-horizontal"></i> Distance</button>
+      <button id="btn-measure-area"><i class="fas fa-vector-square"></i> Area</button>
+      <button id="btn-measure-clear"><i class="fas fa-trash"></i> Clear</button>
+    </div>
+
+    <!-- Small toast -->
+    <div id="sv-toast" style="position:fixed;left:12px;right:12px;bottom:90px;z-index:1200;display:none">
+      <div style="background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.2);font-size:13px">
+        Tip: tap <i class="fas fa-crosshairs"></i> to center on your location, and <i class="fas fa-layer-group"></i> to manage layers.
+      </div>
+    </div>
+
+    <!-- Photo lightbox -->
+    <div id="photo-modal" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+      <span style="position:absolute; top:20px; right:40px; font-size:40px; color:#fff; cursor:pointer;" onclick="closePhotoModal()">&#10005;</span>
+      <img id="photo-modal-img" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 2px 20px #000;">
+    </div>
+    <script>
+      function openPhotoModal(src) { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').style.display='flex'; }
+      function closePhotoModal() { document.getElementById('photo-modal').style.display='none'; document.getElementById('photo-modal-img').src=''; }
+      document.addEventListener('DOMContentLoaded', function() {
+        const photoModal = document.getElementById('photo-modal');
+        if(photoModal) { photoModal.onclick = (e) => { if(e.target === e.currentTarget) closePhotoModal(); }; }
+      });
+    </script>
+  </body>
+</html>
