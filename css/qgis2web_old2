@@ -197,6 +197,8 @@ html, body, #map {
 }
 
 /* --- FINAL ADDITIONS FOR NEW UI --- */
+
+/* Prevents layers panel from overlapping the bottom action bar */
 .leaflet-control-layers-expanded {
     max-height: calc(100vh - 120px) !important;
     overflow-y: auto !important;
@@ -210,22 +212,28 @@ html, body, #map {
     background: #999;
     border-radius: 4px;
 }
+
+/* Hides the original top-left measure control icon */
 .leaflet-control-measure.leaflet-control {
     display: none !important;
 }
+
+/* Styles for the new Logo control */
 .leaflet-control-logo {
     background-color: rgba(255, 255, 255, 0.8);
     padding: 2px;
     border-radius: 4px;
 }
 .leaflet-control-logo img {
-    width: 60px;
+    width: 60px; /* Resized logo */
     height: auto;
     display: block;
 }
+
+/* Styles for the new Measure Pop-up Menu */
 #measure-menu {
     position: fixed;
-    bottom: 85px;
+    bottom: 85px; /* Position above the action bar */
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.95);
@@ -233,7 +241,7 @@ html, body, #map {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 1001;
     padding: 6px;
-    display: none;
+    display: none; /* Hidden by default */
     flex-direction: row;
     gap: 6px;
 }
@@ -251,6 +259,8 @@ html, body, #map {
     align-items: center;
     gap: 5px;
 }
+
+/* Ensures bottom bar icons and text are visible */
 .sv-act i, .sv-act span {
     display: inline-block !important;
     color: #444 !important;

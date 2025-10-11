@@ -38,30 +38,6 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-		/* --- Layers panel must not overlap bottom action bar --- */
-:root { --sv-actionbar-h: 68px; } /* fallback if JS can't compute */
-
-.leaflet-control-layers {
-  /* keep the collapsed button above the action bar */
-  margin-bottom: calc(var(--sv-actionbar-h) + 8px);
-  z-index: 1001; /* slightly above .sv-actionbar (1000) */
-}
-.leaflet-right .leaflet-control-layers-expanded {
-  /* never run under the bottom bar; scroll if tall */
-  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
-  overflow: auto;
-}
-
-/* Ensure measure tooltips/buttons are always visible above bars */
-.leaflet-control-measure,
-.leaflet-measure-resultpopup,
-.leaflet-control-measure .results {
-  z-index: 1002;
-}
-
-/* If your bottom-left Leaflet controls exist, give them room */
-.leaflet-bottom.leaflet-left { margin-bottom: calc(var(--sv-actionbar-h) + 8px); }
-
     </head>
     <body>
         <div id="map">
@@ -147,7 +123,7 @@
 		}
 
         var measureControl = new L.Control.Measure({
-            position: 'topright',
+            position: 'topleft',
             primaryLengthUnit: 'meters',
             secondaryLengthUnit: 'kilometers',
             primaryAreaUnit: 'sqmeters',
@@ -397,106 +373,6 @@
             map.on('overlayadd', e => { if (e.layer === layer_CONT_6) ensureContoursLoaded(); });
         });
         </script>
-		<script>
-/* --- 2a) Compute bottom action bar height and feed CSS var --- */
-(function () {
-  const bar = document.querySelector('.sv-actionbar');
-  function updateSpace() {
-    const h = bar ? bar.offsetHeight : 68;
-    document.documentElement.style.setProperty('--sv-actionbar-h', `${h}px`);
-  }
-  if (bar) {
-    new ResizeObserver(updateSpace).observe(bar);
-    updateSpace();
-  }
-})();
-
-/* --- 2b) Blue dot / accuracy circle on Locate --- */
-/* Uses Leaflet's native locate for consistent UX and permission prompts. */
-(function () {
-  // Keep your existing state object; we add an accuracy circle holder
-  if (!('gpsCircle' in state)) state.gpsCircle = null;
-
-  // Draw/update the blue dot + accuracy circle
-  function drawFix(latlng, accuracyMeters) {
-    // Solid blue dot
-    if (state.gpsMarker) map.removeLayer(state.gpsMarker);
-    state.gpsMarker = L.circleMarker(latlng, {
-      radius: 6,
-      color: '#0078ff',
-      fillColor: '#0078ff',
-      fillOpacity: 1
-    }).addTo(map).bindPopup('You are here');
-
-    // Accuracy ring (light blue)
-    if (state.gpsCircle) map.removeLayer(state.gpsCircle);
-    state.gpsCircle = L.circle(latlng, {
-      radius: Math.max(accuracyMeters || 0, 0),
-      color: '#0078ff',
-      weight: 1,
-      fillOpacity: 0.10
-    }).addTo(map);
-  }
-
-  // Leaflet locate success
-  map.on('locationfound', (e) => {
-    const { latlng, accuracy } = e;
-    drawFix(latlng, accuracy);
-    state.lastFix = { time: Date.now(), lat: latlng.lat, lng: latlng.lng, acc: accuracy };
-    setStatus(`fix @ ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)} (±${Math.round(accuracy)} m)`);
-  });
-
-  // Leaflet locate error
-  map.on('locationerror', (e) => {
-    setStatus('error: ' + e.message);
-    alert('Location error: ' + e.message);
-  });
-
-  // Wire your bottom-bar Locate button to Leaflet locate
-  if (ui?.btnLocate) {
-    ui.btnLocate.onclick = () => {
-      disarmPinDrop?.();
-      map.locate({
-        setView: true,
-        maxZoom: 18,
-        enableHighAccuracy: true,
-        timeout: 10000,
-        watch: false
-      });
-    };
-  }
-})();
-
-/* --- 2c) Measure menu: robust toggles for distance/area/clear --- */
-/* You already create the control as 'measureControl'. Keep that; we just gate the calls. */
-(function () {
-  function ensureMeasureReady() {
-    if (!window.measureControl) return false;
-    // Some builds expose _toolbars only after first click; force init if needed
-    if (!measureControl._toolbars || !measureControl._toolbars.distance) {
-      try { measureControl._toggleMeasure(); measureControl._toggleMeasure(); } catch (e) {}
-    }
-    return !!(measureControl._toolbars && measureControl._toolbars.distance);
-  }
-
-  function trigger(action) {
-    if (!ensureMeasureReady()) { console.warn('Measure not ready'); return; }
-    const tb = measureControl._toolbars[action];
-    if (!tb) return;
-    if (tb._active) tb.disable(); else tb.enable();
-    ui?.measureMenu?.classList?.remove('show');
-  }
-
-  if (ui?.measureDist)  ui.measureDist.onclick  = () => trigger('distance');
-  if (ui?.measureArea)  ui.measureArea.onclick  = () => trigger('area');
-  if (ui?.measureClear) ui.measureClear.onclick = () => {
-    if (!ensureMeasureReady()) return;
-    try { measureControl._clearAllMeasurements(); } catch (e) {}
-    ui?.measureMenu?.classList?.remove('show');
-  };
-})();
-</script>
-
         <div id="actionbar" class="sv-actionbar">
             <button id="btn-locate" class="sv-act"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
             <button id="btn-add-pin" class="sv-act"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
