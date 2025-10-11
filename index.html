@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
     <head>
@@ -39,52 +38,6 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-		/* --- Layers panel must not overlap bottom action bar --- */
-:root { --sv-actionbar-h: 68px; } /* fallback if JS can't compute */
-
-.leaflet-control-layers {
-  /* keep the collapsed button above the action bar */
-  margin-bottom: calc(var(--sv-actionbar-h) + 8px);
-  z-index: 1001; /* slightly above .sv-actionbar (1000) */
-}
-.leaflet-right .leaflet-control-layers-expanded {
-  /* never run under the bottom bar; scroll if tall */
-  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
-  overflow: auto;
-}
-
-/* Ensure measure tooltips/buttons are always visible above bars */
-.leaflet-control-measure,
-.leaflet-measure-resultpopup,
-.leaflet-control-measure .results {
-  z-index: 1002;
-}
-
-/* If your bottom-left Leaflet controls exist, give them room */
-.leaflet-bottom.leaflet-left { margin-bottom: calc(var(--sv-actionbar-h) + 8px); }
-
-<style>
-/* Layers panel must not overlap bottom action bar */
-:root { --sv-actionbar-h: 68px; } /* fallback if JS can't compute */
-
-.leaflet-control-layers {
-  margin-bottom: calc(var(--sv-actionbar-h) + 8px);
-  z-index: 1001; /* slightly above .sv-actionbar (1000) */
-}
-.leaflet-right .leaflet-control-layers-expanded {
-  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
-  overflow: auto;
-}
-
-/* Keep measure popups above bars */
-.leaflet-control-measure,
-.leaflet-measure-resultpopup,
-.leaflet-control-measure .results { z-index: 1002; }
-
-/* If bottom-left controls exist, give them room */
-.leaflet-bottom.leaflet-left { margin-bottom: calc(var(--sv-actionbar-h) + 8px); }
-</style>
-
     </head>
     <body>
         <div id="map">
@@ -105,6 +58,7 @@
         <script src="js/L.Control.Locate.min.js"></script>
         <script src="js/multi-style-layer.js"></script>
         <script src="js/leaflet.rotatedMarker.js"></script>
+
         <script src="js/leaflet-hash.js"></script>
         <script src="js/Autolinker.min.js"></script>
         <script src="js/rbush.min.js"></script>
@@ -169,7 +123,7 @@
 		}
 
         var measureControl = new L.Control.Measure({
-            position: 'topright',
+            position: 'topleft',
             primaryLengthUnit: 'meters',
             secondaryLengthUnit: 'kilometers',
             primaryAreaUnit: 'sqmeters',
@@ -383,14 +337,16 @@
             ui.btnMeasure.onclick = (e) => { e.stopPropagation(); disarmPinDrop(); ui.measureMenu.classList.toggle('show'); };
             document.addEventListener('click', (e) => { if (!ui.measureMenu.contains(e.target) && !ui.btnMeasure.contains(e.target)) ui.measureMenu.classList.remove('show'); });
             
-            const triggerMeasureAction = (action) => {
-                const toolbar = measureControl._toolbars[action];
-                if (toolbar) {
-                    if (toolbar._active) { toolbar.disable(); } 
-                    else { toolbar.enable(); }
-                }
-                ui.measureMenu.classList.remove('show');
-            }
+           const triggerMeasureAction = (action) => {
+    // Find the actual button link inside the hidden measure control
+    const button = document.querySelector(`.leaflet-control-measure-${action} a`);
+    if (button) {
+        button.click(); // Simulate a user click
+    } else if (action === 'clear' && measureControl._layer) { // Fallback for clear
+        measureControl.clearAllMeasurements();
+    }
+    ui.measureMenu.classList.remove('show');
+}
             ui.measureDist.onclick = () => triggerMeasureAction('distance');
             ui.measureArea.onclick = () => triggerMeasureAction('area');
             ui.measureClear.onclick = () => { if(measureControl._layer) measureControl.clearAllMeasurements(); ui.measureMenu.classList.remove('show'); };
@@ -412,83 +368,13 @@
                 if(photoModal) { photoModal.onclick = (e) => { if(e.target === e.currentTarget) closePhotoModal(); }; }
             });
         </script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  /* 2a) Compute bottom action bar height and feed CSS var */
-  (function () {
-    const bar = document.querySelector('.sv-actionbar');
-    function updateSpace() {
-      const h = bar ? bar.offsetHeight : 68;
-      document.documentElement.style.setProperty('--sv-actionbar-h', `${h}px`);
-    }
-    if (bar) { new ResizeObserver(updateSpace).observe(bar); updateSpace(); }
-  })();
-
-  /* 2b) Blue dot + accuracy ring using Leaflet locate() */
-  (function () {
-    // ensure holders exist on the shared state
-    if (!('gpsCircle' in state)) state.gpsCircle = null;
-
-    function drawFix(latlng, acc) {
-      if (state.gpsMarker) map.removeLayer(state.gpsMarker);
-      state.gpsMarker = L.circleMarker(latlng, {
-        radius: 6, color: '#0078ff', fillColor: '#0078ff', fillOpacity: 1
-      }).addTo(map).bindPopup('You are here');
-
-      if (state.gpsCircle) map.removeLayer(state.gpsCircle);
-      state.gpsCircle = L.circle(latlng, {
-        radius: Math.max(acc || 0, 0),
-        color: '#0078ff', weight: 1, fillOpacity: 0.10
-      }).addTo(map);
-    }
-
-    map.on('locationfound', (e) => {
-      drawFix(e.latlng, e.accuracy);
-      state.lastFix = { time: Date.now(), lat: e.latlng.lat, lng: e.latlng.lng, acc: e.accuracy };
-      setStatus(`fix @ ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)} (±${Math.round(e.accuracy)} m)`);
-    });
-    map.on('locationerror', (e) => { setStatus('error: ' + e.message); alert('Location error: ' + e.message); });
-
-    if (ui?.btnLocate) {
-      ui.btnLocate.onclick = () => {
-        // disarm pin drop if armed (helper is in your main block)
-        if (typeof disarmPinDrop === 'function') disarmPinDrop();
-        map.locate({ setView: true, maxZoom: 18, enableHighAccuracy: true, timeout: 10000, watch: false });
-      };
-    }
-  })();
-
-  /* 2c) Measure toggles — guard for plugin readiness & clear reliably */
-  (function () {
-    function ensureMeasureReady() {
-      if (!window.measureControl) return false;
-      if (!measureControl._toolbars || !measureControl._toolbars.distance) {
-        try { measureControl._toggleMeasure(); measureControl._toggleMeasure(); } catch (e) {}
-      }
-      return !!(measureControl._toolbars && measureControl._toolbars.distance);
-    }
-
-    function trigger(action) {
-      if (!ensureMeasureReady()) { console.warn('Measure not ready'); return; }
-      const tb = measureControl._toolbars[action];
-      if (!tb) return;
-      if (tb._active) tb.disable(); else tb.enable();
-      ui?.measureMenu?.classList?.remove('show');
-    }
-
-    if (ui?.measureDist)  ui.measureDist.onclick  = () => trigger('distance');
-    if (ui?.measureArea)  ui.measureArea.onclick  = () => trigger('area');
-    if (ui?.measureClear) ui.measureClear.onclick = () => {
-      if (!ensureMeasureReady()) return;
-      const clearer = (measureControl.clearAllMeasurements || measureControl._clearAllMeasurements || function(){});
-      try { clearer.call(measureControl); } catch (e) {}
-      ui?.measureMenu?.classList?.remove('show');
-    };
-  })();
-});
-</script>
-</script>
-
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function loadScriptOnce(url) { return new Promise(function(resolve, reject) { if (document.querySelector(`script[src="${url}"]`)) return resolve(); var s=document.createElement('script'); s.src=url; s.async=true; s.onload=resolve; s.onerror=reject; document.head.appendChild(s); }); }
+            async function ensureContoursLoaded() { if(!window.layer_CONT_6||layer_CONT_6.__loaded) return; try { await loadScriptOnce('data/CONT_6.js'); if(typeof json_CONT_6 === 'undefined') return; var nl=new L.geoJson(json_CONT_6,{attribution:'',interactive:true,dataVar:'json_CONT_6',layerName:'layer_CONT_6',pane:'pane_CONT_6',onEachFeature:pop_CONT_6,style:style_CONT_6_0}); nl.eachLayer(ly=>layer_CONT_6.addLayer(ly)); layer_CONT_6.__loaded=true; } catch(e) { console.error('[contours] load error', e); } }
+            map.on('overlayadd', e => { if (e.layer === layer_CONT_6) ensureContoursLoaded(); });
+        });
+        </script>
         <div id="actionbar" class="sv-actionbar">
             <button id="btn-locate" class="sv-act"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
             <button id="btn-add-pin" class="sv-act"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
