@@ -1,9 +1,0 @@
-# Ignore Node.js dependency folder
-# Local Netlify folder
-*.log
-.netlify
-.netlify/functions-serve/
-/node_modules
-dist/
-node_modules/
-tmp/

@@ -1,5 +1,0 @@
-# Local Netlify folder
-.netlify
-
-# Ignore Node.js dependency folder
-/node_modules

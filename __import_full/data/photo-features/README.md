@@ -1,1 +1,0 @@
-﻿Photo features (GeoJSON) here
