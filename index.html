@@ -168,7 +168,7 @@
                 case '4': return { pane: 'pane_ESA_7', opacity: 1, color: 'rgba(0,0,0,0.55)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 2.0, fill: true, fillOpacity: 1, fillColor: 'rgba(255,255,0,0.431)', interactive: true };
             }
         }
-        map.createPane('pane_ESA_7'); map.getPane('pane_ESA_7').style.zIndex = 407; var layer_ESA_7 = new L.geoJson(json_ESA_7,{attribution:'',interactive:true,dataVar:'json_ESA_7',layerName:'layer_ESA_7',pane:'pane_ESA_7',onEachFeature: pop_ESA_7, style:style_ESA_7_0}); bounds_group.addLayer(layer_ESA_7);
+        map.createPane('pane_ESA_7'); map.getPane('pane_ESA_7').style.zIndex = 407; var layer_ESA_7 = new L.geoJson(json_ESA_7,{attribution:'',interactive:true,dataVar:'json_ESA_7',layerName:'layer_ESA_7',pane:'pane_ESA_7',onEachFeature: pop_ESA_7, style:style_ESA_7_0}); bounds_group.addLayer(layer_ESA_7); map.addLayer(layer_ESA_7);
         
         function pop_DW_8(feature, layer) {}
         function style_DW_8_0() { return { pane: 'pane_DW_8', opacity: 1, color: 'rgba(229,182,54,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 1.0, fillOpacity: 0, interactive: false, } }
