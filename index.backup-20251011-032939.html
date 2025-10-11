@@ -67,36 +67,20 @@
 
 
 
-
-<style id="sv-measure-banner">
-  /* Top-center status banner (always above layers & controls) */
+<style id="sv-measure-ui-perf">
   .sv-measure-status{
     position:fixed; left:50%; top:8px; transform:translateX(-50%);
-    background:rgba(0,0,0,.85); color:#fff; padding:10px 16px; border-radius:14px;
-    font:16px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    box-shadow:0 8px 22px rgba(0,0,0,.25); pointer-events:none;
-    z-index:1300; opacity:0; transition:opacity .2s ease;
-    white-space:nowrap; max-width:88vw; overflow:hidden; text-overflow:ellipsis;
+    background:rgba(0,0,0,.80); color:#fff; padding:8px 14px; border-radius:12px;
+    font:14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    box-shadow:0 6px 18px rgba(0,0,0,.25); pointer-events:none;
+    z-index:1300; opacity:0; transition:opacity .25s ease;
+    white-space:nowrap; max-width:86vw; overflow:hidden; text-overflow:ellipsis;
   }
   .sv-measure-status.show{ opacity:1; }
-
-  /* Ensure control stack: layers < measure < banner */
   .leaflet-top.leaflet-left { z-index:1100; }
   .leaflet-control-measure,
   .leaflet-control-measure .results,
   .leaflet-measure-resultpopup { z-index:1200; }
-
-  /* Make the measure panel readable on small screens */
-  .leaflet-control-measure .results { font-size:15px; }
-  .leaflet-control-measure .leaflet-control-measure-interaction a,
-  .leaflet-control-measure .leaflet-control-measure-interaction button { font-size:14px; }
-
-  /* Bigger in-map tooltip while drawing */
-  .leaflet-measure-tooltip,
-  .leaflet-measure-tooltip-single {
-    font-size:16px;
-    padding:6px 10px;
-  }
 </style>
 </head>
     <body>
@@ -524,51 +508,11 @@ function onFix(p, recenter=false) {
 
 
 
-
-<script id="sv-measure-ui">
+<script id="sv-measure-ui-perf">
 (function(){
-  if (window.__svMeasureUiInstalled2) return; window.__svMeasureUiInstalled2 = true;
+  if (window.__svMeasureUiPerf) return; window.__svMeasureUiPerf = true;
 
   function q(s,r){ return (r||document).querySelector(s); }
-  function ensureBanner(){
-    var el = q('.sv-measure-status');
-    if (!el){
-      el = document.createElement('div');
-      el.className = 'sv-measure-status';
-      el.setAttribute('role','status'); el.setAttribute('aria-live','polite');
-      document.body.appendChild(el);
-    }
-    return el;
-  }
-  function showBanner(msg){
-    var el = ensureBanner();
-    el.textContent = msg || '';
-    el.className = 'sv-measure-status' + ((msg && msg.length)? ' show' : '');
-  }
-  function hideBannerLater(ms){ setTimeout(function(){ showBanner(''); }, ms||1500); }
-  function fmtMeters(m){
-    try{ if (typeof m!=='number'||!isFinite(m)) return null; return (m>=1000)? (m/1000).toFixed(2)+' km' : m.toFixed(1)+' m'; }catch(_){ return null; }
-  }
-  function readLen(e){
-    try{
-      if (typeof e.length==='number') return e.length;
-      if (e.measure && typeof e.measure.length==='number') return e.measure.length;
-      if (e.result && typeof e.result.length==='number') return e.result.length;
-      if (e.measurement && typeof e.measurement.length==='number') return e.measurement.length;
-    }catch(_){}
-    return null;
-  }
-  function lastLL(e){
-    try{
-      if (e && e.latlng) return e.latlng;
-      if (e && e.points && e.points.length){
-        var p=e.points[e.points.length-1];
-        if (p && p.latlng) return p.latlng;
-        if (p && typeof p.lat==='number' && typeof p.lng==='number') return p;
-      }
-    }catch(_){}
-    return null;
-  }
   function ensureCtl(){
     if (q('.leaflet-control-measure-toggle')) return true;
     if (!(window.map && window.L && L.Control && L.Control.Measure)) return false;
@@ -583,61 +527,125 @@ function onFix(p, recenter=false) {
       return true;
     }catch(e){ return false; }
   }
+  function ensureBanner(){
+    var el = q('.sv-measure-status');
+    if (!el){
+      el = document.createElement('div');
+      el.className = 'sv-measure-status';
+      el.setAttribute('aria-live','polite');
+      el.setAttribute('role','status');
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  function showBanner(msg){
+    var el = ensureBanner();
+    el.textContent = msg || '';
+    el.className = 'sv-measure-status' + ((msg && msg.length)? ' show' : '');
+  }
+  function hideBannerLater(ms){ setTimeout(function(){ showBanner(''); }, ms||1800); }
+
+  function fmtMeters(m){
+    try{
+      if (typeof m!=='number'||!isFinite(m)) return null;
+      return (m>=1000)? (m/1000).toFixed(2)+' km' : m.toFixed(1)+' m';
+    }catch(_){ return null; }
+  }
+  function readLen(e){
+    try{
+      if (typeof e.length==='number') return e.length;
+      if (e.measure && typeof e.measure.length==='number') return e.measure.length;
+      if (e.result && typeof e.result.length==='number') return e.result.length;
+      if (e.measurement && typeof e.measurement.length==='number') return e.measurement.length;
+    }catch(_){}
+    return null;
+  }
+  function lastLL(e){
+    try{
+      if (e.latlng) return e.latlng;
+      if (e.points && e.points.length){
+        var p=e.points[e.points.length-1];
+        if (p && p.latlng) return p.latlng;
+        if (p && typeof p.lat==='number' && typeof p.lng==='number') return p;
+      }
+    }catch(_){}
+    return null;
+  }
+
+  // ---- performance helpers ----
+  var rafQueued = false, lastText = '';
+  function setBannerThrottled(text){
+    lastText = text;
+    if (rafQueued) return;
+    rafQueued = true;
+    (window.requestAnimationFrame || setTimeout)(function(){
+      showBanner(lastText);
+      rafQueued = false;
+    }, 16);
+  }
+  // throttle measuremove to ~12 fps
+  var lastMove = 0, MOVE_INTERVAL = 80;
 
   function hook(){
     if (!window.map) return;
-    ensureCtl();
 
-    var measuring=false, lastMoveTs=0, MOVE_INTERVAL=80;
+    var measuring = false;
 
-    // Prefer plugin events (if your fork emits them)
+    // Use plugin events when available (defer heavy ops off click path)
     try{
       map.on('measurestart', function(){
-        measuring=true; try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
-        showBanner('Measuring… click to add points • double-click to finish');
+        measuring = true;
+        try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
+        setTimeout(function(){
+          setBannerThrottled('Measuring… click to add points • double-click to finish');
+        },0);
       });
+
       map.on('measuremove', function(e){
-        var now = +new Date(); if (now-lastMoveTs < MOVE_INTERVAL) return; lastMoveTs = now;
-        var m=readLen(e), s=fmtMeters(m); if (s) showBanner('Distance: '+s+' — double-click to finish');
+        var now = +new Date();
+        if (now - lastMove < MOVE_INTERVAL) return;
+        lastMove = now;
+        var m = readLen(e), s = fmtMeters(m);
+        if (s) setBannerThrottled('Distance: '+s+' — double-click to finish');
       });
+
       map.on('measurefinish', function(e){
-        measuring=false; try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
-        var m=readLen(e), s=fmtMeters(m), ll=lastLL(e);
-        if (s && ll){ try{ L.popup().setLatLng(ll).setContent('Distance: <b>'+s+'</b>').openOn(map); }catch(_){ } }
-        if (s){ showBanner('Distance: '+s); hideBannerLater(2000); } else { showBanner(''); }
+        measuring = false;
+        try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
+        setTimeout(function(){
+          var m = readLen(e), s = fmtMeters(m), ll = lastLL(e);
+          if (s && ll){ try{ L.popup().setLatLng(ll).setContent('Distance: <b>'+s+'</b>').openOn(map); }catch(_){ } }
+          if (s){ showBanner('Distance: '+s); hideBannerLater(2000); } else { showBanner(''); }
+        },0);
       });
     }catch(_){}
 
-    // Fallbacks (if no plugin events): detect by tooltip/panel presence
+    // Fallbacks if fork doesn’t emit events (also deferred)
     map.on('click', function(){
       if (!measuring && q('.leaflet-control-measure .leaflet-control-measure-interaction')){
-        measuring=true; try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
-        showBanner('Measuring… click to add points • double-click to finish');
+        measuring = true;
+        try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
+        setTimeout(function(){
+          setBannerThrottled('Measuring… click to add points • double-click to finish');
+        },0);
       }
     });
     map.on('dblclick', function(){ /* let plugin finish itself */ });
 
-    // Watcher: if tooltip/panel disappear (finish/clear), restore UI
-    setInterval(function(){
-      var active = !!(q('.leaflet-measure-tooltip, .leaflet-measure-tooltip-single') ||
-                      q('.leaflet-control-measure .leaflet-control-measure-interaction'));
-      if (!active && measuring){
-        measuring=false;
-        try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
-        hideBannerLater(10);
-      }
-    }, 250);
-
-    // Safety on tab hide
+    // Safety: restore zoom on tab hide
     document.addEventListener('visibilitychange', function(){
       if (document.visibilityState==='hidden'){
         try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
-        measuring=false; showBanner('');
+        measuring = false; showBanner('');
       }
     });
+
+    ensureCtl();
   }
 
-  if (document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', hook); } else { hook(); }
+  if (document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', hook);
+  } else { hook(); }
 })();
 </script>
 </body>
