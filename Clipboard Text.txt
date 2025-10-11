@@ -1,0 +1,41 @@
+# Fix-Index-MeasureSyntax.ps1  (PowerShell 5.1-safe)
+param([string]$File = ".\index.html")
+
+function Backup([string]$p){
+  if(!(Test-Path -LiteralPath $p)){ throw "File not found: $p" }
+  $ts = Get-Date -Format "yyyyMMdd-HHmmss"
+  $bak = [IO.Path]::ChangeExtension($p, ".backup-$ts.html")
+  Copy-Item -LiteralPath $p -Destination $bak -Force
+  Write-Host "Backup -> $bak" -ForegroundColor Cyan
+}
+
+Backup $File
+$txt = Get-Content -LiteralPath $File -Raw
+
+# --- 1) Repair the corrupted ui block around measure*
+# Replace from measureMenu... through the bad inline 'var setStatus ...' up to the start of 'var normLngLat'
+$pat = @'
+(?s)measureMenu:\s*document\.getElementById\('measure-menu'\),\s*measureDist:\s*var\s+setStatus[\s\S]*?;\s*var\s+normLngLat
+'@
+$rep = @"
+measureMenu: document.getElementById('measure-menu'),
+                measureDist: null,
+                measureArea: null,
+                measureClear: null
+            };
+            var setStatus = function(m){ if (window.ui && ui.status) ui.status.textContent = 'status: ' + m; };
+            var normLngLat
+"@
+$txt = [regex]::Replace($txt, $pat, $rep, 'IgnoreCase, Singleline')
+
+# --- 2) De-duplicate repeated style guards (keep the first)
+$patGuardDup = @'
+(?s)(<style id=""sv-measure-guard"">[\s\S]*?</style>)\s*(?:<style id=""sv-measure-guard"">[\s\S]*?</style>)+
+'@
+$txt = [regex]::Replace($txt, $patGuardDup, '$1', 'IgnoreCase, Singleline')
+
+# --- 3) Save atomically (avoid editor/dev-server file locks)
+$temp = [IO.Path]::GetTempFileName()
+[System.IO.File]::WriteAllText($temp, $txt, [System.Text.Encoding]::UTF8)
+Move-Item -LiteralPath $temp -Destination $File -Force
+Write-Host "Patched index.html successfully. Hard reload (Ctrl+F5) and test." -ForegroundColor Green

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -39,24 +39,6 @@
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
     <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
-<style>
-:root { --sv-actionbar-h: 68px; }
-.leaflet-control-layers { margin-bottom: calc(var(--sv-actionbar-h) + 8px); z-index: 1001; }
-.leaflet-right .leaflet-control-layers-expanded {
-  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
-  overflow: auto;
-}
-</style>
-<style>
-#sv-logo-overlay{
-  position: fixed; top: 10px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 950; pointer-events: none;
-}
-#sv-logo-overlay a{ pointer-events: auto; display:inline-block; }
-#sv-logo{ width: 110px !important; max-height: 40px !important; height: auto !important; display:block !important; }
-.leaflet-control img#sv-logo{ max-width: none !important; max-height:none !important; }
-</style>
 </head>
     <body>
         <div id="map">
@@ -283,7 +265,15 @@
         var lay = L.control.layers.tree(null, overlaysTree,{ collapsed: true });
         lay.addTo(map);
         
-        
+        L.Control.Logo = L.Control.extend({
+            onAdd: function(map) {
+                var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
+                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo"></a>';
+                L.DomEvent.disableClickPropagation(container);
+                return container;
+            }
+        });
+        new L.Control.Logo({ position: 'topleft' }).addTo(map);
 		var i = 0;
         layer_LOTS_5.eachLayer(function(layer) {
             layer.bindTooltip((layer.feature.properties['Text'] || ''), {permanent: true, offset: [-0, -16], className: 'css_LOTS_5'});
@@ -357,7 +347,7 @@ function onFix(p, recenter=false) {
             function disarmPinDrop() { if(state.dropPinArmed) { state.dropPinArmed = false; setStatus('Pin drop cancelled.'); if (dropPinCaptureHandler) { map.getContainer().removeEventListener('click', dropPinCaptureHandler, true); dropPinCaptureHandler = null; } } }
             
             ui.btnLocate.onclick = () => { disarmPinDrop(); if (!navigator.geolocation) return alert('Geolocation not supported.'); setStatus('locating...'); navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 }); };
-            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pinÃ¢â‚¬Â¦'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
+            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pin…'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
             ui.btnCamera.onclick = () => { disarmPinDrop(); camOn(); };
             ui.btnLayers.onclick = () => { disarmPinDrop(); document.querySelector('.leaflet-control-layers').classList.toggle('leaflet-control-layers-expanded'); };
             ui.btnCamOff.onclick = () => { if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop()); state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.classList.remove('show'); setStatus('camera off'); };
@@ -404,236 +394,23 @@ function onFix(p, recenter=false) {
                 Tip: tap <i class="fas fa-crosshairs"></i> to center on your location, and <i class="fas fa-layer-group"></i> to manage layers.
             </div>
         </div>
-    <script>
-document.addEventListener('DOMContentLoaded', function () {
-  function clickMenuItem(label) {
-    const toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!toggle) return;
-    if (!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction')) { toggle.click(); }
-    const panel = document.querySelector('.leaflet-control-measure'); if (!panel) return;
-    const target = Array.from(panel.querySelectorAll('a,button,span,div'))
-      .find(el => (el.textContent||'').trim().toLowerCase().includes(label));
-    if (target) target.click();
-  }
-  const btn = document.getElementById('btn-measure');
-  if (btn) { btn.onclick = (e) => { e.stopPropagation(); clickMenuItem('distance'); }; }
-  const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
-});
-</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  function clickMenuItem(label) {
-    const toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!toggle) return;
-    if (!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction')) { toggle.click(); }
-    const panel = document.querySelector('.leaflet-control-measure'); if (!panel) return;
-    const target = Array.from(panel.querySelectorAll('a,button,span,div'))
-      .find(el => (el.textContent||'').trim().toLowerCase().includes(label));
-    if (target) target.click();
-  }
   const btn = document.getElementById('btn-measure');
-  if (btn) { btn.onclick = (e) => { e.stopPropagation(); clickMenuItem('distance'); }; }
-  const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
+  if (!btn) return;
+
+  // remove any inline onclick to prevent double-fire
+  btn.removeAttribute('onclick');
+
+  function openMeasureOnce() {
+    const isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
+    const toggle = document.querySelector('.leaflet-control-measure-toggle');
+    if (!isOpen && toggle) toggle.click();  // open if closed; never close if open
+  }
+
+  btn.onclick = function (e) { e.stopPropagation(); openMeasureOnce(); };
 });
 </script>
-
-<div id="sv-logo-overlay">
-  <a href="https://www.solarvillage.ca" target="_blank" rel="noopener">
-    <img id="sv-logo" src="solarvilla.png" alt="Solar Village" />
-  </a>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  var stale = document.querySelector(".leaflet-control-logo");
-  if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
-});
-</script>
-<script>
-// SV-MEASURE-OPENONLY (ported)
-(function(){
-  function openMeasureOnce(){
-    var isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
-    var toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!isOpen && toggle) toggle.click(); // open if closed; never closes if open
-  }
-  function findBtn(){
-    return document.getElementById('btn-measure')
-        || document.querySelector('#actionbar [title=""Measure""]')
-        || (function(){ var el=document.querySelector('#actionbar .fa-ruler-combined'); return el&&el.closest('button'); })()
-        || (function(){ var a=[].slice.call(document.querySelectorAll('#actionbar button')); return a.find(b => (b.textContent||'').toLowerCase().includes('measure')); })();
-  }
-  function bind(){
-    if (!(window.L && L.Control && L.Control.Measure)) return;
-    if (!document.querySelector('.leaflet-control-measure-toggle')) return;
-    var btn = findBtn(); if (!btn) return;
-    btn.removeAttribute('onclick');
-    if (btn.__svBound) return;
-    btn.addEventListener('click', function(e){ e.stopPropagation(); openMeasureOnce(); }, true);
-    btn.__svBound = true;
-  }
-  try { bind(); } catch(e){}
-  document.addEventListener('DOMContentLoaded', bind);
-})();
-</script>
-<script>
-// SV-MEASURE-REBIND
-document.addEventListener('DOMContentLoaded', function(){
-  var oldBtn = document.getElementById('btn-measure'); if (!oldBtn) return;
-  var btn = oldBtn.cloneNode(true);
-  oldBtn.replaceWith(btn);
-
-  function openOnce(){
-    var isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
-    var toggle = document.querySelector('.leaflet-control-measure-toggle');
-    if (!isOpen && toggle) toggle.click();
-  }
-  btn.addEventListener('click', function(e){ e.stopPropagation(); openOnce(); }, true);
-});
-</script>
-<script>
-// === SV: Measure open-only with anti-close shield ===
-(function(){
-  // 0) safety CSS: keep measure visible
-  (function(){
-    var id='sv-measure-safety';
-    if(!document.getElementById(id)){
-      var s=document.createElement('style'); s.id=id;
-      s.textContent = `
-        .leaflet-top.leaflet-left{z-index:1100}
-        .leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200}
-        .leaflet-control-measure{display:block}
-      `;
-      document.head.appendChild(s);
-    }
-  })();
-
-  function ensureMeasureControl(){
-    if (!(window.L && window.map)) return false;
-    if (document.querySelector('.leaflet-control-measure-toggle')) return true;
-    if (!(L.Control && L.Control.Measure)) return false;
-    try {
-      if (!window.__svMeasureCtl) {
-        window.__svMeasureCtl = new L.Control.Measure({
-          position:'topleft',
-          primaryLengthUnit:'meters',
-          secondaryLengthUnit:'kilometers',
-          primaryAreaUnit:'sqmeters',
-          secondaryAreaUnit:'hectares'
-        }).addTo(map);
-      }
-      return !!document.querySelector('.leaflet-control-measure-toggle');
-    } catch(e){ console.warn('ensureMeasureControl:', e); return false; }
-  }
-
-  function isOpen(){
-    return !!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
-  }
-  function findToggle(){
-    return document.querySelector('.leaflet-control-measure-toggle')
-        || (function(){ const r=document.querySelector('.leaflet-control-measure'); if(!r) return null;
-                        return Array.from(r.querySelectorAll('button,a,span,div')).find(el=>{
-                          const t=(el.textContent||'').toLowerCase();
-                          const tt=(el.title||'').toLowerCase();
-                          const aa=(el.getAttribute('aria-label')||'').toLowerCase();
-                          return el.className.includes('toggle')||t.includes('measure')||t.includes('distance')||tt.includes('measure')||tt.includes('distance')||aa.includes('measure')||aa.includes('distance');
-                        })||null; })();
-  }
-
-  // Block outside-click closers for a short window
-  function antiCloseShield(durationMs){
-    const blocker = (e)=>{ e.stopImmediatePropagation(); };
-    document.addEventListener('click', blocker, true);
-    document.addEventListener('mousedown', blocker, true);
-    document.addEventListener('touchstart', blocker, true);
-    setTimeout(()=> {
-      document.removeEventListener('click', blocker, true);
-      document.removeEventListener('mousedown', blocker, true);
-      document.removeEventListener('touchstart', blocker, true);
-    }, durationMs|0);
-  }
-
-  function openMeasureOnce(){
-    if (isOpen()) return;
-    const t = findToggle();
-    if (!t) return;
-    antiCloseShield(300);      // prevent instant re-close
-    t.click();                 // open the control
-  }
-
-  function findBottomBtn(){
-    return document.getElementById('btn-measure')
-        || document.querySelector('#actionbar [title="Measure"]')
-        || (function(){ const i=document.querySelector('#actionbar .fa-ruler-combined'); return i && i.closest('button'); })()
-        || Array.from(document.querySelectorAll('#actionbar button')).find(b => (b.textContent||'').toLowerCase().includes('measure'))
-        || null;
-  }
-
-  function bind(){
-    if (!ensureMeasureControl()) return;
-    const old = findBottomBtn(); if (!old) return;
-    const btn = old.cloneNode(true);   // strip old listeners
-    old.replaceWith(btn);
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      // If control just got created, give DOM a tick
-      if (!document.querySelector('.leaflet-control-measure-toggle')) {
-        setTimeout(openMeasureOnce, 0);
-      } else {
-        openMeasureOnce();
-      }
-    }, true);
-  }
-
-  // init now + on DOM ready + brief retry for slow assets
-  function init(){ bind(); setTimeout(bind, 400); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-})();
-</script>
-
-<script>
-// SV: Minimal Measure-only binder (open-only). Touches NOTHING else.
-(function(){
-  function ctlReady(){ return !!(window.L && L.Control && L.Control.Measure); }
-  function ensureCtl(){
-    if (!ctlReady() || !window.map) return false;
-    if (document.querySelector('.leaflet-control-measure-toggle')) return true;
-    if (!window.__svMeasureCtl) {
-      try {
-        window.__svMeasureCtl = new L.Control.Measure({
-          position:'topleft',
-          primaryLengthUnit:'meters',
-          secondaryLengthUnit:'kilometers',
-          primaryAreaUnit:'sqmeters',
-          secondaryAreaUnit:'hectares'
-        }).addTo(map);
-      } catch(e){ console.warn('[SV] add measure failed:', e); }
-    }
-    return !!document.querySelector('.leaflet-control-measure-toggle');
-  }
-  function isOpen(){ return !!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction'); }
-  function openOnce(){ if(!isOpen()){ var t=document.querySelector('.leaflet-control-measure-toggle'); if(t) t.click(); } }
-  function findBtn(){
-    return document.getElementById('btn-measure')
-      || document.querySelector('#actionbar [title="Measure"]')
-      || (function(){ var i=document.querySelector('#actionbar .fa-ruler-combined'); return i && i.closest('button'); })()
-      || Array.from(document.querySelectorAll('#actionbar button')).find(b => (b.textContent||'').toLowerCase().includes('measure'));
-  }
-  function bind(){
-    if (!ensureCtl()) return;
-    var old = findBtn(); if (!old) return;
-    var btn = old.cloneNode(true); old.replaceWith(btn);
-    btn.addEventListener('click', function(e){ e.stopPropagation(); (document.querySelector('.leaflet-control-measure-toggle')) ? openOnce() : setTimeout(openOnce,0); }, true);
-  }
-  (document.readyState==='loading') ? document.addEventListener('DOMContentLoaded', bind) : bind();
-})();
-</script>
-<script src="js/sv-app.js" defer></script>
 </body>
 </html>
-
-
-
-
-

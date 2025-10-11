@@ -39,48 +39,17 @@
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
     <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
-
-
-
-<style id="sv-measure-max-guard">
-  .leaflet-container { overflow: visible !important; }
-  .leaflet-control-container { position: relative !important; z-index: 2147483645 !important; }
-  .leaflet-top.leaflet-left,
-  .leaflet-control { position: relative !important; z-index: 2147483646 !important; }
+<style id=""sv-measure-guard"">
+  .leaflet-top.leaflet-left { z-index: 1100 }
   .leaflet-control-measure,
   .leaflet-control-measure .results,
-  .leaflet-measure-resultpopup,
-  .leaflet-measure-tooltip,
-  .leaflet-measure-tooltip-single {
-    position: relative !important; z-index: 2147483647 !important;
-    display: block !important; visibility: visible !important; opacity: 1 !important;
-  }
-  .sv-finish-pill {
-    position: fixed; right: 12px; bottom: 96px;
-    padding: 8px 12px; border-radius: 999px; background: #111; color:#fff;
-    font: 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; z-index: 2147483647;
-    opacity: .92; user-select: none;
-  }
-  .sv-finish-pill.sv-hide { display:none !important; }
+  .leaflet-measure-resultpopup { z-index: 1200 }
 </style>
-
-
-
-<style id="sv-measure-ui-perf">
-  .sv-measure-status{
-    position:fixed; left:50%; top:8px; transform:translateX(-50%);
-    background:rgba(0,0,0,.80); color:#fff; padding:8px 14px; border-radius:12px;
-    font:14px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    box-shadow:0 6px 18px rgba(0,0,0,.25); pointer-events:none;
-    z-index:1300; opacity:0; transition:opacity .25s ease;
-    white-space:nowrap; max-width:86vw; overflow:hidden; text-overflow:ellipsis;
-  }
-  .sv-measure-status.show{ opacity:1; }
-  .leaflet-top.leaflet-left { z-index:1100; }
+<style id=""sv-measure-guard"">
+  .leaflet-top.leaflet-left { z-index: 1100 }
   .leaflet-control-measure,
   .leaflet-control-measure .results,
-  .leaflet-measure-resultpopup { z-index:1200; }
+  .leaflet-measure-resultpopup { z-index: 1200 }
 </style>
 </head>
     <body>
@@ -339,12 +308,9 @@
                 video: document.getElementById('cam-video'),
                 canvas: document.getElementById('cam-canvas'),
                 measureMenu: document.getElementById('measure-menu'),
-                measureDist: null,
-                measureArea: null,
-                measureClear: null
-            };
-            var setStatus = function(m){ if (window.ui && ui.status) ui.status.textContent = 'status: ' + m; };
-            var normLngLat = function(c){ var [x,y]=c.map(Number); if(Math.abs(x)<=90&&Math.abs(y)>90)[x,y]=[y,x]; return [x,y]; };var pinIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32] });
+                measureDist: var setStatus = m => ui.status.textContent = 'status: ' + m;
+            var normLngLat = function(c){ var [x,y]=c.map(Number); if(Math.abs(x)<=90&&Math.abs(y)>90)[x,y]=[y,x]; return [x,y]; };
+            var pinIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32] });
             var photoIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/><circle cx="20" cy="22" r="6.5" fill="#fff"/><circle cx="20" cy="22" r="3.5" fill="#7e57c2"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -30] });
        
 function onFix(p, recenter=false) {
@@ -427,7 +393,23 @@ function onFix(p, recenter=false) {
             </div>
         </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var btn = document.getElementById('btn-measure');
+  if (!btn) return;
 
+  // remove any inline onclick to prevent double-fire
+  btn.removeAttribute('onclick');
+
+  function openMeasureOnce() {
+    var isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
+    var toggle = document.querySelector('.leaflet-control-measure-toggle');
+    if (!isOpen && toggle) toggle.click();  // open if closed; never close if open
+  }
+
+  btn.onclick = function (e) { e.stopPropagation(); openMeasureOnce(); };
+});
+</script>
 <script src="js/sv-app.js" defer></script>
 <script id=""sv-measure-ensure-es5">
 (function(){
@@ -450,7 +432,7 @@ function onFix(p, recenter=false) {
   function bindBtnOpenOnly(){
     if (window.__svMeasureBtnBound) return;
     var btn = document.getElementById('btn-measure') ||
-              document.querySelector('#actionbar [title="Measure"]') ||
+              document.querySelector('#actionbar [title=""Measure""]') ||
               (function(){ var i=document.querySelector('#actionbar .fa-ruler-combined'); return i && i.closest('button'); })();
     if (!btn) return;
     function isOpen(){ return !!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction'); }
@@ -477,177 +459,5 @@ function onFix(p, recenter=false) {
   }
 })();
 </script>
-
-
-
-
-
-<script id="sv-measure-diagnostics">
-(function(){
-  if (window.__svDiag) return; window.__svDiag=true;
-  var s = {
-    btn: !!document.getElementById('btn-measure'),
-    ctl: !!(window.L && L.Control && L.Control.Measure),
-    toggle: !!document.querySelector('.leaflet-control-measure-toggle'),
-    panelZ: (function(){var el=document.querySelector('.leaflet-top.leaflet-left');return el?getComputedStyle(el).zIndex:'(none)'})()
-  };
-  console.table(s);
-
-  var box=document.createElement('div');
-  box.style.cssText='position:fixed;left:10px;top:10px;background:#111;color:#0f0;padding:8px 10px;font:12px/1.2 monospace;z-index:2147483647;border-radius:6px;opacity:.9';
-  box.textContent='Measure diag: btn='+s.btn+' ctl='+s.ctl+' toggle='+s.toggle+' z='+s.panelZ;
-  document.body.appendChild(box);
-  setTimeout(function(){ if(box&&box.parentNode) box.parentNode.removeChild(box); }, 2500);
-})();
-</script>
-
-
-
-
-
-
-
-
-<script id="sv-measure-ui-perf">
-(function(){
-  if (window.__svMeasureUiPerf) return; window.__svMeasureUiPerf = true;
-
-  function q(s,r){ return (r||document).querySelector(s); }
-  function ensureCtl(){
-    if (q('.leaflet-control-measure-toggle')) return true;
-    if (!(window.map && window.L && L.Control && L.Control.Measure)) return false;
-    try{
-      var ctl = new L.Control.Measure({
-        position:'topleft',
-        primaryLengthUnit:'meters', secondaryLengthUnit:'kilometers',
-        primaryAreaUnit:'sqmeters', secondaryAreaUnit:'hectares'
-      });
-      ctl.addTo(map);
-      window.__svMeasureCtl = ctl;
-      return true;
-    }catch(e){ return false; }
-  }
-  function ensureBanner(){
-    var el = q('.sv-measure-status');
-    if (!el){
-      el = document.createElement('div');
-      el.className = 'sv-measure-status';
-      el.setAttribute('aria-live','polite');
-      el.setAttribute('role','status');
-      document.body.appendChild(el);
-    }
-    return el;
-  }
-  function showBanner(msg){
-    var el = ensureBanner();
-    el.textContent = msg || '';
-    el.className = 'sv-measure-status' + ((msg && msg.length)? ' show' : '');
-  }
-  function hideBannerLater(ms){ setTimeout(function(){ showBanner(''); }, ms||1800); }
-
-  function fmtMeters(m){
-    try{
-      if (typeof m!=='number'||!isFinite(m)) return null;
-      return (m>=1000)? (m/1000).toFixed(2)+' km' : m.toFixed(1)+' m';
-    }catch(_){ return null; }
-  }
-  function readLen(e){
-    try{
-      if (typeof e.length==='number') return e.length;
-      if (e.measure && typeof e.measure.length==='number') return e.measure.length;
-      if (e.result && typeof e.result.length==='number') return e.result.length;
-      if (e.measurement && typeof e.measurement.length==='number') return e.measurement.length;
-    }catch(_){}
-    return null;
-  }
-  function lastLL(e){
-    try{
-      if (e.latlng) return e.latlng;
-      if (e.points && e.points.length){
-        var p=e.points[e.points.length-1];
-        if (p && p.latlng) return p.latlng;
-        if (p && typeof p.lat==='number' && typeof p.lng==='number') return p;
-      }
-    }catch(_){}
-    return null;
-  }
-
-  // ---- performance helpers ----
-  var rafQueued = false, lastText = '';
-  function setBannerThrottled(text){
-    lastText = text;
-    if (rafQueued) return;
-    rafQueued = true;
-    (window.requestAnimationFrame || setTimeout)(function(){
-      showBanner(lastText);
-      rafQueued = false;
-    }, 16);
-  }
-  // throttle measuremove to ~12 fps
-  var lastMove = 0, MOVE_INTERVAL = 80;
-
-  function hook(){
-    if (!window.map) return;
-
-    var measuring = false;
-
-    // Use plugin events when available (defer heavy ops off click path)
-    try{
-      map.on('measurestart', function(){
-        measuring = true;
-        try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
-        setTimeout(function(){
-          setBannerThrottled('Measuring… click to add points • double-click to finish');
-        },0);
-      });
-
-      map.on('measuremove', function(e){
-        var now = +new Date();
-        if (now - lastMove < MOVE_INTERVAL) return;
-        lastMove = now;
-        var m = readLen(e), s = fmtMeters(m);
-        if (s) setBannerThrottled('Distance: '+s+' — double-click to finish');
-      });
-
-      map.on('measurefinish', function(e){
-        measuring = false;
-        try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
-        setTimeout(function(){
-          var m = readLen(e), s = fmtMeters(m), ll = lastLL(e);
-          if (s && ll){ try{ L.popup().setLatLng(ll).setContent('Distance: <b>'+s+'</b>').openOn(map); }catch(_){ } }
-          if (s){ showBanner('Distance: '+s); hideBannerLater(2000); } else { showBanner(''); }
-        },0);
-      });
-    }catch(_){}
-
-    // Fallbacks if fork doesn’t emit events (also deferred)
-    map.on('click', function(){
-      if (!measuring && q('.leaflet-control-measure .leaflet-control-measure-interaction')){
-        measuring = true;
-        try{ map.doubleClickZoom && map.doubleClickZoom.disable(); }catch(_){}
-        setTimeout(function(){
-          setBannerThrottled('Measuring… click to add points • double-click to finish');
-        },0);
-      }
-    });
-    map.on('dblclick', function(){ /* let plugin finish itself */ });
-
-    // Safety: restore zoom on tab hide
-    document.addEventListener('visibilitychange', function(){
-      if (document.visibilityState==='hidden'){
-        try{ map.doubleClickZoom && map.doubleClickZoom.enable(); }catch(_){}
-        measuring = false; showBanner('');
-      }
-    });
-
-    ensureCtl();
-  }
-
-  if (document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded', hook);
-  } else { hook(); }
-})();
-</script>
 </body>
 </html>
-

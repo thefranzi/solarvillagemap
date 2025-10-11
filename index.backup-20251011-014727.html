@@ -38,7 +38,20 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-    </head>
+    <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
+<style id=""sv-measure-guard"">
+  .leaflet-top.leaflet-left { z-index: 1100 }
+  .leaflet-control-measure,
+  .leaflet-control-measure .results,
+  .leaflet-measure-resultpopup { z-index: 1200 }
+</style>
+<style id=""sv-measure-guard"">
+  .leaflet-top.leaflet-left { z-index: 1100 }
+  .leaflet-control-measure,
+  .leaflet-control-measure .results,
+  .leaflet-measure-resultpopup { z-index: 1200 }
+</style>
+</head>
     <body>
         <div id="map">
             <div id="camera-wrap">
@@ -121,15 +134,6 @@
 				popup._contentNode.classList.remove('media');
 			}
 		}
-
-        var measureControl = new L.Control.Measure({
-            position: 'topleft',
-            primaryLengthUnit: 'meters',
-            secondaryLengthUnit: 'kilometers',
-            primaryAreaUnit: 'sqmeters',
-            secondaryAreaUnit: 'hectares'
-        });
-        measureControl.addTo(map);
 
         var bounds_group = new L.featureGroup([]);
         function setBounds() {}
@@ -304,12 +308,7 @@
                 video: document.getElementById('cam-video'),
                 canvas: document.getElementById('cam-canvas'),
                 measureMenu: document.getElementById('measure-menu'),
-                measureDist: document.getElementById('btn-measure-dist'),
-                measureArea: document.getElementById('btn-measure-area'),
-                measureClear: document.getElementById('btn-measure-clear'),
-            };
-
-            const setStatus = m => ui.status.textContent = 'status: ' + m;
+                measureDist: const setStatus = m => ui.status.textContent = 'status: ' + m;
             const normLngLat = c => { let [x,y]=c.map(Number); if(Math.abs(x)<=90&&Math.abs(y)>90)[x,y]=[y,x]; return [x,y]; };
             const pinIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32] });
             const photoIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/><circle cx="20" cy="22" r="6.5" fill="#fff"/><circle cx="20" cy="22" r="3.5" fill="#7e57c2"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -30] });
@@ -352,14 +351,7 @@ function onFix(p, recenter=false) {
             ui.btnCamOff.onclick = () => { if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop()); state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.classList.remove('show'); setStatus('camera off'); };
 			ui.btnCamShot.onclick = async () => { if (!state.cam.stream) return; const [w,h]=[ui.video.videoWidth,ui.video.videoHeight]; if (!w||!h) return; ui.canvas.width=w;ui.canvas.height=h; ui.canvas.getContext('2d').drawImage(ui.video,0,0,w,h); const blob = await new Promise(res=>ui.canvas.toBlob(res,'image/jpeg',0.8)); const fix=state.lastFix; const {lat,lng}=fix?fix:map.getCenter(); const title=prompt('Photo title (optional):','')||'Photo'; const description=prompt('Photo description (optional):','')||''; const filename=`photo_${Date.now()}.jpg`; setStatus('saving photo...'); try { await uploadPhoto(blob,filename,lat,lng,title,description); setStatus('photo saved'); } catch(e) { console.error("Failed to upload photo:",e); setStatus('photo save failed'); alert("Error: Could not upload photo."); } finally { ui.btnCamOff.onclick(); } };
 
-ui.btnMeasure.onclick = (e) => {
-    e.stopPropagation();
-    disarmPinDrop();
-    const measureButton = document.querySelector('.leaflet-control-measure-toggle');
-    if (measureButton) {
-        measureButton.click();
-    }
-};
+
             loadData(BACKEND.pinsGet, addPinFeature);
             loadData(BACKEND.photosGet, addPhotoFeature).then(() => setStatus('ready'));
             try { if(!localStorage.getItem('sv_toast_seen')){ const el=document.getElementById('sv-toast'); if(el){ el.style.display='block'; setTimeout(() => { el.style.display='none'; localStorage.setItem('sv_toast_seen','1'); }, 4200); } } } catch(e){}
@@ -400,15 +392,72 @@ ui.btnMeasure.onclick = (e) => {
                 Tip: tap <i class="fas fa-crosshairs"></i> to center on your location, and <i class="fas fa-layer-group"></i> to manage layers.
             </div>
         </div>
-    <script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function () {
   const btn = document.getElementById('btn-measure');
-  if (btn) btn.onclick = function (e) {
-    e.stopPropagation();
-    const t = document.querySelector('.leaflet-control-measure-toggle');
-    if (t) t.click();
-  };
+  if (!btn) return;
+
+  // remove any inline onclick to prevent double-fire
+  btn.removeAttribute('onclick');
+
+  function openMeasureOnce() {
+    const isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
+    const toggle = document.querySelector('.leaflet-control-measure-toggle');
+    if (!isOpen && toggle) toggle.click();  // open if closed; never close if open
+  }
+
+  btn.onclick = function (e) { e.stopPropagation(); openMeasureOnce(); };
 });
+</script>
+<script src="js/sv-app.js" defer></script>
+<script id=""sv-measure-ensure-es5">
+(function(){
+  if (window.__svMeasureEnsureLoaded) return; window.__svMeasureEnsureLoaded = true;
+  function hasCtl(){ return !!document.querySelector('.leaflet-control-measure-toggle'); }
+  function addCtlOnce(){
+    if (hasCtl()) return true;
+    if (!(window.map && window.L && L.Control && L.Control.Measure)) return false;
+    try {
+      new L.Control.Measure({
+        position:'topleft',
+        primaryLengthUnit:'meters',
+        secondaryLengthUnit:'kilometers',
+        primaryAreaUnit:'sqmeters',
+        secondaryAreaUnit:'hectares'
+      }).addTo(map);
+      return hasCtl();
+    } catch(e){ return false; }
+  }
+  function bindBtnOpenOnly(){
+    if (window.__svMeasureBtnBound) return;
+    var btn = document.getElementById('btn-measure') ||
+              document.querySelector('#actionbar [title=""Measure""]') ||
+              (function(){ var i=document.querySelector('#actionbar .fa-ruler-combined'); return i && i.closest('button'); })();
+    if (!btn) return;
+    function isOpen(){ return !!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction'); }
+    function openOnce(){
+      if (isOpen()) return;
+      var t = document.querySelector('.leaflet-control-measure-toggle');
+      if (t) t.click();
+    }
+    btn.addEventListener('click', function(ev){
+      if (!hasCtl()) addCtlOnce();
+      openOnce();
+    }, true);
+    window.__svMeasureBtnBound = true;
+  }
+  var tries = 0, max = 200, timer = setInterval(function(){
+    tries++;
+    if (addCtlOnce()) { clearInterval(timer); bindBtnOpenOnly(); }
+    if (tries >= max) { clearInterval(timer); bindBtnOpenOnly(); }
+  }, 50);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ addCtlOnce(); bindBtnOpenOnly(); });
+  } else {
+    addCtlOnce(); bindBtnOpenOnly();
+  }
+})();
 </script>
 </body>
 </html>
