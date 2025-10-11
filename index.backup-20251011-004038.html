@@ -592,48 +592,8 @@ document.addEventListener('DOMContentLoaded', function(){
 })();
 </script>
 
-<script>
-// SV: Minimal Measure-only binder (open-only). Touches NOTHING else.
-(function(){
-  function ctlReady(){ return !!(window.L && L.Control && L.Control.Measure); }
-  function ensureCtl(){
-    if (!ctlReady() || !window.map) return false;
-    if (document.querySelector('.leaflet-control-measure-toggle')) return true;
-    if (!window.__svMeasureCtl) {
-      try {
-        window.__svMeasureCtl = new L.Control.Measure({
-          position:'topleft',
-          primaryLengthUnit:'meters',
-          secondaryLengthUnit:'kilometers',
-          primaryAreaUnit:'sqmeters',
-          secondaryAreaUnit:'hectares'
-        }).addTo(map);
-      } catch(e){ console.warn('[SV] add measure failed:', e); }
-    }
-    return !!document.querySelector('.leaflet-control-measure-toggle');
-  }
-  function isOpen(){ return !!document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction'); }
-  function openOnce(){ if(!isOpen()){ var t=document.querySelector('.leaflet-control-measure-toggle'); if(t) t.click(); } }
-  function findBtn(){
-    return document.getElementById('btn-measure')
-      || document.querySelector('#actionbar [title="Measure"]')
-      || (function(){ var i=document.querySelector('#actionbar .fa-ruler-combined'); return i && i.closest('button'); })()
-      || Array.from(document.querySelectorAll('#actionbar button')).find(b => (b.textContent||'').toLowerCase().includes('measure'));
-  }
-  function bind(){
-    if (!ensureCtl()) return;
-    var old = findBtn(); if (!old) return;
-    var btn = old.cloneNode(true); old.replaceWith(btn);
-    btn.addEventListener('click', function(e){ e.stopPropagation(); (document.querySelector('.leaflet-control-measure-toggle')) ? openOnce() : setTimeout(openOnce,0); }, true);
-  }
-  (document.readyState==='loading') ? document.addEventListener('DOMContentLoaded', bind) : bind();
-})();
-</script>
-<script src="js/sv-app.js" defer></script>
 </body>
 </html>
-
-
 
 
 
