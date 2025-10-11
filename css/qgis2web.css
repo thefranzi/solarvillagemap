@@ -211,7 +211,7 @@ html, body, #map {
     border-radius: 4px;
 }
 
-/* Hide the default measure control, as it is triggered by the bottom bar */
-.leaflet-bar.leaflet-control.leaflet-control-measure {
+/* CORRECTED RULE: Hide the top-left measure control UI */
+.leaflet-control-measure.leaflet-control {
     display: none !important;
 }
