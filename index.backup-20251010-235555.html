@@ -39,6 +39,32 @@
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
     <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
+<style>
+/* Top-center fixed logo that never shifts with Leaflet controls */
+#sv-logo-overlay{
+  position: fixed; /* independent of Leaflet control layout */
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 950;           /* below measure UI (1200), above map */
+  pointer-events: none;   /* do not block clicks on map/controls */
+}
+#sv-logo-overlay a{
+  pointer-events: auto;   /* allow clicking the logo link if you want */
+  display: inline-block;
+}
+#sv-logo{
+  width: 110px !important;
+  max-height: 40px !important;
+  height: auto !important;
+  display: block !important;
+}
+/* Neutralize any global control img rules that could stretch it */
+.leaflet-control img#sv-logo{
+  max-width: none !important;
+  max-height: none !important;
+}
+</style>
 </head>
     <body>
         <div id="map">
@@ -265,15 +291,7 @@
         var lay = L.control.layers.tree(null, overlaysTree,{ collapsed: true });
         lay.addTo(map);
         
-        L.Control.Logo = L.Control.extend({
-            onAdd: function(map) {
-                var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
-                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo"></a>';
-                L.DomEvent.disableClickPropagation(container);
-                return container;
-            }
-        });
-        new L.Control.Logo({ position: 'topleft' }).addTo(map);
+        
 		var i = 0;
         layer_LOTS_5.eachLayer(function(layer) {
             layer.bindTooltip((layer.feature.properties['Text'] || ''), {permanent: true, offset: [-0, -16], className: 'css_LOTS_5'});
@@ -288,25 +306,33 @@
         });
         </script><!-- Bottom Action Bar -->
 <div id="actionbar" class="sv-actionbar">
-  <button id="btn-measure" class="sv-act" title="Measure">
-    <i class="fas fa-ruler-combined"></i><span>Measure</span>
-  </button>
+  <button id="btn-locate" class="sv-act" title="Locate"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
+  <button id="btn-add-pin" class="sv-act" title="Add Pin"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
+  <button id="btn-camera" class="sv-act" title="Photo"><i class="fas fa-camera"></i><span>Photo</span></button>
+  <button id="btn-measure" class="sv-act" title="Measure"><i class="fas fa-ruler-combined"></i><span>Measure</span></button>
+  <button id="btn-layers" class="sv-act" title="Layers"><i class="fas fa-layer-group"></i><span>Layers</span></button>
+</div><script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('btn-measure');
+  if (!btn) return;
+  btn.removeAttribute('onclick');
+  function openMeasureOnce() {
+    const isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
+    const toggle = document.querySelector('.leaflet-control-measure-toggle');
+    if (!isOpen && toggle) toggle.click();
+  }
+  btn.onclick = function (e) { e.stopPropagation(); openMeasureOnce(); };
+});
+</script>
+<div id="sv-logo-overlay">
+  <a href="https://www.solarvillage.ca" target="_blank" rel="noopener">
+    <img id="sv-logo" src="solarvilla.png" alt="Solar Village" />
+  </a>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  // Cosmetic: show a ruler icon on the plugin toggle
-  const toggleBtn = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-  if (toggleBtn) { toggleBtn.innerHTML = ''; if (!toggleBtn.className.includes('fas')) toggleBtn.className += ' fas fa-ruler'; }
-
-  // Action bar "Measure" -> click plugin toggle
-  const btn = document.getElementById('btn-measure');
-  if (btn) {
-    btn.onclick = function (e) {
-      e.stopPropagation();
-      const t = document.querySelector('.leaflet-control-measure-toggle');
-      if (t) t.click();  // opens/closes the official Measure UI
-    };
-  }
+document.addEventListener('DOMContentLoaded', function(){
+  var stale = document.querySelector(".leaflet-control-logo");
+  if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
 });
 </script>
 </body>

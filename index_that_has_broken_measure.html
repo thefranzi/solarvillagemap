@@ -347,7 +347,7 @@ function onFix(p, recenter=false) {
             function disarmPinDrop() { if(state.dropPinArmed) { state.dropPinArmed = false; setStatus('Pin drop cancelled.'); if (dropPinCaptureHandler) { map.getContainer().removeEventListener('click', dropPinCaptureHandler, true); dropPinCaptureHandler = null; } } }
             
             ui.btnLocate.onclick = () => { disarmPinDrop(); if (!navigator.geolocation) return alert('Geolocation not supported.'); setStatus('locating...'); navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 }); };
-            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pinâ€¦'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
+            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pinÃ¢â‚¬Â¦'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
             ui.btnCamera.onclick = () => { disarmPinDrop(); camOn(); };
             ui.btnLayers.onclick = () => { disarmPinDrop(); document.querySelector('.leaflet-control-layers').classList.toggle('leaflet-control-layers-expanded'); };
             ui.btnCamOff.onclick = () => { if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop()); state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.classList.remove('show'); setStatus('camera off'); };
@@ -427,6 +427,35 @@ document.addEventListener('DOMContentLoaded', function () {
   const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
   if (t) { t.innerHTML=''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
 });
+</script>
+<script>
+// SV-MEASURE-OPENONLY
+(function(){
+  function openMeasureOnce(){
+    var isOpen = document.querySelector('.leaflet-control-measure .leaflet-control-measure-interaction');
+    var toggle = document.querySelector('.leaflet-control-measure-toggle');
+    if (!isOpen && toggle) toggle.click(); // open if closed (never closes)
+  }
+  function bind(){
+    // require plugin + toggle
+    if (!(window.L && L.Control && L.Control.Measure)) return;
+    var toggle = document.querySelector('.leaflet-control-measure-toggle'); if(!toggle) return;
+
+    // find the bottom bar Measure button (several fallbacks)
+    var btn = document.getElementById('btn-measure')
+          || document.querySelector('#actionbar [title="Measure"]')
+          || (function(){ var el=document.querySelector('#actionbar .fa-ruler-combined'); return el&&el.closest('button'); })()
+          || (function(){ var a=[].slice.call(document.querySelectorAll('#actionbar button')); return a.find(b => (b.textContent||'').toLowerCase().includes('measure')); })();
+    if (!btn) return;
+
+    btn.removeAttribute('onclick');        // prevent double-fire
+    if (btn.__svBound) return;             // idempotent
+    btn.addEventListener('click', function(e){ e.stopPropagation(); openMeasureOnce(); }, true);
+    btn.__svBound = true;
+  }
+  try { bind(); } catch(e){}
+  document.addEventListener('DOMContentLoaded', bind);
+})();
 </script>
 </body>
 </html>
