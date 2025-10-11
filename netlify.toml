@@ -7,8 +7,11 @@
 
 [[headers]]
   for = "/*"
+  for = "/css/*"
   [headers.values]
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
     Permissions-Policy = "geolocation=(self), camera=(self), microphone=()"
     Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: data:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+	  Content-Type = "text/css; charset=utf-8"
+
