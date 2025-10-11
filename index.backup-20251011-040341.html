@@ -730,61 +730,6 @@ function onFix(p, recenter=false) {
   }
 })();
 </script>
-<script id="sv-prune-layerspanel-pinsphotos">
-(function(){
-  function isPinsOrPhotos(txt){
-    if (!txt) return false;
-    txt = String(txt).toLowerCase();
-    return txt.includes('pin') || txt.includes('photo');
-  }
-  function pruneLayersPanel(){
-    var list = document.querySelector('.leaflet-control-layers-list');
-    if (!list) return;
-    var rows = list.querySelectorAll('label, .leaflet-control-layers-selector, .leaflet-control-layers-overlays label, .leaflet-control-layers-base label');
-    rows.forEach(function(row){
-      var textNode = row.querySelector('.leaflet-control-layers-name') || row;
-      var name = textNode && textNode.textContent || '';
-      if (isPinsOrPhotos(name)) {
-        var container = row.closest('label') || row;
-        if (container && container.parentNode) container.parentNode.removeChild(container);
-      }
-    });
-  }
-  function patchAddItem(){
-    if (!(window.L && L.Control && L.Control.Layers)) return false;
-    if (L.Control.Layers.__svPatched) return true;
-    var _addItem = L.Control.Layers.prototype._addItem;
-    L.Control.Layers.prototype._addItem = function (obj){
-      try {
-        var name = (obj && (obj.name || obj.overlay && obj.overlay.name)) || obj && obj.overlay && obj.overlay.options && obj.overlay.options.name || '';
-        if (isPinsOrPhotos(name)) return;
-      } catch(e){}
-      return _addItem.call(this, obj);
-    };
-    L.Control.Layers.__svPatched = true;
-    return true;
-  }
-  function hookToggle(){
-    var t = document.querySelector('.leaflet-control-layers-toggle');
-    if (!t) return;
-    t.addEventListener('click', function(){
-      setTimeout(pruneLayersPanel, 30);
-    }, true);
-  }
-  function boot(){
-    patchAddItem();
-    pruneLayersPanel();
-    hookToggle();
-    var list = document.querySelector('.leaflet-control-layers');
-    if (list && window.MutationObserver){
-      var mo = new MutationObserver(function(){ pruneLayersPanel(); });
-      mo.observe(list, { childList:true, subtree:true });
-    }
-  }
-  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', boot); }
-  else { boot(); }
-})();
-</script>
 </body>
 </html>
 
