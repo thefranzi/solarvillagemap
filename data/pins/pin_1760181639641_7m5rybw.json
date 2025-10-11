@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33400705456735,
+      49.95877746281864
+    ]
+  },
+  "properties": {
+    "title": "CRE Office",
+    "description": "",
+    "ts": 1760181639624
+  }
+}
