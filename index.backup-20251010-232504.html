@@ -38,7 +38,47 @@
         @media (max-width:420px){.sv-act span{display:none;}}
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
-    </head>
+    <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
+<style>
+/* Measure UI above toolbar */
+.leaflet-control-measure,
+.leaflet-measure-resultpopup,
+.leaflet-control-measure .results { z-index: 1200; }
+
+/* Bottom action bar */
+.sv-actionbar {
+  position: fixed; left: 8px; right: 8px;
+  bottom: env(safe-area-inset-bottom,8px);
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 10px; background: rgba(255,255,255,.9);
+  padding: 8px; border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  z-index: 1000;
+}
+.sv-act { display:flex; flex-direction:column; align-items:center; justify-content:center;
+          min-width:44px; min-height:44px; padding:6px 4px; border:none; border-radius:12px;
+          background:#fff; cursor:pointer; }
+.sv-act i { font-size:18px; line-height:1; }
+.sv-act span { font-size:11px; margin-top:4px; }
+@media (max-width:420px){ .sv-act span{ display:none; } }
+
+/* Space default Leaflet controls from bottom bar on left */
+.leaflet-bottom.leaflet-left { margin-bottom: 68px; }
+
+/* Layers panel never overlaps bottom bar */
+:root { --sv-actionbar-h: 68px; }
+.leaflet-control-layers { margin-bottom: calc(var(--sv-actionbar-h) + 8px); z-index: 1001; }
+.leaflet-right .leaflet-control-layers-expanded {
+  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
+  overflow: auto;
+}
+
+/* Hard cap logo size (defeat any global img rules) */
+.leaflet-control-logo img#sv-logo {
+  width: 110px !important; height: auto !important; max-height: 40px !important; max-width: none !important; display: block !important;
+}
+</style>
+</head>
     <body>
         <div id="map">
             <div id="camera-wrap">
@@ -267,7 +307,7 @@
         L.Control.Logo = L.Control.extend({
             onAdd: function(map) {
                 var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
-                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo"></a>';
+                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo" id="sv-logo"></a>';
                 L.DomEvent.disableClickPropagation(container);
                 return container;
             }
@@ -285,130 +325,92 @@
         map.on("zoomend layeradd layerremove", function(){
             resetLabels([layer_LOTS_5]);
         });
-        </script>
-		
-		<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const BACKEND = { pinsGet:'/.netlify/functions/pins', pinsPost:'/.netlify/functions/pins', photosGet:'/.netlify/functions/photos', photoUpload:'/.netlify/functions/uploadPhoto' };
-            const state = { lastFix: null, dropPinArmed: false, cam: { stream:null }, gpsMarker: null };
-            const ui = {
-                status: document.getElementById('gps-status'),
-                btnLocate: document.getElementById('btn-locate'),
-                btnAddPin: document.getElementById('btn-add-pin'),
-                btnCamera: document.getElementById('btn-camera'),
-                btnMeasure: document.getElementById('btn-measure'),
-                btnLayers: document.getElementById('btn-layers'),
-                btnCamShot: document.getElementById('btn-camera-shot'),
-                btnCamOff: document.getElementById('btn-camera-off'),
-                camWrap: document.getElementById('camera-wrap'),
-                video: document.getElementById('cam-video'),
-                canvas: document.getElementById('cam-canvas'),
-                measureMenu: document.getElementById('measure-menu'),
-                measureDist: document.getElementById('btn-measure-dist'),
-                measureArea: document.getElementById('btn-measure-area'),
-                measureClear: document.getElementById('btn-measure-clear'),
-            };
-
-            const setStatus = m => ui.status.textContent = 'status: ' + m;
-            const normLngLat = c => { let [x,y]=c.map(Number); if(Math.abs(x)<=90&&Math.abs(y)>90)[x,y]=[y,x]; return [x,y]; };
-            const pinIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 2c-6.1 0-11 4.9-11 11 0 8.3 11 23 11 23s11-14.7 11-23c0-6.1-4.9-11-11-11z" fill="#ff8c00"/><circle cx="20" cy="13" r="5.5" fill="#fff"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -32] });
-            const photoIcon = L.icon({ iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M6 12a4 4 0 0 1 4-4h5l2-2h6l2 2h5a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V12z" fill="#7e57c2"/><circle cx="20" cy="22" r="6.5" fill="#fff"/><circle cx="20" cy="22" r="3.5" fill="#7e57c2"/></svg>`), iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -30] });
-       
-function onFix(p, recenter=false) {
-    const c = p.coords;
-    state.lastFix = { time:p.timestamp, lat:c.latitude, lng:c.longitude };
-    const latlng = [state.lastFix.lat, state.lastFix.lng];
-    if (recenter) map.setView(latlng, Math.max(map.getZoom(), 18));
-
-    // This is the new code for the blue dot
-    if (!state.gpsMarker) {
-        state.gpsMarker = L.circleMarker(latlng, {
-            radius: 8,
-            weight: 1,
-            color: '#136AEC',
-            fillColor: '#2A93EE',
-            fillOpacity: 0.7
-        }).addTo(map);
-    } else {
-        state.gpsMarker.setLatLng(latlng);
-    }
-    setStatus(`fix @ ${new Date(state.lastFix.time).toLocaleTimeString()}`);
-}            
-			function onGeoError(err) { setStatus('error: ' + err.message); alert('Location error: ' + err.message); }
-            async function loadData(url, addFeatureFunc) { try { (await(await fetch(`${url}?t=${Date.now()}`,{cache:'no-store'})).json()).features.forEach(addFeatureFunc); } catch(e) { console.error('Data load error', e); } }
-            function addPinFeature(feat) { if (!feat?.geometry?.coordinates) return; const [lng, lat] = normLngLat(feat.geometry.coordinates); const {title,description} = feat.properties||{}; L.marker([lat, lng],{icon:pinIcon}).addTo(pinsLayer).bindPopup(`<b>${title||'Pin'}</b><br>${description||''}`); }
-            async function savePin(lng, lat, title, description) { const f = {type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},properties:{title,description,ts:Date.now()}}; const r = await fetch(BACKEND.pinsPost,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(!r.ok) throw new Error('Failed to save pin.'); addPinFeature(await r.json()); }
-            function addPhotoFeature(feat) { if (!feat?.geometry?.coordinates) return; const [lng, lat] = normLngLat(feat.geometry.coordinates); const {title,description,imageUrl} = feat.properties||{}; const h=`<div style="max-width:220px"><b>${title||'Photo'}</b>${description?`<br>${description}`:''}${imageUrl?`<div style="margin-top:6px"><img src="${imageUrl}" alt style="width:100px;max-height:80px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="openPhotoModal('${imageUrl}')"></div>`:''}</div>`; L.marker([lat,lng],{icon:photoIcon}).addTo(photosLayer).bindPopup(h); }
-            async function uploadPhoto(blob, filename, lat, lng, title, description) { const fd = new FormData(); fd.append('file',new File([blob],filename,{type:blob.type||'image/jpeg'})); fd.append('lat',String(lat)); fd.append('lng',String(lng)); fd.append('title',title||''); fd.append('description',description||''); const r = await fetch(BACKEND.photoUpload,{method:'POST',body:fd}); if(!r.ok) throw new Error('Photo upload failed.'); addPhotoFeature((await r.json()).feature); }
-            async function camOn() { try { const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}); state.cam.stream=s; ui.video.srcObject=s; await ui.video.play(); ui.camWrap.classList.add('show'); setStatus('camera on'); } catch(e){ alert('Camera error: '+e.message); setStatus('camera error'); } }
-
-            let dropPinCaptureHandler = null;
-            function disarmPinDrop() { if(state.dropPinArmed) { state.dropPinArmed = false; setStatus('Pin drop cancelled.'); if (dropPinCaptureHandler) { map.getContainer().removeEventListener('click', dropPinCaptureHandler, true); dropPinCaptureHandler = null; } } }
-            
-            ui.btnLocate.onclick = () => { disarmPinDrop(); if (!navigator.geolocation) return alert('Geolocation not supported.'); setStatus('locating...'); navigator.geolocation.getCurrentPosition(p => onFix(p, true), onGeoError, { enableHighAccuracy:true, timeout:10000, maximumAge:0 }); };
-            ui.btnAddPin.onclick = () => { if (state.dropPinArmed) return disarmPinDrop(); state.dropPinArmed = true; setStatus('Click the map to place a pinâ€¦'); map.getContainer().addEventListener('click', dropPinCaptureHandler = async (ev) => { if (!state.dropPinArmed) return; const els = [document.getElementById('actionbar'), document.querySelector('.leaflet-control-container'), document.getElementById('measure-menu')]; if (els.some(el => el && el.contains(ev.target))) return; ev.stopPropagation(); ev.preventDefault(); const latlng = map.containerPointToLatLng([ev.clientX, ev.clientY]); disarmPinDrop(); const title = prompt('Pin title:', 'Pin') || 'Pin'; const description = prompt('Pin description (optional):', '') || ''; try { setStatus('saving pin...'); await savePin(latlng.lng, latlng.lat, title, description); setStatus('pin saved'); } catch (e) { console.error("Failed to save pin:", e); setStatus('pin save failed'); alert("Error: Could not save pin."); } }, {capture: true, once: true}); };
-            ui.btnCamera.onclick = () => { disarmPinDrop(); camOn(); };
-            ui.btnLayers.onclick = () => { disarmPinDrop(); document.querySelector('.leaflet-control-layers').classList.toggle('leaflet-control-layers-expanded'); };
-            ui.btnCamOff.onclick = () => { if (state.cam.stream) state.cam.stream.getTracks().forEach(t => t.stop()); state.cam.stream = null; ui.video.srcObject = null; ui.camWrap.classList.remove('show'); setStatus('camera off'); };
-			ui.btnCamShot.onclick = async () => { if (!state.cam.stream) return; const [w,h]=[ui.video.videoWidth,ui.video.videoHeight]; if (!w||!h) return; ui.canvas.width=w;ui.canvas.height=h; ui.canvas.getContext('2d').drawImage(ui.video,0,0,w,h); const blob = await new Promise(res=>ui.canvas.toBlob(res,'image/jpeg',0.8)); const fix=state.lastFix; const {lat,lng}=fix?fix:map.getCenter(); const title=prompt('Photo title (optional):','')||'Photo'; const description=prompt('Photo description (optional):','')||''; const filename=`photo_${Date.now()}.jpg`; setStatus('saving photo...'); try { await uploadPhoto(blob,filename,lat,lng,title,description); setStatus('photo saved'); } catch(e) { console.error("Failed to upload photo:",e); setStatus('photo save failed'); alert("Error: Could not upload photo."); } finally { ui.btnCamOff.onclick(); } };
-
-ui.btnMeasure.onclick = (e) => {
-    e.stopPropagation();
-    disarmPinDrop();
-    const measureButton = document.querySelector('.leaflet-control-measure-toggle');
-    if (measureButton) {
-        measureButton.click();
-    }
-};
-            loadData(BACKEND.pinsGet, addPinFeature);
-            loadData(BACKEND.photosGet, addPhotoFeature).then(() => setStatus('ready'));
-            try { if(!localStorage.getItem('sv_toast_seen')){ const el=document.getElementById('sv-toast'); if(el){ el.style.display='block'; setTimeout(() => { el.style.display='none'; localStorage.setItem('sv_toast_seen','1'); }, 4200); } } } catch(e){}
-        });
-		</script>
-        <div id="photo-modal" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
-            <span style="position:absolute; top:20px; right:40px; font-size:40px; color:#fff; cursor:pointer;" onclick="closePhotoModal()">&#10005;</span>
-            <img id="photo-modal-img" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 2px 20px #000;">
-        </div>
-        <script>
-            function openPhotoModal(src) { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').style.display='flex'; }
-            function closePhotoModal() { document.getElementById('photo-modal').style.display='none'; document.getElementById('photo-modal-img').src=''; }
-            document.addEventListener('DOMContentLoaded', function() {
-                const photoModal = document.getElementById('photo-modal');
-                if(photoModal) { photoModal.onclick = (e) => { if(e.target === e.currentTarget) closePhotoModal(); }; }
-            });
-        </script>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function loadScriptOnce(url) { return new Promise(function(resolve, reject) { if (document.querySelector(`script[src="${url}"]`)) return resolve(); var s=document.createElement('script'); s.src=url; s.async=true; s.onload=resolve; s.onerror=reject; document.head.appendChild(s); }); }
-            async function ensureContoursLoaded() { if(!window.layer_CONT_6||layer_CONT_6.__loaded) return; try { await loadScriptOnce('data/CONT_6.js'); if(typeof json_CONT_6 === 'undefined') return; var nl=new L.geoJson(json_CONT_6,{attribution:'',interactive:true,dataVar:'json_CONT_6',layerName:'layer_CONT_6',pane:'pane_CONT_6',onEachFeature:pop_CONT_6,style:style_CONT_6_0}); nl.eachLayer(ly=>layer_CONT_6.addLayer(ly)); layer_CONT_6.__loaded=true; } catch(e) { console.error('[contours] load error', e); } }
-            map.on('overlayadd', e => { if (e.layer === layer_CONT_6) ensureContoursLoaded(); });
-        });
-        </script>
-        <div id="actionbar" class="sv-actionbar">
-            <button id="btn-locate" class="sv-act"><i class="fas fa-crosshairs"></i><span>Locate</span></button>
-            <button id="btn-add-pin" class="sv-act"><i class="fas fa-map-pin"></i><span>Add Pin</span></button>
-            <button id="btn-camera" class="sv-act"><i class="fas fa-camera"></i><span>Photo</span></button>
-            <button id="btn-measure" class="sv-act"><i class="fas fa-ruler-combined"></i><span>Measure</span></button>
-<button id="btn-layers" class="sv-act">
-    <svg style="width:18px; height:18px; fill:#444;" viewBox="0 0 512 512"><path d="M448 0H64C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64zM112 112l144-64 144 64-144 64-144-64zm256 216l-112 48-112-48v-80l112 48 112-48v80z"/></svg>
-    <span>Layers</span>
-</button>       
-	   </div>
-
-        <div id="sv-toast" style="position:fixed;left:12px;right:12px;bottom:90px;z-index:1200;display:none">
-            <div style="background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.2);font-size:13px">
-                Tip: tap <i class="fas fa-crosshairs"></i> to center on your location, and <i class="fas fa-layer-group"></i> to manage layers.
-            </div>
-        </div>
-    <script>
+        </script><!-- Bottom Action Bar -->
+<div id="actionbar" class="sv-actionbar">
+  <button id="btn-measure" class="sv-act" title="Measure">
+    <i class="fas fa-ruler-combined"></i><span>Measure</span>
+  </button>
+</div>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
+  // Cosmetic: show a ruler icon on the plugin toggle
+  const toggleBtn = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
+  if (toggleBtn) { toggleBtn.innerHTML = ''; if (!toggleBtn.className.includes('fas')) toggleBtn.className += ' fas fa-ruler'; }
+
+  // Action bar "Measure" -> click plugin toggle
   const btn = document.getElementById('btn-measure');
-  if (btn) btn.onclick = function (e) {
-    e.stopPropagation();
-    const t = document.querySelector('.leaflet-control-measure-toggle');
-    if (t) t.click();
-  };
+  if (btn) {
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      const t = document.querySelector('.leaflet-control-measure-toggle');
+      if (t) t.click();  // opens/closes the official Measure UI
+    };
+  }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Cosmetic: ensure measure toggle shows a ruler icon
+  (function decorateMeasureToggle(){
+    const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
+    if (t) { t.innerHTML = ''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
+  })();
+
+  // Keep CSS var in sync with actual bar height
+  (function keepBottomSpace(){
+    const bar = document.getElementById('actionbar');
+    function upd(){ if (bar) document.documentElement.style.setProperty('--sv-actionbar-h', bar.offsetHeight + 'px'); }
+    if ('ResizeObserver' in window && bar) { new ResizeObserver(upd).observe(bar); upd(); }
+    else { upd(); window.addEventListener('resize', upd); }
+  })();
+
+  // LAYERS: expand/collapse
+  const btnLayers = document.getElementById('btn-layers');
+  if (btnLayers) {
+    btnLayers.onclick = function (e) {
+      e.stopPropagation();
+      const ctl = document.querySelector('.leaflet-control-layers');
+      if (!ctl) return;
+      ctl.classList.toggle('leaflet-control-layers-expanded');
+    };
+  }
+
+  // MEASURE: toggle official plugin
+  const btnMeasure = document.getElementById('btn-measure');
+  if (btnMeasure) {
+    btnMeasure.onclick = function (e) {
+      e.stopPropagation();
+      const toggle = document.querySelector('.leaflet-control-measure-toggle');
+      if (toggle) toggle.click();
+    };
+  }
+
+  // LOCATE: blue dot + ring
+  const btnLocate = document.getElementById('btn-locate');
+  if (btnLocate && window.map && window.L) {
+    let gpsMarker = null, gpsCircle = null;
+    function drawFix(latlng, acc) {
+      if (gpsMarker) map.removeLayer(gpsMarker);
+      gpsMarker = L.circleMarker(latlng, { radius:6, color:'#0078ff', fillColor:'#0078ff', fillOpacity:1 })
+                    .addTo(map).bindPopup('You are here');
+      if (gpsCircle) map.removeLayer(gpsCircle);
+      gpsCircle = L.circle(latlng, { radius: Math.max(acc || 0, 0), color:'#0078ff', weight:1, fillOpacity: 0.10 }).addTo(map);
+    }
+    map.on('locationfound', function(e){ drawFix(e.latlng, e.accuracy); map.setView(e.latlng, Math.max(map.getZoom(), 18)); });
+    map.on('locationerror', function(e){ console.error('Location error:', e.message); alert('Location error: ' + e.message); });
+    btnLocate.onclick = function (e) {
+      e.stopPropagation();
+      try { map.locate({ setView:false, enableHighAccuracy:true, timeout:10000, watch:false }); }
+      catch(err){ console.error('map.locate failed', err); }
+    };
+  }
 });
 </script>
 </body>
 </html>
+
+
+
+
+
+
