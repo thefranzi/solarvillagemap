@@ -219,6 +219,8 @@ html, body, #map {
     background-color: rgba(255, 255, 255, 0.8);
     padding: 2px;
     border-radius: 4px;
+    order: -1; /* This forces the logo to the top */
+    margin-bottom: 10px; /* This adds a nice space below the logo */
 }
 .leaflet-control-logo img {
     width: 60px;

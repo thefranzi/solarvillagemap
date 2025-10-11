@@ -39,45 +39,6 @@
         .leaflet-bottom.leaflet-left{margin-bottom:68px;}
         </style>
     <style>.leaflet-control-measure,.leaflet-measure-resultpopup,.leaflet-control-measure .results{z-index:1200;}</style>
-<style>
-/* Measure UI above toolbar */
-.leaflet-control-measure,
-.leaflet-measure-resultpopup,
-.leaflet-control-measure .results { z-index: 1200; }
-
-/* Bottom action bar */
-.sv-actionbar {
-  position: fixed; left: 8px; right: 8px;
-  bottom: env(safe-area-inset-bottom,8px);
-  display: grid; grid-template-columns: repeat(5,1fr);
-  gap: 10px; background: rgba(255,255,255,.9);
-  padding: 8px; border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.15);
-  z-index: 1000;
-}
-.sv-act { display:flex; flex-direction:column; align-items:center; justify-content:center;
-          min-width:44px; min-height:44px; padding:6px 4px; border:none; border-radius:12px;
-          background:#fff; cursor:pointer; }
-.sv-act i { font-size:18px; line-height:1; }
-.sv-act span { font-size:11px; margin-top:4px; }
-@media (max-width:420px){ .sv-act span{ display:none; } }
-
-/* Space default Leaflet controls from bottom bar on left */
-.leaflet-bottom.leaflet-left { margin-bottom: 68px; }
-
-/* Layers panel never overlaps bottom bar */
-:root { --sv-actionbar-h: 68px; }
-.leaflet-control-layers { margin-bottom: calc(var(--sv-actionbar-h) + 8px); z-index: 1001; }
-.leaflet-right .leaflet-control-layers-expanded {
-  max-height: calc(100vh - var(--sv-actionbar-h) - 24px);
-  overflow: auto;
-}
-
-/* Hard cap logo size (defeat any global img rules) */
-.leaflet-control-logo img#sv-logo {
-  width: 110px !important; height: auto !important; max-height: 40px !important; max-width: none !important; display: block !important;
-}
-</style>
 </head>
     <body>
         <div id="map">
@@ -307,7 +268,7 @@
         L.Control.Logo = L.Control.extend({
             onAdd: function(map) {
                 var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
-                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo" id="sv-logo"></a>';
+                container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo"></a>';
                 L.DomEvent.disableClickPropagation(container);
                 return container;
             }
@@ -348,68 +309,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  // Cosmetic: ensure measure toggle shows a ruler icon
-  (function decorateMeasureToggle(){
-    const t = document.getElementsByClassName('leaflet-control-measure-toggle')[0];
-    if (t) { t.innerHTML = ''; if (!t.className.includes('fas')) t.className += ' fas fa-ruler'; }
-  })();
-
-  // Keep CSS var in sync with actual bar height
-  (function keepBottomSpace(){
-    const bar = document.getElementById('actionbar');
-    function upd(){ if (bar) document.documentElement.style.setProperty('--sv-actionbar-h', bar.offsetHeight + 'px'); }
-    if ('ResizeObserver' in window && bar) { new ResizeObserver(upd).observe(bar); upd(); }
-    else { upd(); window.addEventListener('resize', upd); }
-  })();
-
-  // LAYERS: expand/collapse
-  const btnLayers = document.getElementById('btn-layers');
-  if (btnLayers) {
-    btnLayers.onclick = function (e) {
-      e.stopPropagation();
-      const ctl = document.querySelector('.leaflet-control-layers');
-      if (!ctl) return;
-      ctl.classList.toggle('leaflet-control-layers-expanded');
-    };
-  }
-
-  // MEASURE: toggle official plugin
-  const btnMeasure = document.getElementById('btn-measure');
-  if (btnMeasure) {
-    btnMeasure.onclick = function (e) {
-      e.stopPropagation();
-      const toggle = document.querySelector('.leaflet-control-measure-toggle');
-      if (toggle) toggle.click();
-    };
-  }
-
-  // LOCATE: blue dot + ring
-  const btnLocate = document.getElementById('btn-locate');
-  if (btnLocate && window.map && window.L) {
-    let gpsMarker = null, gpsCircle = null;
-    function drawFix(latlng, acc) {
-      if (gpsMarker) map.removeLayer(gpsMarker);
-      gpsMarker = L.circleMarker(latlng, { radius:6, color:'#0078ff', fillColor:'#0078ff', fillOpacity:1 })
-                    .addTo(map).bindPopup('You are here');
-      if (gpsCircle) map.removeLayer(gpsCircle);
-      gpsCircle = L.circle(latlng, { radius: Math.max(acc || 0, 0), color:'#0078ff', weight:1, fillOpacity: 0.10 }).addTo(map);
-    }
-    map.on('locationfound', function(e){ drawFix(e.latlng, e.accuracy); map.setView(e.latlng, Math.max(map.getZoom(), 18)); });
-    map.on('locationerror', function(e){ console.error('Location error:', e.message); alert('Location error: ' + e.message); });
-    btnLocate.onclick = function (e) {
-      e.stopPropagation();
-      try { map.locate({ setView:false, enableHighAccuracy:true, timeout:10000, watch:false }); }
-      catch(err){ console.error('map.locate failed', err); }
-    };
-  }
-});
-</script>
 </body>
 </html>
-
-
 
 
 
