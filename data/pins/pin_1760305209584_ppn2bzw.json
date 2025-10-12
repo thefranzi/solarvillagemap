@@ -1,0 +1,14 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -123.12026023864748,
+      49.49444462222773
+    ]
+  },
+  "properties": {
+    "title": "AZ",
+    "description": ""
+  }
+}
