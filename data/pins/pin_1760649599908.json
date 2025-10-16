@@ -1,0 +1,14 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.334841221571,
+      49.95857099196253
+    ]
+  },
+  "properties": {
+    "title": "Existing Pool",
+    "description": ""
+  }
+}
