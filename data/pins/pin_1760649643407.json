@@ -1,0 +1,14 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33485597372058,
+      49.958588679112886
+    ]
+  },
+  "properties": {
+    "title": "Pool",
+    "description": ""
+  }
+}
