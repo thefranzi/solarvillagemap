@@ -1,0 +1,14 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33402314782144,
+      49.95879143378697
+    ]
+  },
+  "properties": {
+    "title": "Office",
+    "description": ""
+  }
+}
