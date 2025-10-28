@@ -145,9 +145,10 @@
     // Replace 'YOUR_MAPBOX_ACCESS_TOKEN' with your actual token
     mapboxgl.accessToken = pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg
 
+
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/outdoors-v12',
+        style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite imagery + labels
         center: [-119.5, 49.9],
         zoom: 11,
         pitch: 60,
@@ -156,28 +157,16 @@
     });
 
     map.on('load', () => {
-        // Terrain source (default global)
+        // Use Mapbox's public terrain source
         map.addSource('mapbox-dem', {
             'type': 'raster-dem',
-            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1', // Publicly available DEM
             'tileSize': 512,
             'maxzoom': 14
         });
-        // To use your custom DEM instead, upload to Mapbox Studio and swap the below:
-        /*
-        map.addSource('custom-dem', {
-          'type': 'raster-dem',
-          'url': 'mapbox://YOUR_USERNAME/YOUR_DEM_TILESET_ID',
-          'tileSize': 512,
-          'maxzoom': 14
-        });
-        map.setTerrain({
-          'source': 'custom-dem',
-          'exaggeration': 1.5
-        });
-        */
         map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
 
+        // Add realistic skybox
         map.addLayer({
             'id': 'sky',
             'type': 'sky',
@@ -188,37 +177,12 @@
             }
         });
 
-        // Example: Add a GeoJSON layer from qgis2web export (uncomment when ready)
-        /*
-        map.addSource('your-layer', {
-            'type': 'geojson',
-            'data': 'data/your-layer.geojson'
-        });
-        map.addLayer({
-            'id': 'your-layer-fill',
-            'type': 'fill',
-            'source': 'your-layer',
-            'paint': {
-                'fill-color': '#088',
-                'fill-opacity': 0.5
-            }
-        });
-        map.addLayer({
-            'id': 'your-layer-outline',
-            'type': 'line',
-            'source': 'your-layer',
-            'paint': {
-                'line-color': '#000',
-                'line-width': 2
-            }
-        });
-        */
-
+        // Add navigation controls
         map.addControl(new mapboxgl.NavigationControl(), 'top-left');
         map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
     });
 
-    // Control handlers
+    // UI controls for terrain exaggeration, pitch, etc.—same as before!
     const exaggerationSlider = document.getElementById('exaggeration');
     const exaggerationValue = document.getElementById('exaggeration-value');
     const pitchSlider = document.getElementById('pitch');
