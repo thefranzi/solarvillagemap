@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3D Mapbox GLJS – All Layers (18)</title>
+  <title>3D Map with ESRI Imagery and Custom DEM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet"/>
@@ -34,7 +34,12 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzY
 
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v12', // OpenStreetMap-based imagery
+    // Use a minimal custom style to avoid default vector backgrounds.
+    style: {
+      "version": 8,
+      "sources": {},
+      "layers": []
+    },
     center: [-119.5, 49.9],
     zoom: 12,
     pitch: 60,
@@ -43,6 +48,24 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
+    // ESRI Imagery Layer
+    map.addSource('esri-imagery', {
+      type: 'raster',
+      tiles: [
+        'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      attribution: 'Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+    });
+    map.addLayer({
+      id: 'esri-imagery-lyr',
+      type: 'raster',
+      source: 'esri-imagery',
+      minzoom: 0,
+      maxzoom: 22
+    });
+
+    // Terrain (DEM)
     map.addSource('mapbox-dem', {
       'type': 'raster-dem',
       'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
@@ -53,7 +76,6 @@ map.on('load', () => {
       'url': 'mapbox://franzix.6e8svldc',
       'tileSize': 512,
       'maxzoom': 14 });
-
     map.setTerrain({'source':'custom-dem','exaggeration':1.5});
 
     map.addLayer({id:'sky',type:'sky',paint:{'sky-type':'atmosphere','sky-atmosphere-sun':[0.0,90.0],'sky-atmosphere-sun-intensity':15}});
@@ -61,7 +83,7 @@ map.on('load', () => {
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
     map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
 
-    // 18 LAYERS: (assumes all .geojson are in /data/)
+    // 18 vector overlays (from data/*.geojson, one per layer)
     const layers = [
     {name:'BNDRY_4', type:'line', color:'#1b2631', width:2 },
     {name:'LOTS_5', type:'fill', color:'#a1dab4', opacity:0.4, outline:'#375931'},
@@ -112,7 +134,6 @@ map.on('load', () => {
         });
       }
     });
-
 });
 
 const exaggerationSlider = document.getElementById('exaggeration');
