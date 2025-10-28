@@ -48,38 +48,35 @@
   // PUT YOUR MAPBOX ACCESS TOKEN HERE:
     mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg'
 
-  const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/outdoors-v12', // Best for 3D terrain
-    center: [-119.5, 49.9], // Kelowna
-    zoom: 12,
-    pitch: 60,
-    bearing: 0,
-    antialias: true
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite imagery + terrain
+  center: [-119.5, 49.9],
+  zoom: 12,
+  pitch: 60,
+  bearing: 0,
+  antialias: true
+});
+map.on('load', () => {
+  map.addSource('mapbox-dem', {
+    'type': 'raster-dem',
+    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+    'tileSize': 512,
+    'maxzoom': 14
   });
-
-  map.on('load', () => {
-    map.addSource('mapbox-dem', {
-      'type': 'raster-dem',
-      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1', // Public DEM
-      'tileSize': 512,
-      'maxzoom': 14
-    });
-    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-
-    map.addLayer({
-      'id': 'sky',
-      'type': 'sky',
-      'paint': {
-        'sky-type': 'atmosphere',
-        'sky-atmosphere-sun': [0.0, 90.0],
-        'sky-atmosphere-sun-intensity': 15
-      }
-    });
-
-    map.addControl(new mapboxgl.NavigationControl(), 'top-left');
-    map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
-
+  map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+  map.addLayer({
+    'id': 'sky',
+    'type': 'sky',
+    'paint': {
+      'sky-type': 'atmosphere',
+      'sky-atmosphere-sun': [0.0, 90.0],
+      'sky-atmosphere-sun-intensity': 15
+    }
+  });
+  map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+  map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
+  
     // ----- Add GeoJSON overlay layers here when ready -----
     /*
     map.addSource('LOTS5', {
