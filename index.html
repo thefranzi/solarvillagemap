@@ -2,66 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3D Mapbox Terrain & Satellite</title>
+  <title>Mapbox 3D Terrain & Satellite</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; }
     #map {
       position: absolute;
       top: 0; bottom: 0; left: 0; right: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+      width: 100%; height: 100%; z-index: 0;
     }
     .controls {
       position: absolute;
-      top: 18px;
-      right: 18px;
-      background: rgba(255,255,255,0.92);
-      padding: 16px;
-      border-radius: 8px;
+      top: 18px; right: 18px;
+      background: rgba(255,255,255,0.93);
+      padding: 16px; border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      z-index: 1;
-      min-width: 180px;
+      z-index: 1; min-width: 180px;
     }
     label { font-size: 12px; font-weight: 500; margin-bottom: 8px; }
     input[type="range"] { width: 100%; margin: 8px 0; }
     .value-display { font-size: 14px; font-weight: 600; color: #21808d; }
     .btn {
-      display: inline-block;
-      padding: 8px 16px;
-      background: #21808d;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      width: 100%;
+      display: inline-block; padding: 8px 16px;
+      background: #21808d; color: white;
+      border: none; border-radius: 6px;
+      font-size: 13px; cursor: pointer; width: 100%;
       margin-top: 8px;
     }
     .btn:hover { background: #1d7480; }
-    .toggle2d3d {
-      position: absolute;
-      top: 20px; left: 20px; z-index: 2;
-    }
-    .toggle2d3d-btn {
-      background: #21808d; color: #fff; border: none; border-radius: 6px;
-      padding: 8px 18px; font-size: 15px; cursor: pointer;
-    }
-    .toggle2d3d-btn:hover { background: #1d7480; }
   </style>
 </head>
 <body>
-<div class="toggle2d3d">
-  <!-- Update this link to your legacy Leaflet 2D page as needed -->
-  <a href="index-leaflet.html" class="toggle2d3d-btn">Switch to 2D Map</a>
-</div>
 <div id="map"></div>
 <div class="controls">
     <label>Terrain Exaggeration: <span class="value-display" id="exaggeration-value">1.5x</span></label>
@@ -72,24 +45,23 @@
     <button class="btn" id="reset-view">Reset View</button>
 </div>
 <script>
-  // IMPORTANT: Use your own Mapbox token here!
-  mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg';
+  // PUT YOUR MAPBOX ACCESS TOKEN HERE:
+   mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg';
 
   const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-streets-v12', // Public satellite + labels
+    style: 'mapbox://styles/mapbox/outdoors-v12', // Best for 3D terrain
     center: [-119.5, 49.9], // Kelowna
-    zoom: 11,
+    zoom: 12,
     pitch: 60,
     bearing: 0,
     antialias: true
   });
 
   map.on('load', () => {
-    // Public DEM source
     map.addSource('mapbox-dem', {
       'type': 'raster-dem',
-      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1', // Public DEM
       'tileSize': 512,
       'maxzoom': 14
     });
@@ -108,9 +80,8 @@
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
     map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
 
-    // ----- Add GeoJSON overlay layers here (copy/export from QGIS2Web) -----
+    // ----- Add GeoJSON overlay layers here when ready -----
     /*
-    Example:
     map.addSource('LOTS5', {
       'type': 'geojson',
       'data': 'data/LOTS5.geojson'
@@ -130,10 +101,9 @@
       'filter': ['==', '$type', 'Polygon']
     });
     */
-    // Repeat for each layer (CONT6, ESA7, etc.) once ready.
   });
 
-  // Controls
+  // Controls logic
   const exaggerationSlider = document.getElementById('exaggeration');
   const exaggerationValue = document.getElementById('exaggeration-value');
   const pitchSlider = document.getElementById('pitch');
@@ -173,7 +143,7 @@
   document.getElementById('reset-view').addEventListener('click', () => {
     map.flyTo({
       center: [-119.5, 49.9],
-      zoom: 11,
+      zoom: 12,
       pitch: 60,
       bearing: 0
     });
