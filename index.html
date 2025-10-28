@@ -73,7 +73,7 @@ map.on('load', () => {
       'maxzoom': 14 });
     map.addSource('custom-dem', {
       'type': 'raster-dem',
-      'url': 'mapbox://franzix.6e8svldc',
+      'url': 'mapbox://franzix.dtm2-tileset',
       'tileSize': 512,
       'maxzoom': 14 });
     map.setTerrain({'source':'custom-dem','exaggeration':1.5});
@@ -163,5 +163,61 @@ document.getElementById('use-public-dem').addEventListener('click', () => {
   map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': parseFloat(exaggerationSlider.value)});
 });
 </script>
+<div id="layerMenu" style="position:absolute;top:18px;left:18px;z-index:10;background:rgba(255,255,255,0.93);padding:16px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.13);max-height:80vh;overflow:auto;display:none;">
+  <h4 style="margin:0 0 8px 0;font-size:13px;">Layer Visibility</h4>
+  <div id="layerMenuContent"></div>
+</div>
+<script>
+const overlayList = [
+  {id:'BNDRY_4-line',     label:'BNDRY_4'},
+  {id:'LOTS_5-fill',      label:'LOTS_5'},
+  {id:'LOTS_5-outline',   label:'LOTS_5 outline'},
+  {id:'CONT_6-line',      label:'CONT_6'},
+  {id:'ESA_7-fill',       label:'ESA_7'},
+  {id:'DW_8-fill',        label:'DW_8'},
+  {id:'DW_8-outline',     label:'DW_8 outline'},
+  {id:'SBE_9-fill',       label:'SBE_9'},
+  {id:'EX_BLD_10-fill',   label:'EX_BLD_10'},
+  {id:'EX_BLD_10-outline',label:'EX_BLD_10 outline'},
+  {id:'CRK_COV_11-fill',  label:'CRK_COV_11'},
+  {id:'ENV_RST_12-fill',  label:'ENV_RST_12'},
+  {id:'SRW_MOTI_13-line', label:'SRW_MOTI_13'},
+  {id:'CE_14-fill',       label:'CE_14'},
+  {id:'BA_15-fill',       label:'BA_15'},
+  {id:'ALR_16-fill',      label:'ALR_16'},
+  {id:'AOI_17-fill',      label:'AOI_17'},
+  {id:'SEPTIC_18-fill',   label:'SEPTIC_18'},
+  {id:'WELLS_19-circle',  label:'WELLS_19'},
+  {id:'FENCE_20-line',    label:'FENCE_20'},
+  {id:'EX_FENCE_21-line', label:'EX_FENCE_21'}
+];
+map.on('idle', function() {
+  // Only build menu after all layers have loaded and sources are ready
+  const menuDiv = document.getElementById('layerMenu');
+  const menuContent = document.getElementById('layerMenuContent');
+  menuDiv.style.display = 'block';
+  menuContent.innerHTML = '';
+  overlayList.forEach(entry => {
+    if (map.getLayer(entry.id)) {
+      let wrapper = document.createElement('div');
+      wrapper.style.marginBottom = "6px";
+      let checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = entry.id;
+      checkbox.checked = map.getLayoutProperty(entry.id, 'visibility') !== 'none';
+      checkbox.onchange = function() {
+        map.setLayoutProperty(entry.id, 'visibility', checkbox.checked ? 'visible' : 'none');
+      };
+      let label = document.createElement('label');
+      label.htmlFor = entry.id;
+      label.innerText = ' ' + entry.label;
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+      menuContent.appendChild(wrapper);
+    }
+  });
+});
+</script>
+
 </body>
 </html>
