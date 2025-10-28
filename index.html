@@ -1,232 +1,183 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Terrain Map - Mapbox GL JS</title>
-    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
-    <style>
-        :root {
-            --color-background: rgba(252, 252, 249, 1);
-            --color-surface: rgba(255, 255, 253, 1);
-            --color-text: rgba(19, 52, 59, 1);
-            --color-primary: rgba(33, 128, 141, 1);
-            --color-primary-hover: rgba(29, 116, 128, 1);
-            --color-border: rgba(94, 82, 64, 0.2);
-            --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            font-family: var(--font-family-base);
-            background: var(--color-background);
-            color: var(--color-text);
-        }
-
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--color-surface);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            z-index: 1;
-            min-width: 200px;
-        }
-
-        .control-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            margin: 8px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background: var(--color-primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .btn:hover {
-            background: var(--color-primary-hover);
-        }
-
-        .value-display {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--color-primary);
-        }
-
-        .info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: var(--color-surface);
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            font-size: 12px;
-            max-width: 300px;
-        }
-        /* Toggle 2D/3D switch styles */
-        .toggle2d3d {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 2;
-        }
-        .toggle2d3d-btn {
-            background: var(--color-primary);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 18px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .toggle2d3d-btn:hover {
-            background: var(--color-primary-hover);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>3D Mapbox Terrain & Satellite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      position: absolute;
+      top: 0; bottom: 0; left: 0; right: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    .controls {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255,255,255,0.92);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 1;
+      min-width: 180px;
+    }
+    label { font-size: 12px; font-weight: 500; margin-bottom: 8px; }
+    input[type="range"] { width: 100%; margin: 8px 0; }
+    .value-display { font-size: 14px; font-weight: 600; color: #21808d; }
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #21808d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .btn:hover { background: #1d7480; }
+    .toggle2d3d {
+      position: absolute;
+      top: 20px; left: 20px; z-index: 2;
+    }
+    .toggle2d3d-btn {
+      background: #21808d; color: #fff; border: none; border-radius: 6px;
+      padding: 8px 18px; font-size: 15px; cursor: pointer;
+    }
+    .toggle2d3d-btn:hover { background: #1d7480; }
+  </style>
 </head>
 <body>
 <div class="toggle2d3d">
-  <!-- Update this link after upload to Netlify/github for your legacy 2D map file -->
+  <!-- Update this link to your legacy Leaflet 2D page as needed -->
   <a href="index-leaflet.html" class="toggle2d3d-btn">Switch to 2D Map</a>
 </div>
-
 <div id="map"></div>
 <div class="controls">
-    <div class="control-group">
-        <label>Terrain Exaggeration: <span class="value-display" id="exaggeration-value">1.5x</span></label>
-        <input type="range" id="exaggeration" min="0" max="3" step="0.1" value="1.5">
-    </div>
-    <div class="control-group">
-        <label>Pitch: <span class="value-display" id="pitch-value">60°</span></label>
-        <input type="range" id="pitch" min="0" max="85" step="1" value="60">
-    </div>
-    <div class="control-group">
-        <button class="btn" id="toggle-3d">Toggle 3D/2D</button>
-        <button class="btn" id="reset-view">Reset View</button>
-    </div>
-</div>
-<div class="info">
-    <h3>Instructions:</h3>
-    <p><strong>Change DEM:</strong> Update the 'custom-dem' source URL with your own.</p>
-    <p><strong>Add Layers:</strong> Import your qgis2web GeoJSON layers (see code comments).</p>
-    <p><strong>Switch Views:</strong> Use the “2D Map” button to view the original layout.</p>
-    <p><strong>Deploy:</strong> Push to GitHub → Deploy via Netlify.</p>
+    <label>Terrain Exaggeration: <span class="value-display" id="exaggeration-value">1.5x</span></label>
+    <input type="range" id="exaggeration" min="0" max="3" step="0.1" value="1.5">
+    <label>Pitch: <span class="value-display" id="pitch-value">60°</span></label>
+    <input type="range" id="pitch" min="0" max="85" step="1" value="60">
+    <button class="btn" id="toggle-3d">Toggle 3D/2D</button>
+    <button class="btn" id="reset-view">Reset View</button>
 </div>
 <script>
-    // Replace 'YOUR_MAPBOX_ACCESS_TOKEN' with your actual token
-    mapboxgl.accessToken = pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg
+  // IMPORTANT: Use your own Mapbox token here!
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg';
 
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-streets-v12', // Public satellite + labels
+    center: [-119.5, 49.9], // Kelowna
+    zoom: 11,
+    pitch: 60,
+    bearing: 0,
+    antialias: true
+  });
 
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite imagery + labels
-        center: [-119.5, 49.9],
-        zoom: 11,
-        pitch: 60,
-        bearing: 0,
-        antialias: true
+  map.on('load', () => {
+    // Public DEM source
+    map.addSource('mapbox-dem', {
+      'type': 'raster-dem',
+      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+      'tileSize': 512,
+      'maxzoom': 14
+    });
+    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+
+    map.addLayer({
+      'id': 'sky',
+      'type': 'sky',
+      'paint': {
+        'sky-type': 'atmosphere',
+        'sky-atmosphere-sun': [0.0, 90.0],
+        'sky-atmosphere-sun-intensity': 15
+      }
     });
 
-    map.on('load', () => {
-        // Use Mapbox's public terrain source
-        map.addSource('mapbox-dem', {
-            'type': 'raster-dem',
-            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1', // Publicly available DEM
-            'tileSize': 512,
-            'maxzoom': 14
-        });
-        map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+    map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+    map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
 
-        // Add realistic skybox
-        map.addLayer({
-            'id': 'sky',
-            'type': 'sky',
-            'paint': {
-                'sky-type': 'atmosphere',
-                'sky-atmosphere-sun': [0.0, 90.0],
-                'sky-atmosphere-sun-intensity': 15
-            }
-        });
-
-        // Add navigation controls
-        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
-        map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
+    // ----- Add GeoJSON overlay layers here (copy/export from QGIS2Web) -----
+    /*
+    Example:
+    map.addSource('LOTS5', {
+      'type': 'geojson',
+      'data': 'data/LOTS5.geojson'
     });
-
-    // UI controls for terrain exaggeration, pitch, etc.—same as before!
-    const exaggerationSlider = document.getElementById('exaggeration');
-    const exaggerationValue = document.getElementById('exaggeration-value');
-    const pitchSlider = document.getElementById('pitch');
-    const pitchValue = document.getElementById('pitch-value');
-
-    exaggerationSlider.addEventListener('input', (e) => {
-        const value = parseFloat(e.target.value);
-        exaggerationValue.textContent = value.toFixed(1) + 'x';
-        if (map.getTerrain()) {
-            map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': value });
-        }
+    map.addLayer({
+      'id': 'LOTS5-fill',
+      'type': 'fill',
+      'source': 'LOTS5',
+      'paint': { 'fill-color': '#a1dab4', 'fill-opacity': 0.4 },
+      'filter': ['==', '$type', 'Polygon']
     });
-
-    pitchSlider.addEventListener('input', (e) => {
-        const value = parseInt(e.target.value);
-        pitchValue.textContent = value + '°';
-        map.setPitch(value);
+    map.addLayer({
+      'id': 'LOTS5-outline',
+      'type': 'line',
+      'source': 'LOTS5',
+      'paint': { 'line-color': '#41b6c4', 'line-width': 1.5 },
+      'filter': ['==', '$type', 'Polygon']
     });
+    */
+    // Repeat for each layer (CONT6, ESA7, etc.) once ready.
+  });
 
-    document.getElementById('toggle-3d').addEventListener('click', () => {
-        if (map.getTerrain()) {
-            map.setTerrain(null);
-            pitchSlider.value = 0;
-            pitchValue.textContent = '0°';
-            map.setPitch(0);
-        } else {
-            map.setTerrain({
-                'source': 'mapbox-dem',
-                'exaggeration': parseFloat(exaggerationSlider.value)
-            });
-            pitchSlider.value = 60;
-            pitchValue.textContent = '60°';
-            map.setPitch(60);
-        }
-    });
+  // Controls
+  const exaggerationSlider = document.getElementById('exaggeration');
+  const exaggerationValue = document.getElementById('exaggeration-value');
+  const pitchSlider = document.getElementById('pitch');
+  const pitchValue = document.getElementById('pitch-value');
 
-    document.getElementById('reset-view').addEventListener('click', () => {
-        map.flyTo({
-            center: [-119.5, 49.9],
-            zoom: 11,
-            pitch: 60,
-            bearing: 0
-        });
+  exaggerationSlider.addEventListener('input', (e) => {
+    const value = parseFloat(e.target.value);
+    exaggerationValue.textContent = value.toFixed(1) + 'x';
+    if (map.getTerrain()) {
+      map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': value });
+    }
+  });
+
+  pitchSlider.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value);
+    pitchValue.textContent = value + '°';
+    map.setPitch(value);
+  });
+
+  document.getElementById('toggle-3d').addEventListener('click', () => {
+    if (map.getTerrain()) {
+      map.setTerrain(null);
+      pitchSlider.value = 0;
+      pitchValue.textContent = '0°';
+      map.setPitch(0);
+    } else {
+      map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': parseFloat(exaggerationSlider.value)
+      });
+      pitchSlider.value = 60;
+      pitchValue.textContent = '60°';
+      map.setPitch(60);
+    }
+  });
+
+  document.getElementById('reset-view').addEventListener('click', () => {
+    map.flyTo({
+      center: [-119.5, 49.9],
+      zoom: 11,
+      pitch: 60,
+      bearing: 0
     });
+  });
 </script>
 </body>
 </html>
