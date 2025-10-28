@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "ALR_16",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::2955" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Layer": "ALR", "PaperSpace": null, "SubClasses": "AcDbEntity:AcDbHatch", "Linetype": "ByLayer", "EntityHand": "92B", "Text": "SOLID" }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 332252.685886580497026, 5536558.220157984644175 ], [ 332320.53359111782629, 5536584.810303184203804 ], [ 332366.054297536204103, 5536528.856167110614479 ], [ 332389.451314621604979, 5536196.866632501594722 ], [ 332408.871346209198236, 5536162.847581857815385 ], [ 332236.065001927898265, 5536171.031035719439387 ], [ 332252.685886580497026, 5536558.220157984644175 ] ] ] ] } }
+]
+}

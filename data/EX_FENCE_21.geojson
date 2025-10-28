@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "EX_FENCE_21",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::2955" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 11, "type": null, "height": null, "length": 386.18882970170006 }, "geometry": { "type": "LineString", "coordinates": [ [ 332499.890363950049505, 5536578.115706669166684 ], [ 332468.720494624401908, 5536579.287002772092819 ], [ 332457.009406916040462, 5536601.645257451571524 ], [ 332445.718656028620899, 5536744.909450552426279 ], [ 332454.167510851286352, 5536837.574907056987286 ] ] } },
+{ "type": "Feature", "properties": { "fid": 12, "type": null, "height": null, "length": 80.984714324730049 }, "geometry": { "type": "LineString", "coordinates": [ [ 332600.587370481225662, 5536153.356735345907509 ], [ 332681.454778027895372, 5536149.084494947455823 ] ] } }
+]
+}

@@ -2,36 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mapbox 3D Terrain & Satellite</title>
+  <title>3D Mapbox GLJS – All Layers (18)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet"/>
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
-    #map {
-      position: absolute;
-      top: 0; bottom: 0; left: 0; right: 0;
-      width: 100%; height: 100%; z-index: 0;
-    }
-    .controls {
-      position: absolute;
-      top: 18px; right: 18px;
-      background: rgba(255,255,255,0.93);
-      padding: 16px; border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      z-index: 1; min-width: 180px;
-    }
-    label { font-size: 12px; font-weight: 500; margin-bottom: 8px; }
-    input[type="range"] { width: 100%; margin: 8px 0; }
-    .value-display { font-size: 14px; font-weight: 600; color: #21808d; }
-    .btn {
-      display: inline-block; padding: 8px 16px;
-      background: #21808d; color: white;
-      border: none; border-radius: 6px;
-      font-size: 13px; cursor: pointer; width: 100%;
-      margin-top: 8px;
-    }
-    .btn:hover { background: #1d7480; }
+    html, body { height: 100%; margin: 0; padding: 0;}
+    #map {position:absolute; top:0; bottom:0; width:100%; height:100%;}
+    .controls { position:absolute; top:18px; right:18px; background: rgba(255,255,255,0.93); padding:16px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:1; min-width:180px;}
+    label { font-size:12px; font-weight:500; margin-bottom:8px;}
+    input[type=range]{width:100%; margin:8px 0;}
+    .value-display{font-size:14px; font-weight:600; color:#21808d;}
+    .btn { display:inline-block; padding:8px 16px; background:#21808d; color:white; border:none; border-radius:6px; font-size:13px; cursor:pointer; width:100%; margin-top:8px;}
+    .btn:hover {background: #1d7480;}
   </style>
 </head>
 <body>
@@ -43,89 +26,121 @@
     <input type="range" id="pitch" min="0" max="85" step="1" value="60">
     <button class="btn" id="toggle-3d">Toggle 3D/2D</button>
     <button class="btn" id="reset-view">Reset View</button>
+    <button class="btn" id="use-custom-dem">Custom DEM</button>
+    <button class="btn" id="use-public-dem">Public DEM</button>
 </div>
 <script>
-  // Using your provided Mapbox token!
-  mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg';
+mapboxgl.accessToken = 'pk.eyJ1IjoiZnJhbnppeCIsImEiOiJjbWg5cWNsdTMwY2ZqMm1weHBzYnVrbDFlIn0.J3vRTt1v5Q_WuO8b0CkIHg';
 
-  const map = new mapboxgl.Map({
+const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite imagery + terrain enabled
-    center: [-119.5, 49.9], // Kelowna area
+    style: 'mapbox://styles/mapbox/streets-v12', // OpenStreetMap-based imagery
+    center: [-119.5, 49.9],
     zoom: 12,
     pitch: 60,
     bearing: 0,
     antialias: true
-  });
+});
 
-  map.on('load', () => {
+map.on('load', () => {
     map.addSource('mapbox-dem', {
       'type': 'raster-dem',
       'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
       'tileSize': 512,
-      'maxzoom': 14
-    });
-    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+      'maxzoom': 14 });
+    map.addSource('custom-dem', {
+      'type': 'raster-dem',
+      'url': 'mapbox://franzix.6e8svldc',
+      'tileSize': 512,
+      'maxzoom': 14 });
 
-    map.addLayer({
-      'id': 'sky',
-      'type': 'sky',
-      'paint': {
-        'sky-type': 'atmosphere',
-        'sky-atmosphere-sun': [0.0, 90.0],
-        'sky-atmosphere-sun-intensity': 15
-      }
-    });
+    map.setTerrain({'source':'custom-dem','exaggeration':1.5});
+
+    map.addLayer({id:'sky',type:'sky',paint:{'sky-type':'atmosphere','sky-atmosphere-sun':[0.0,90.0],'sky-atmosphere-sun-intensity':15}});
 
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
     map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
-  });
 
-  // UI controls for exaggeration and pitch
-  const exaggerationSlider = document.getElementById('exaggeration');
-  const exaggerationValue = document.getElementById('exaggeration-value');
-  const pitchSlider = document.getElementById('pitch');
-  const pitchValue = document.getElementById('pitch-value');
+    // 18 LAYERS: (assumes all .geojson are in /data/)
+    const layers = [
+    {name:'BNDRY_4', type:'line', color:'#1b2631', width:2 },
+    {name:'LOTS_5', type:'fill', color:'#a1dab4', opacity:0.4, outline:'#375931'},
+    {name:'CONT_6', type:'line', color:'#b37066', width:1 },
+    {name:'ESA_7', type:'fill', color:'#c83200', opacity:0.4 },
+    {name:'DW_8', type:'fill', color:'#efef53', opacity:0.25, outline:'#a17e22'},
+    {name:'SBE_9', type:'fill', color:'#d4b8a0', opacity:0.25 },
+    {name:'EX_BLD_10', type:'fill', color:'#bbb9c2', opacity:0.40, outline:'#49464e'},
+    {name:'CRK_COV_11', type:'fill', color:'#4993c2', opacity:0.28 },
+    {name:'ENV_RST_12', type:'fill', color:'#a5d6a7', opacity:0.32 },
+    {name:'SRW_MOTI_13', type:'line', color:'#ff2e63', width:2.5 },
+    {name:'CE_14', type:'fill', color:'#947a82', opacity:0.24 },
+    {name:'BA_15', type:'fill', color:'#934d26', opacity:0.18 },
+    {name:'ALR_16', type:'fill', color:'#39a862', opacity:0.19 },
+    {name:'AOI_17', type:'fill', color:'#ccae62', opacity:0.23 },
+    {name:'SEPTIC_18', type:'fill', color:'#9f65a6', opacity:0.21 },
+    {name:'WELLS_19', type:'circle', color:'#4575b4',radius:6,border:'#313530' },
+    {name:'FENCE_20', type:'line', color:'#ff9900', width:2.2 },
+    {name:'EX_FENCE_21', type:'line', color:'#537aa1', width:2.2 }
+    ];
 
-  exaggerationSlider.addEventListener('input', (e) => {
-    const value = parseFloat(e.target.value);
-    exaggerationValue.textContent = value.toFixed(1) + 'x';
-    if (map.getTerrain()) {
-      map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': value });
-    }
-  });
-
-  pitchSlider.addEventListener('input', (e) => {
-    const value = parseInt(e.target.value);
-    pitchValue.textContent = value + '°';
-    map.setPitch(value);
-  });
-
-  document.getElementById('toggle-3d').addEventListener('click', () => {
-    if (map.getTerrain()) {
-      map.setTerrain(null);
-      pitchSlider.value = 0;
-      pitchValue.textContent = '0°';
-      map.setPitch(0);
-    } else {
-      map.setTerrain({
-        'source': 'mapbox-dem',
-        'exaggeration': parseFloat(exaggerationSlider.value)
-      });
-      pitchSlider.value = 60;
-      pitchValue.textContent = '60°';
-      map.setPitch(60);
-    }
-  });
-
-  document.getElementById('reset-view').addEventListener('click', () => {
-    map.flyTo({
-      center: [-119.5, 49.9],
-      zoom: 12,
-      pitch: 60,
-      bearing: 0
+    layers.forEach(l => {
+      map.addSource(l.name, {type:'geojson', data:`data/${l.name}.geojson`});
+      if(l.type==='fill'){
+        map.addLayer({id:`${l.name}-fill`,type:'fill',source:l.name,
+          paint:{
+            'fill-color':l.color,
+            'fill-opacity':l.opacity||0.4
+          }
+        });
+        if(l.outline){
+          map.addLayer({id:`${l.name}-outline`,type:'line',source:l.name,
+            paint:{'line-color':l.outline,'line-width':1 }
+          });
+        }
+      }else if(l.type==='line'){
+        map.addLayer({id:`${l.name}-line`,type:'line',source:l.name,
+          paint:{'line-color':l.color,'line-width':l.width||2 }
+        });
+      }else if(l.type==='circle'){
+        map.addLayer({id:`${l.name}-circle`,type:'circle',source:l.name,
+          paint:{
+            'circle-radius':l.radius||5,
+            'circle-color':l.color,
+            'circle-stroke-width':2,
+            'circle-stroke-color':l.border||'#222'
+          }
+        });
+      }
     });
-  });
+
+});
+
+const exaggerationSlider = document.getElementById('exaggeration');
+const exaggerationValue = document.getElementById('exaggeration-value');
+const pitchSlider = document.getElementById('pitch');
+const pitchValue = document.getElementById('pitch-value');
+exaggerationSlider.addEventListener('input', (e) => {
+  const value = parseFloat(e.target.value); exaggerationValue.textContent = value.toFixed(1) + 'x';
+  if (map.getTerrain()) { map.setTerrain({ 'source': map.getTerrain().options.source, 'exaggeration': value });}
+});
+pitchSlider.addEventListener('input', (e) => {
+  const value = parseInt(e.target.value); pitchValue.textContent = value + '°'; map.setPitch(value);
+});
+document.getElementById('toggle-3d').addEventListener('click', () => {
+  if (map.getTerrain()) { map.setTerrain(null); pitchSlider.value = 0; pitchValue.textContent = '0°'; map.setPitch(0);
+  } else { map.setTerrain({ 'source': 'custom-dem', 'exaggeration': parseFloat(exaggerationSlider.value) });
+    pitchSlider.value = 60; pitchValue.textContent = '60°'; map.setPitch(60);
+  }
+});
+document.getElementById('reset-view').addEventListener('click', () => {
+  map.flyTo({ center: [-119.5,49.9], zoom: 12, pitch: 60, bearing: 0 });
+});
+document.getElementById('use-custom-dem').addEventListener('click', () => {
+  map.setTerrain({ 'source': 'custom-dem', 'exaggeration': parseFloat(exaggerationSlider.value)});
+});
+document.getElementById('use-public-dem').addEventListener('click', () => {
+  map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': parseFloat(exaggerationSlider.value)});
+});
 </script>
 </body>
 </html>
