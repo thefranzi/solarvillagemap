@@ -46,7 +46,32 @@ document.addEventListener('DOMContentLoaded', function() {
         L.marker([lat,lng],{icon:photoIcon}).addTo(photosLayer).bindPopup(h); 
     }
     
-    async function uploadPhoto(blob, filename, lat, lng, title, description) { const fd = new FormData(); fd.append('file',new File([blob],filename,{type:blob.type||'image/jpeg'})); fd.append('lat',String(lat)); fd.append('lng',String(lng)); fd.append('title',title||''); fd.append('description',description||''); const r = await fetch(BACKEND.photoUpload,{method:'POST',body:fd}); if(!r.ok) throw new Error('Photo upload failed.'); addPhotoFeature((await r.json()).feature); }
+async function uploadPhoto(lng, lat, title, description) {
+  // Capture the current camera frame from the canvas as a JPEG data URL
+  const dataUrl = ui.canvas.toDataURL('image/jpeg', 0.9);
+
+  const body = {
+    dataUrl,
+    lat,
+    lng,
+    title: title || '',
+    description: description || ''
+  };
+
+  const r = await fetch(BACKEND.photoUpload, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!r.ok) {
+    throw new Error('Photo upload failed.');
+  }
+
+  return r.json();
+}
+
+
     async function camOn() { try { const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}); state.cam.stream=s; ui.video.srcObject=s; await ui.video.play(); ui.camWrap.classList.add('show'); } catch(e){ alert('Camera error: '+e.message); } }
 
     let dropPinCaptureHandler = null;
