@@ -66,14 +66,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- PINS ---
-    function addPinFeature(feat) {
-        if (!feat?.geometry?.coordinates) return;
-        const [lng, lat] = feat.geometry.coordinates; // GeoJSON [lng, lat]
-        const { title, description } = feat.properties || {};
-        L.marker([lat, lng], { icon: pinIcon })      // Leaflet [lat, lng]
-            .addTo(pinsLayer)
-            .bindPopup(`<b>${title || 'Pin'}</b><br>${description || ''}`);
-    }
+function addPinFeature(feat) {
+  if (!feat?.geometry?.coordinates) return;
+  const coords = feat.geometry.coordinates;
+  if (!Array.isArray(coords) || coords.length < 2) return;
+
+  const [lng, lat] = coords;
+  if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
+
+  const { title, description } = feat.properties || {};
+  L.marker([lat, lng], { icon: pinIcon })
+    .addTo(pinsLayer)
+    .bindPopup(`<b>${title || 'Pin'}</b><br>${description || ''}`);
+}
 
     async function savePin(lng, lat, title, description) {
         const f = {
@@ -91,29 +96,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- PHOTOS ---
-    function addPhotoFeature(feat) {
-        if (!feat?.geometry?.coordinates) return;
-        const [lng, lat] = feat.geometry.coordinates; // GeoJSON [lng, lat]
-        const { title, description, imageUrl } = feat.properties || {};
-        const h = `
-          <div style="max-width:220px">
-            <b>${title || 'Photo'}</b>
-            ${description ? `<br>${description}` : ''}
-            ${
-              imageUrl
-                ? `<div style="margin-top:6px">
-                     <img src="${imageUrl}" alt="Photo thumbnail"
-                          style="width:100px;max-height:80px;border-radius:4px;object-fit:cover;cursor:pointer"
-                          onclick="openPhotoModal('${imageUrl}')">
-                   </div>`
-                : ''
-            }
-          </div>
-        `;
-        L.marker([lat, lng], { icon: photoIcon })   // Leaflet [lat, lng]
-            .addTo(photosLayer)
-            .bindPopup(h);
-    }
+function addPhotoFeature(feat) {
+  if (!feat?.geometry?.coordinates) return;
+  const coords = feat.geometry.coordinates;
+  if (!Array.isArray(coords) || coords.length < 2) return;
+
+  const [lng, lat] = coords;
+  if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
+
+  const { title, description, imageUrl } = feat.properties || {};
+  const h = `
+    <div style="max-width:220px">
+      <b>${title || 'Photo'}</b>
+      ${description ? `<br>${description}` : ''}
+      ${
+        imageUrl
+          ? `<div style="margin-top:6px">
+               <img src="${imageUrl}" alt="Photo thumbnail"
+                    style="width:100px;max-height:80px;border-radius:4px;object-fit:cover;cursor:pointer"
+                    onclick="openPhotoModal('${imageUrl}')">
+             </div>`
+          : ''
+      }
+    </div>
+  `;
+  L.marker([lat, lng], { icon: photoIcon })
+    .addTo(photosLayer)
+    .bindPopup(h);
+}
 
     async function uploadPhoto(lng, lat, title, description) {
         // Capture the current camera frame from the canvas as a JPEG data URL
