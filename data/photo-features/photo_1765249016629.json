@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33389574289323,
+      49.958561069899716
+    ]
+  },
+  "properties": {
+    "title": "office",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1765249016629.jpg",
+    "ts": 1765249016629
+  }
+}
