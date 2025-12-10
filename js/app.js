@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    // Ensure layers exist
     if (!window.pinsLayer || !window.photosLayer) {
         console.warn('pinsLayer or photosLayer missing; creating new feature groups.');
         window.pinsLayer = window.pinsLayer || L.featureGroup().addTo(map);
@@ -115,15 +116,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!feat || !feat.geometry || !Array.isArray(feat.geometry.coordinates)) return;
         const [lng, lat] = feat.geometry.coordinates;
         if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
+
         const props = feat.properties || {};
         const title = props.title || 'Pin';
         const description = props.description || '';
 
         L.marker([lat, lng], { icon: pinIcon })
             .addTo(window.pinsLayer)
-            .bindPopup(
-                `**${title}**\n\n${description}`
-            );
+            .bindPopup(`<b>${title}</b><br>${description}`);
     }
 
     async function savePin(lng, lat, title, description) {
@@ -164,27 +164,59 @@ document.addEventListener('DOMContentLoaded', function () {
         marker.bindPopup(popupHtml);
     }
 
-    async function savePhoto(lng, lat, title, description, file) {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('title', title);
-        form.append('description', description);
-        form.append('lng', lng);
-        form.append('lat', lat);
+    // Upload photo using JSON dataUrl, matching uploadPhoto.mjs
+    async function savePhoto(lng, lat, title, description, blob) {
+        // Convert Blob → data URL
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        const body = { dataUrl, lat, lng, title, description };
 
         const r = await fetch(BACKEND.photoUpload, {
             method: 'POST',
-            body: form
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
         });
-        if (!r.ok) throw new Error(`Failed to upload photo. HTTP ${r.status}`);
-        const saved = await r.json();
-        addPhotoFeature(saved);
+
+        if (!r.ok) {
+            let errText = '';
+            try {
+                errText = await r.text();
+            } catch (e) { /* ignore */ }
+            console.error('uploadPhoto HTTP', r.status, 'body:', errText);
+            throw new Error(`Failed to upload photo. HTTP ${r.status}`);
+        }
+
+        const saved = await r.json(); // { ok: true, imageUrl }
+
+        const feature = {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [lng, lat] },
+            properties: {
+                title,
+                description,
+                imageUrl: saved.imageUrl,
+                ts: Date.now()
+            }
+        };
+        addPhotoFeature(feature);
     }
 
     // --- CAMERA HANDLING ---
     async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Camera is not supported in this browser.');
+            return;
+        }
         try {
-            state.cam.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+            state.cam.stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
             ui.video.srcObject = state.cam.stream;
             ui.camWrap.classList.add('show');
         } catch (e) {
@@ -198,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
             state.cam.stream.getTracks().forEach(t => t.stop());
             state.cam.stream = null;
         }
+        ui.video.srcObject = null;
         ui.camWrap.classList.remove('show');
     }
 
@@ -218,8 +251,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const canvas = ui.canvas;
         const ctx = canvas.getContext('2d');
 
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+
+        if (!vw || !vh) {
+            console.warn('Video dimensions not ready; ignoring shot.');
+            return;
+        }
+
+        canvas.width = vw;
+        canvas.height = vh;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
@@ -252,6 +293,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- MAP CLICK HANDLING FOR PINS & PHOTOS ---
     map.on('click', async function (e) {
         const latlng = e.latlng;
+        if (!latlng) return;
+
         if (state.dropPinArmed) {
             const title = prompt('Pin title?', 'Pin') || 'Pin';
             const description = prompt('Description? (optional)', '') || '';
@@ -264,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function () {
             state.dropPinArmed = false;
             ui.btnAddPin.classList.remove('active');
         } else if (state.dropPhotoArmed) {
-            // Store where the next photo belongs
             state.photoLatLng = { lat: latlng.lat, lng: latlng.lng };
             alert('Location set. Now take a photo.');
         }
@@ -300,10 +342,83 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Measure button is handled by leaflet-measure; keep as a placeholder for future hooks if needed.
-    ui.btnMeasure.addEventListener('click', function () {
-        // No-op here; simple measure control is already on the map.
-    });
+    // --- SIMPLE MEASURE TOOL ---
+    const measureTool = (function () {
+        let chip = null;
+        const stateM = { on: false, pts: [], line: null };
+
+        function show(text) {
+            if (!chip) {
+                chip = document.createElement('div');
+                chip.className = 'sv-measure-chip';
+                document.body.appendChild(chip);
+            }
+            chip.textContent = text;
+            chip.style.display = 'block';
+        }
+
+        function hide() {
+            if (chip) chip.style.display = 'none';
+        }
+
+        function format(meters) {
+            return meters < 1000 ? meters.toFixed(0) + ' m' : (meters / 1000).toFixed(2) + ' km';
+        }
+
+        function calculateTotal() {
+            let dist = 0;
+            for (let i = 1; i < stateM.pts.length; i++) {
+                dist += stateM.pts[i - 1].distanceTo(stateM.pts[i]);
+            }
+            return dist;
+        }
+
+        function clickAdd(ev) {
+            stateM.pts.push(ev.latlng);
+            if (!stateM.line) {
+                stateM.line = L.polyline(stateM.pts, {
+                    color: '#222',
+                    weight: 3,
+                    dashArray: '6,4'
+                }).addTo(map);
+            } else {
+                stateM.line.setLatLngs(stateM.pts);
+            }
+            show('Distance: ' + format(calculateTotal()) + ' (double-click to finish)');
+        }
+
+        function finish() {
+            hide();
+            map.off('click', clickAdd);
+            map.off('dblclick', finish);
+            if (stateM.line) {
+                try { map.removeLayer(stateM.line); } catch (e) {}
+            }
+            stateM.on = false;
+            stateM.pts = [];
+            stateM.line = null;
+        }
+
+        return function () {
+            // Turn off pin/photo modes when measuring
+            state.dropPinArmed = false;
+            state.dropPhotoArmed = false;
+            state.photoLatLng = null;
+            ui.btnAddPin.classList.remove('active');
+            ui.btnCamera.classList.remove('active');
+
+            if (!stateM.on) {
+                stateM.on = true;
+                show('Distance: 0 m (double-click to finish)');
+                map.on('click', clickAdd);
+                map.on('dblclick', finish);
+            } else {
+                finish();
+            }
+        };
+    })();
+
+    ui.btnMeasure.addEventListener('click', measureTool);
 
     // --- INITIAL DATA LOAD ---
     loadData(BACKEND.pinsGet, addPinFeature);
