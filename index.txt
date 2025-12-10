@@ -497,7 +497,7 @@
                     {label: '<img src="legend/DW_8.png" /> DW', layer: layer_DW_8},
                     {label: '<img src="legend/LOTS_5.png" /> LOTS', layer: layer_LOTS_5},
                     {label: '<img src="legend/BNDRY_4.png" /> BNDRY', layer: layer_BNDRY_4},
-                    {label: '<img src="legend/DWY_ALL_10.png" /> DWY_ALL', layer: layer_DWY_ALL_10},
+                    {label: '<img src="legend/DWY_ALL_10.png" /> DWY_ALL', layer: layer_DWY_ALL_10}
                 ]},
                 {label: '<b>Secondary</b>', selectAllCheckbox: true, children: [
                     {label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
@@ -512,14 +512,14 @@
                     {label: '<img src="legend/DWY_L4_GRVL_7.png" /> DWY_L4_GRVL', layer: layer_DWY_L4_GRVL_7},
                     {label: '<img src="legend/DWY_L4_PVMT_8.png" /> DWY_L4_PVMT', layer: layer_DWY_L4_PVMT_8},
                     {label: '<img src="legend/LOTLINE_FLAGGING_9.png" /> LOTLINE_FLAGGING', layer: layer_LOTLINE_FLAGGING_9},
-                    {label: '<img src="legend/RD_EOA_11.png" /> RD_EOA', layer: layer_RD_EOA_11},
+                    {label: '<img src="legend/RD_EOA_11.png" /> RD_EOA', layer: layer_RD_EOA_11}
                 ]},
 
                 {label: '<b>Baselayers</b>', selectAllCheckbox: true, children: [
                     {label: "World Imagery", layer: layer_WorldImagery_3, radioGroup: 'bm' },
                     {label: "Google Satellite", layer: layer_GoogleSatellite_2, radioGroup: 'bm' },
                     {label: "OSM", layer: layer_OSM_1, radioGroup: 'bm' },
-                    {label: "Google Maps", layer: layer_GoogleMaps_0, radioGroup: 'bm' },
+                    {label: "Google Maps", layer: layer_GoogleMaps_0, radioGroup: 'bm' }
                 ]}
             ];
 
