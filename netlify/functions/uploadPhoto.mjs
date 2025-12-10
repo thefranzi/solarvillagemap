@@ -73,10 +73,16 @@ export async function handler(event) {
       headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' },
       body: JSON.stringify({ ok: true, imageUrl })
     };
-  } catch (e) {
+   } catch (e) {
+    // Log full error to Netlify function logs
+    console.error('uploadPhoto error:', e);
+
     return {
       statusCode: 500,
-      headers: { 'content-type': 'text/plain', 'access-control-allow-origin': '*' },
+      headers: {
+        'content-type': 'text/plain',
+        'access-control-allow-origin': '*'
+      },
       body: e.stack || e.message
     };
   }
