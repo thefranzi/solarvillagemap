@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33433433751817,
+      49.95942421621824
+    ]
+  },
+  "properties": {
+    "title": "old well head",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1765353023247.jpg",
+    "ts": 1765353023247
+  }
+}
