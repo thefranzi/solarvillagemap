@@ -27,8 +27,24 @@ export async function handler(event) {
       return { statusCode: 400, body: 'POST JSON required' };
     }
 
-    const body = JSON.parse(event.body || '{}');
-    const { dataUrl, lat, lng, title = '', description = '' } = body;
+const bodyRaw = event.body || '';
+let body;
+try {
+  body = JSON.parse(bodyRaw);
+} catch (err) {
+  console.error('uploadPhoto JSON parse failed. Raw body:', bodyRaw.slice(0, 200));
+  return {
+    statusCode: 400,
+    headers: {
+      'access-control-allow-origin': '*',
+      'content-type': 'text/plain'
+    },
+    body: 'Invalid JSON body for uploadPhoto'
+  };
+}
+
+const { dataUrl, lat, lng, title = '', description = '' } = body;
+
 
     if (!dataUrl || !lat || !lng) {
       return { statusCode: 400, body: 'Missing dataUrl, lat, or lng' };
