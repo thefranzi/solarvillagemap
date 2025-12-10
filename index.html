@@ -127,6 +127,15 @@
             
             const INITIAL_BOUNDS = map.getBounds();
 
+// LOG LOCATION EVENTS HERE
+map.on('locationfound', function (e) {
+    console.log('locationfound', e.latlng, 'accuracy', e.accuracy);
+});
+map.on('locationerror', function (e) {
+    console.error('locationerror', e.message);
+});
+
+			
             var hash = new L.Hash(map);
             map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a>');
 
