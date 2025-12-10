@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33444559574129,
+      49.959095995586445
+    ]
+  },
+  "properties": {
+    "title": "CE 4-5 w",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1765350850098.jpg",
+    "ts": 1765350850098
+  }
+}
