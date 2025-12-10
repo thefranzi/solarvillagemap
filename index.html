@@ -137,7 +137,21 @@
             var totalMarkers = 0;
 
             // --- 2. STANDARD CONTROLS ---
-            L.control.locate({ position: 'topleft', flyTo: true }).addTo(map);
+           L.control.locate({
+  position: 'topleft',
+  flyTo: true,
+  follow: true,
+  setView: true,
+  keepCurrentZoomLevel: false,
+  cacheLocation: false,
+  showPopup: false,
+  locateOptions: {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  }
+}).addTo(map);
+
             
             L.Control.Home = L.Control.extend({
                 onAdd: function(map) {
