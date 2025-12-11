@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -375,7 +375,9 @@ map.on('locationerror', function (e) {
                     lineCap: 'round',
                     lineJoin: 'round',
                     weight: 2.0,
-                    fillOpacity: 0,
+                            fill: true,
+        fillColor: 'rgba(222, 184, 135, 1.0)', // light tan dirt/gravel
+                    fillOpacity: 0.85,
                     interactive: true
                 }
             }
@@ -402,6 +404,9 @@ map.on('locationerror', function (e) {
                     lineCap: 'round',
                     lineJoin: 'round',
                     weight: 2.5,
+                            fill: true,
+        fillColor: 'rgba(20, 20, 20, 1.0)',    // fresh blacktop
+        fillOpacity: 0.95,
                     fillOpacity: 0,
                     interactive: true
                 }
