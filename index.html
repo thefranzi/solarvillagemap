@@ -258,31 +258,32 @@ map.on('locationerror', function (e) {
                         // --- NEW ENGINEERING / DRIVEWAY LAYERS (OFF BY DEFAULT) ---
 
             function pop_FUT_RD_3(feature, layer) {}
-            function style_FUT_RD_3_0() {
-                return {
-                    pane: 'pane_FUT_RD_3',
-                    opacity: 1,
-                    color: 'rgba(255,255,255,1.0)',
-                    dashArray: '4,4',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    weight: 2.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_FUT_RD_3');
-            map.getPane('pane_FUT_RD_3').style.zIndex = 430;
-            var layer_FUT_RD_3 = new L.geoJson(json_FUT_RD_3, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_FUT_RD_3',
-                layerName: 'layer_FUT_RD_3',
-                pane: 'pane_FUT_RD_3',
-                onEachFeature: pop_FUT_RD_3,
-                style: style_FUT_RD_3_0
-            });
-            bounds_group.addLayer(layer_FUT_RD_3);
+function style_FUT_RD_3_0() {
+    return {
+        pane: 'pane_FUT_RD_3',
+        opacity: 1,
+        color: 'rgba(35,35,35,1.0)',   // same color as LOTS_5
+        dashArray: '6,4',              // dashed
+        lineCap: 'square',
+        lineJoin: 'bevel',
+        weight: 6.0,                   // same thickness as LOTS_5
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_FUT_RD_3');
+map.getPane('pane_FUT_RD_3').style.zIndex = 430;
+var layer_FUT_RD_3 = new L.geoJson(json_FUT_RD_3, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_FUT_RD_3',
+    layerName: 'layer_FUT_RD_3',
+    pane: 'pane_FUT_RD_3',
+    onEachFeature: pop_FUT_RD_3,
+    style: style_FUT_RD_3_0
+});
+bounds_group.addLayer(layer_FUT_RD_3);
+
 
             function pop_FUT_LGL_EXT_4(feature, layer) {}
             function style_FUT_LGL_EXT_4_0() {
