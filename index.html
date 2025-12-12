@@ -201,10 +201,23 @@ map.on('locationerror', function (e) {
             map.addLayer(layer_WorldImagery_3);
             function pop_BNDRY_4(feature, layer) {}
             function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,0,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
-            map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 5001; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); map.addLayer(layer_BNDRY_4);
+            map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); map.addLayer(layer_BNDRY_4);
             function pop_LOTS_5(feature, layer) {}
-            function style_LOTS_5_0() { return { pane: 'pane_LOTS_5', opacity: 1, color: 'rgba(35,35,35,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 6.0, fillOpacity: 0, interactive: true, } }
-            map.createPane('pane_LOTS_5'); map.getPane('pane_LOTS_5').style.zIndex = 5002; var layer_LOTS_5 = new L.geoJson(json_LOTS_5,{attribution:'',interactive:true,dataVar:'json_LOTS_5',layerName:'layer_LOTS_5',pane:'pane_LOTS_5',onEachFeature:pop_LOTS_5,style:style_LOTS_5_0}); bounds_group.addLayer(layer_LOTS_5); map.addLayer(layer_LOTS_5);
+            function style_LOTS_5_0() {
+    return {
+        pane: 'pane_LOTS_5',
+        opacity: 1,
+        color: 'rgba(0,0,0,1.0)',   // same color as BNDRY_4
+        dashArray: '',
+        lineCap: 'square',
+        lineJoin: 'bevel',
+        weight: 4.0,                // same thickness as BNDRY_4
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+
+            map.createPane('pane_LOTS_5'); map.getPane('pane_LOTS_5').style.zIndex = 408; var layer_LOTS_5 = new L.geoJson(json_LOTS_5,{attribution:'',interactive:true,dataVar:'json_LOTS_5',layerName:'layer_LOTS_5',pane:'pane_LOTS_5',onEachFeature:pop_LOTS_5,style:style_LOTS_5_0}); bounds_group.addLayer(layer_LOTS_5); map.addLayer(layer_LOTS_5);
             function pop_CONT_6(feature, layer) {}
             function style_CONT_6_0() { return { pane: 'pane_CONT_6', opacity: 1, color: 'rgba(243,166,178,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 1.0, fillOpacity: 0, interactive: true, } }
             map.createPane('pane_CONT_6'); map.getPane('pane_CONT_6').style.zIndex = 406; var layer_CONT_6 = new L.geoJson(json_CONT_6, { attribution: '', interactive: true, dataVar: 'json_CONT_6', layerName: 'layer_CONT_6', pane: 'pane_CONT_6', onEachFeature: pop_CONT_6, style: style_CONT_6_0 }); bounds_group.addLayer(layer_CONT_6);
@@ -213,7 +226,7 @@ map.on('locationerror', function (e) {
             map.createPane('pane_ESA_7'); map.getPane('pane_ESA_7').style.zIndex = 407; var layer_ESA_7 = new L.geoJson(json_ESA_7,{attribution:'',interactive:true,dataVar:'json_ESA_7',layerName:'layer_ESA_7',pane:'pane_ESA_7',onEachFeature: pop_ESA_7, style:style_ESA_7_0}); bounds_group.addLayer(layer_ESA_7); // map.addLayer(layer_ESA_7); // ESA is now on by default
             function pop_DW_8(feature, layer) {}
             function style_DW_8_0() { return { pane: 'pane_DW_8', opacity: 1, color: 'rgba(229,182,54,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 1.0, fillOpacity: 0, interactive: false } }
-            map.createPane('pane_DW_8'); map.getPane('pane_DW_8').style.zIndex = 408; var layer_DW_8 = new L.geoJson(json_DW_8,{attribution:'',interactive:false,dataVar:'json_DW_8',layerName:'layer_DW_8',pane:'pane_DW_8',onEachFeature:pop_DW_8,style:style_DW_8_0}); bounds_group.addLayer(layer_DW_8); map.addLayer(layer_DW_8);
+            map.createPane('pane_DW_8'); map.getPane('pane_DW_8').style.zIndex = 4000; var layer_DW_8 = new L.geoJson(json_DW_8,{attribution:'',interactive:false,dataVar:'json_DW_8',layerName:'layer_DW_8',pane:'pane_DW_8',onEachFeature:pop_DW_8,style:style_DW_8_0}); bounds_group.addLayer(layer_DW_8); map.addLayer(layer_DW_8);
             function pop_SBE_9(feature, layer) {}
             function style_SBE_9_0() { return { pane: 'pane_SBE_9', opacity: 1, color: 'rgba(203,0,255,0.39)', dashArray: '8.0,4.0,2.0,4.0', lineCap: 'square', lineJoin: 'bevel', weight: 2.0, fillOpacity: 0, interactive: false } }
             function style_SBE_9_1() { return { pane: 'pane_SBE_9', opacity: 1, color: 'rgba(35,35,35,0.39)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(251,230,255,0.39)', interactive: false } }
@@ -257,16 +270,16 @@ map.on('locationerror', function (e) {
             map.createPane('pane_EX_FENCE_21'); map.getPane('pane_EX_FENCE_21').style.zIndex = 421; var layer_EX_FENCE_21 = new L.geoJson(json_EX_FENCE_21,{attribution:'',interactive:true,dataVar:'json_EX_FENCE_21',layerName:'layer_EX_FENCE_21',pane:'pane_EX_FENCE_21',onEachFeature:pop_EX_FENCE_21,style:style_EX_FENCE_21_0}); bounds_group.addLayer(layer_EX_FENCE_21); map.addLayer(layer_EX_FENCE_21);
                         // --- NEW ENGINEERING / DRIVEWAY LAYERS (OFF BY DEFAULT) ---
 
-            function pop_FUT_RD_3(feature, layer) {}
+           function pop_FUT_RD_3(feature, layer) {}
 function style_FUT_RD_3_0() {
     return {
         pane: 'pane_FUT_RD_3',
         opacity: 1,
-        color: 'rgba(35,35,35,1.0)',   // same color as LOTS_5
-        dashArray: '6,4',              // dashed
+        color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
+        dashArray: '6,4',           // dashed
         lineCap: 'square',
         lineJoin: 'bevel',
-        weight: 6.0,                   // same thickness as LOTS_5
+        weight: 4.0,                // same thickness as new LOTS_5
         fillOpacity: 0,
         interactive: true
     }
@@ -284,227 +297,225 @@ var layer_FUT_RD_3 = new L.geoJson(json_FUT_RD_3, {
 });
 bounds_group.addLayer(layer_FUT_RD_3);
 
+function pop_FUT_LGL_EXT_4(feature, layer) {}
+function style_FUT_LGL_EXT_4_0() {
+    return {
+        pane: 'pane_FUT_LGL_EXT_4',
+        opacity: 1,
+        color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
+        dashArray: '6,4',           // dashed
+        lineCap: 'square',
+        lineJoin: 'bevel',
+        weight: 4.0,                // same thickness as new LOTS_5
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_FUT_LGL_EXT_4');
+map.getPane('pane_FUT_LGL_EXT_4').style.zIndex = 431;
+var layer_FUT_LGL_EXT_4 = new L.geoJson(json_FUT_LGL_EXT_4, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_FUT_LGL_EXT_4',
+    layerName: 'layer_FUT_LGL_EXT_4',
+    pane: 'pane_FUT_LGL_EXT_4',
+    onEachFeature: pop_FUT_LGL_EXT_4,
+    style: style_FUT_LGL_EXT_4_0
+});
+bounds_group.addLayer(layer_FUT_LGL_EXT_4);
 
-            function pop_FUT_LGL_EXT_4(feature, layer) {}
-            function style_FUT_LGL_EXT_4_0() {
-                return {
-                    pane: 'pane_FUT_LGL_EXT_4',
-                    opacity: 1,
-                    color: 'rgba(255,255,0,1.0)',
-                    dashArray: '4,4',
-                    lineCap: 'square',
-                    lineJoin: 'bevel',
-                    weight: 2.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_FUT_LGL_EXT_4');
-            map.getPane('pane_FUT_LGL_EXT_4').style.zIndex = 431;
-            var layer_FUT_LGL_EXT_4 = new L.geoJson(json_FUT_LGL_EXT_4, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_FUT_LGL_EXT_4',
-                layerName: 'layer_FUT_LGL_EXT_4',
-                pane: 'pane_FUT_LGL_EXT_4',
-                onEachFeature: pop_FUT_LGL_EXT_4,
-                style: style_FUT_LGL_EXT_4_0
-            });
-            bounds_group.addLayer(layer_FUT_LGL_EXT_4);
+function pop_FUT_LGL_P2A_5(feature, layer) {}
+function style_FUT_LGL_P2A_5_0() {
+    return {
+        pane: 'pane_FUT_LGL_P2A_5',
+        opacity: 1,
+        color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
+        dashArray: '6,4',           // dashed
+        lineCap: 'square',
+        lineJoin: 'bevel',
+        weight: 4.0,                // same thickness as new LOTS_5
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_FUT_LGL_P2A_5');
+map.getPane('pane_FUT_LGL_P2A_5').style.zIndex = 432;
+var layer_FUT_LGL_P2A_5 = new L.geoJson(json_FUT_LGL_P2A_5, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_FUT_LGL_P2A_5',
+    layerName: 'layer_FUT_LGL_P2A_5',
+    pane: 'pane_FUT_LGL_P2A_5',
+    onEachFeature: pop_FUT_LGL_P2A_5,
+    style: style_FUT_LGL_P2A_5_0
+});
+bounds_group.addLayer(layer_FUT_LGL_P2A_5);
 
-            function pop_FUT_LGL_P2A_5(feature, layer) {}
-            function style_FUT_LGL_P2A_5_0() {
-                return {
-                    pane: 'pane_FUT_LGL_P2A_5',
-                    opacity: 1,
-                    color: 'rgba(255,170,0,1.0)',
-                    dashArray: '4,4',
-                    lineCap: 'square',
-                    lineJoin: 'bevel',
-                    weight: 2.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_FUT_LGL_P2A_5');
-            map.getPane('pane_FUT_LGL_P2A_5').style.zIndex = 432;
-            var layer_FUT_LGL_P2A_5 = new L.geoJson(json_FUT_LGL_P2A_5, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_FUT_LGL_P2A_5',
-                layerName: 'layer_FUT_LGL_P2A_5',
-                pane: 'pane_FUT_LGL_P2A_5',
-                onEachFeature: pop_FUT_LGL_P2A_5,
-                style: style_FUT_LGL_P2A_5_0
-            });
-            bounds_group.addLayer(layer_FUT_LGL_P2A_5);
+function pop_EX_LGL_6(feature, layer) {}
+function style_EX_LGL_6_0() {
+    return {
+        pane: 'pane_EX_LGL_6',
+        opacity: 1,
+        color: 'rgba(0,0,0,1.0)',   // same as new LOTS_5 / BNDRY_4
+        dashArray: '',
+        lineCap: 'square',
+        lineJoin: 'bevel',
+        weight: 4.0,                // same as new LOTS_5 / BNDRY_4
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_EX_LGL_6');
+map.getPane('pane_EX_LGL_6').style.zIndex = 433;
+var layer_EX_LGL_6 = new L.geoJson(json_EX_LGL_6, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_EX_LGL_6',
+    layerName: 'layer_EX_LGL_6',
+    pane: 'pane_EX_LGL_6',
+    onEachFeature: pop_EX_LGL_6,
+    style: style_EX_LGL_6_0
+});
+bounds_group.addLayer(layer_EX_LGL_6);
 
-            function pop_EX_LGL_6(feature, layer) {}
-            function style_EX_LGL_6_0() {
-                return {
-                    pane: 'pane_EX_LGL_6',
-                    opacity: 1,
-                    color: 'rgba(255,0,0,1.0)',
-                    dashArray: '',
-                    lineCap: 'square',
-                    lineJoin: 'bevel',
-                    weight: 2.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_EX_LGL_6');
-            map.getPane('pane_EX_LGL_6').style.zIndex = 433;
-            var layer_EX_LGL_6 = new L.geoJson(json_EX_LGL_6, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_EX_LGL_6',
-                layerName: 'layer_EX_LGL_6',
-                pane: 'pane_EX_LGL_6',
-                onEachFeature: pop_EX_LGL_6,
-                style: style_EX_LGL_6_0
-            });
-            bounds_group.addLayer(layer_EX_LGL_6);
-
-            function pop_DWY_L4_GRVL_7(feature, layer) {}
-            function style_DWY_L4_GRVL_7_0() {
-                return {
-                    pane: 'pane_DWY_L4_GRVL_7',
-                    opacity: 1,
-                    color: 'rgba(160,82,45,1.0)',
-                    dashArray: '',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    weight: 2.0,
-                            fill: true,
+function pop_DWY_L4_GRVL_7(feature, layer) {}
+function style_DWY_L4_GRVL_7_0() {
+    return {
+        pane: 'pane_DWY_L4_GRVL_7',
+        opacity: 1,
+        color: 'rgba(160,82,45,1.0)',
+        dashArray: '',
+        lineCap: 'round',
+        lineJoin: 'round',
+        weight: 2.0,
+        fill: true,
         fillColor: 'rgba(222, 184, 135, 1.0)', // light tan dirt/gravel
-                    fillOpacity: 0.85,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_DWY_L4_GRVL_7');
-            map.getPane('pane_DWY_L4_GRVL_7').style.zIndex = 434;
-            var layer_DWY_L4_GRVL_7 = new L.geoJson(json_DWY_L4_GRVL_7, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_DWY_L4_GRVL_7',
-                layerName: 'layer_DWY_L4_GRVL_7',
-                pane: 'pane_DWY_L4_GRVL_7',
-                onEachFeature: pop_DWY_L4_GRVL_7,
-                style: style_DWY_L4_GRVL_7_0
-            });
-            bounds_group.addLayer(layer_DWY_L4_GRVL_7);
+        fillOpacity: 0.85,
+        interactive: true
+    }
+}
+map.createPane('pane_DWY_L4_GRVL_7');
+map.getPane('pane_DWY_L4_GRVL_7').style.zIndex = 434;
+var layer_DWY_L4_GRVL_7 = new L.geoJson(json_DWY_L4_GRVL_7, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_DWY_L4_GRVL_7',
+    layerName: 'layer_DWY_L4_GRVL_7',
+    pane: 'pane_DWY_L4_GRVL_7',
+    onEachFeature: pop_DWY_L4_GRVL_7,
+    style: style_DWY_L4_GRVL_7_0
+});
+bounds_group.addLayer(layer_DWY_L4_GRVL_7);
 
-            function pop_DWY_L4_PVMT_8(feature, layer) {}
-            function style_DWY_L4_PVMT_8_0() {
-                return {
-                    pane: 'pane_DWY_L4_PVMT_8',
-                    opacity: 1,
-                    color: 'rgba(128,128,128,1.0)',
-                    dashArray: '',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    weight: 2.5,
-                            fill: true,
+function pop_DWY_L4_PVMT_8(feature, layer) {}
+function style_DWY_L4_PVMT_8_0() {
+    return {
+        pane: 'pane_DWY_L4_PVMT_8',
+        opacity: 1,
+        color: 'rgba(128,128,128,1.0)',
+        dashArray: '',
+        lineCap: 'round',
+        lineJoin: 'round',
+        weight: 2.5,
+        fill: true,
         fillColor: 'rgba(20, 20, 20, 1.0)',    // fresh blacktop
         fillOpacity: 0.95,
+        interactive: true
+    }
+}
+map.createPane('pane_DWY_L4_PVMT_8');
+map.getPane('pane_DWY_L4_PVMT_8').style.zIndex = 435;
+var layer_DWY_L4_PVMT_8 = new L.geoJson(json_DWY_L4_PVMT_8, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_DWY_L4_PVMT_8',
+    layerName: 'layer_DWY_L4_PVMT_8',
+    pane: 'pane_DWY_L4_PVMT_8',
+    onEachFeature: pop_DWY_L4_PVMT_8,
+    style: style_DWY_L4_PVMT_8_0
+});
+bounds_group.addLayer(layer_DWY_L4_PVMT_8);
 
-                    interactive: true
-                }
-            }
-            map.createPane('pane_DWY_L4_PVMT_8');
-            map.getPane('pane_DWY_L4_PVMT_8').style.zIndex = 435;
-            var layer_DWY_L4_PVMT_8 = new L.geoJson(json_DWY_L4_PVMT_8, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_DWY_L4_PVMT_8',
-                layerName: 'layer_DWY_L4_PVMT_8',
-                pane: 'pane_DWY_L4_PVMT_8',
-                onEachFeature: pop_DWY_L4_PVMT_8,
-                style: style_DWY_L4_PVMT_8_0
-            });
-            bounds_group.addLayer(layer_DWY_L4_PVMT_8);
+function pop_LOTLINE_FLAGGING_9(feature, layer) {}
+function style_LOTLINE_FLAGGING_9_0() {
+    return {
+        pane: 'pane_LOTLINE_FLAGGING_9',
+        opacity: 1,
+        color: 'rgba(255,0,255,1.0)',
+        dashArray: '2,4',
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        weight: 1.5,
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_LOTLINE_FLAGGING_9');
+map.getPane('pane_LOTLINE_FLAGGING_9').style.zIndex = 436;
+var layer_LOTLINE_FLAGGING_9 = new L.geoJson(json_LOTLINE_FLAGGING_9, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_LOTLINE_FLAGGING_9',
+    layerName: 'layer_LOTLINE_FLAGGING_9',
+    pane: 'pane_LOTLINE_FLAGGING_9',
+    onEachFeature: pop_LOTLINE_FLAGGING_9,
+    style: style_LOTLINE_FLAGGING_9_0
+});
+bounds_group.addLayer(layer_LOTLINE_FLAGGING_9);
 
-            function pop_LOTLINE_FLAGGING_9(feature, layer) {}
-            function style_LOTLINE_FLAGGING_9_0() {
-                return {
-                    pane: 'pane_LOTLINE_FLAGGING_9',
-                    opacity: 1,
-                    color: 'rgba(255,0,255,1.0)',
-                    dashArray: '2,4',
-                    lineCap: 'butt',
-                    lineJoin: 'miter',
-                    weight: 1.5,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_LOTLINE_FLAGGING_9');
-            map.getPane('pane_LOTLINE_FLAGGING_9').style.zIndex = 436;
-            var layer_LOTLINE_FLAGGING_9 = new L.geoJson(json_LOTLINE_FLAGGING_9, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_LOTLINE_FLAGGING_9',
-                layerName: 'layer_LOTLINE_FLAGGING_9',
-                pane: 'pane_LOTLINE_FLAGGING_9',
-                onEachFeature: pop_LOTLINE_FLAGGING_9,
-                style: style_LOTLINE_FLAGGING_9_0
-            });
-            bounds_group.addLayer(layer_LOTLINE_FLAGGING_9);
+function pop_DWY_ALL_10(feature, layer) {}
+function style_DWY_ALL_10_0() {
+    return {
+        pane: 'pane_DWY_ALL_10',
+        opacity: 1,
+        color: 'rgba(255,105,180,1.0)',
+        dashArray: '',
+        lineCap: 'round',
+        lineJoin: 'round',
+        weight: 2.0,
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_DWY_ALL_10');
+map.getPane('pane_DWY_ALL_10').style.zIndex = 405;
+var layer_DWY_ALL_10 = new L.geoJson(json_DWY_ALL_10, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_DWY_ALL_10',
+    layerName: 'layer_DWY_ALL_10',
+    pane: 'pane_DWY_ALL_10',
+    onEachFeature: pop_DWY_ALL_10,
+    style: style_DWY_ALL_10_0
+});
+bounds_group.addLayer(layer_DWY_ALL_10);
 
-            function pop_DWY_ALL_10(feature, layer) {}
-            function style_DWY_ALL_10_0() {
-                return {
-                    pane: 'pane_DWY_ALL_10',
-                    opacity: 1,
-                    color: 'rgba(255,105,180,1.0)',
-                    dashArray: '',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    weight: 2.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_DWY_ALL_10');
-            map.getPane('pane_DWY_ALL_10').style.zIndex = 437;
-            var layer_DWY_ALL_10 = new L.geoJson(json_DWY_ALL_10, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_DWY_ALL_10',
-                layerName: 'layer_DWY_ALL_10',
-                pane: 'pane_DWY_ALL_10',
-                onEachFeature: pop_DWY_ALL_10,
-                style: style_DWY_ALL_10_0
-            });
-            bounds_group.addLayer(layer_DWY_ALL_10);
-
-            function pop_RD_EOA_11(feature, layer) {}
-            function style_RD_EOA_11_0() {
-                return {
-                    pane: 'pane_RD_EOA_11',
-                    opacity: 1,
-                    color: 'rgba(255,0,0,1.0)',
-                    dashArray: '6,4',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    weight: 3.0,
-                    fillOpacity: 0,
-                    interactive: true
-                }
-            }
-            map.createPane('pane_RD_EOA_11');
-            map.getPane('pane_RD_EOA_11').style.zIndex = 438;
-            var layer_RD_EOA_11 = new L.geoJson(json_RD_EOA_11, {
-                attribution: '',
-                interactive: true,
-                dataVar: 'json_RD_EOA_11',
-                layerName: 'layer_RD_EOA_11',
-                pane: 'pane_RD_EOA_11',
-                onEachFeature: pop_RD_EOA_11,
-                style: style_RD_EOA_11_0
-            });
-            bounds_group.addLayer(layer_RD_EOA_11);
+function pop_RD_EOA_11(feature, layer) {}
+function style_RD_EOA_11_0() {
+    return {
+        pane: 'pane_RD_EOA_11',
+        opacity: 0.8,                   // 80% stroke opacity
+        color: 'rgba(180,180,180,1.0)', // light gray
+        dashArray: '6,4',               // dashed
+        lineCap: 'round',
+        lineJoin: 'round',
+        weight: 3.0,
+        fillOpacity: 0,
+        interactive: true
+    }
+}
+map.createPane('pane_RD_EOA_11');
+map.getPane('pane_RD_EOA_11').style.zIndex = 438;
+var layer_RD_EOA_11 = new L.geoJson(json_RD_EOA_11, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_RD_EOA_11',
+    layerName: 'layer_RD_EOA_11',
+    pane: 'pane_RD_EOA_11',
+    onEachFeature: pop_RD_EOA_11,
+    style: style_RD_EOA_11_0
+});
+bounds_group.addLayer(layer_RD_EOA_11);
 
                        var overlaysTree = [
                 {label: '<b>User Content</b>', selectAllCheckbox: true, children: [
