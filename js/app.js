@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
         btnCamOff: document.getElementById('btn-camera-off'),
         camWrap: document.getElementById('camera-wrap'),
         video: document.getElementById('cam-video'),
-        canvas: document.getElementById('cam-canvas')
+        canvas: document.getElementById('cam-canvas'),
+        toast: document.getElementById('sv-toast') // optional toast element
     };
 
     // Hard fail if core UI is missing
@@ -46,6 +47,16 @@ document.addEventListener('DOMContentLoaded', function () {
         !ui.video || !ui.canvas) {
         console.error('One or more required UI elements are missing. Aborting app.js init.');
         return;
+    }
+
+    // Simple toast helper for short status messages
+    function svShowToast(msg) {
+        if (!ui.toast) return;
+        ui.toast.textContent = msg;
+        ui.toast.style.opacity = '0.95';
+        setTimeout(function () {
+            ui.toast.style.opacity = '0';
+        }, 2000);
     }
 
     const pinIcon = L.icon({
@@ -119,18 +130,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const props = feat.properties || {};
         const title = props.title || 'Pin';
-        const description = props.description || '';
 
         L.marker([lat, lng], { icon: pinIcon })
             .addTo(window.pinsLayer)
-            .bindPopup(`<b>${title}</b><br>${description}`);
+            .bindPopup(`<b>${title}</b>`);
     }
 
-    async function savePin(lng, lat, title, description) {
+    async function savePin(lng, lat, title) {
         const f = {
             type: 'Feature',
             geometry: { type: 'Point', coordinates: [lng, lat] },
-            properties: { title, description }
+            properties: { title }
         };
         const r = await fetch(BACKEND.pinsPost, {
             method: 'POST',
@@ -150,13 +160,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const props = feat.properties || {};
         const title = props.title || 'Photo';
-        const description = props.description || '';
         const imageUrl = props.imageUrl || '';
 
         const marker = L.marker([lat, lng], { icon: photoIcon }).addTo(window.photosLayer);
 
         let popupHtml = `<strong>${title}</strong>`;
-        if (description) popupHtml += `<br>${description}`;
         if (imageUrl) {
             popupHtml += `<br><img src="${imageUrl}" style="max-width:200px;max-height:200px;cursor:pointer;" onclick="openPhotoModal('${imageUrl}')">`;
         }
@@ -165,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Upload photo using JSON dataUrl, matching uploadPhoto.mjs
-    async function savePhoto(lng, lat, title, description, blob) {
+    async function savePhoto(lng, lat, title, blob) {
         // Convert Blob → data URL
         const dataUrl = await new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -174,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.readAsDataURL(blob);
         });
 
-        const body = { dataUrl, lat, lng, title, description };
+        const body = { dataUrl, lat, lng, title };
 
         const r = await fetch(BACKEND.photoUpload, {
             method: 'POST',
@@ -198,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function () {
             geometry: { type: 'Point', coordinates: [lng, lat] },
             properties: {
                 title,
-                description,
                 imageUrl: saved.imageUrl,
                 ts: Date.now()
             }
@@ -218,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 audio: false
             });
             ui.video.srcObject = state.cam.stream;
-            ui.camWrap.classList.add('show');
+            // Camera stream ready; UI will be shown after map click for location
         } catch (e) {
             console.error('Camera error', e);
             alert('Could not access camera.');
@@ -270,20 +277,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const title = prompt('Photo title?', 'Photo') || 'Photo';
-        const description = prompt('Description? (optional)', '') || '';
 
         try {
             await savePhoto(
                 state.photoLatLng.lng,
                 state.photoLatLng.lat,
                 title,
-                description,
                 blob
             );
-            alert('Photo saved.');
+            svShowToast('Photo saved successfully');
             stopCamera();
             state.dropPhotoArmed = false;
             state.photoLatLng = null;
+            if (typeof closePhotoModal === 'function') {
+                closePhotoModal();
+            }
         } catch (e) {
             console.error('Photo save error', e);
             alert('Could not save photo.');
@@ -297,9 +305,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (state.dropPinArmed) {
             const title = prompt('Pin title?', 'Pin') || 'Pin';
-            const description = prompt('Description? (optional)', '') || '';
             try {
-                await savePin(latlng.lng, latlng.lat, title, description);
+                await savePin(latlng.lng, latlng.lat, title);
+                svShowToast('Pin placed successfully');
             } catch (err) {
                 console.error('Pin save error', err);
                 alert('Could not save pin.');
@@ -308,7 +316,8 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.btnAddPin.classList.remove('active');
         } else if (state.dropPhotoArmed) {
             state.photoLatLng = { lat: latlng.lat, lng: latlng.lng };
-            alert('Location set. Now take a photo.');
+            svShowToast('Location set. Now take a photo.');
+            ui.camWrap.classList.add('show');
         }
     });
 
@@ -331,14 +340,17 @@ document.addEventListener('DOMContentLoaded', function () {
         state.dropPhotoArmed = !state.dropPhotoArmed;
         if (state.dropPhotoArmed) {
             state.dropPinArmed = false;
+            state.photoLatLng = null;
             ui.btnCamera.classList.add('active');
             ui.btnAddPin.classList.remove('active');
+            // Start camera stream but keep UI hidden until map click
             await startCamera();
-            alert('Click on the map to choose the photo location, then tap "Take Photo".');
+            svShowToast('Tap on the map where the photo was taken');
         } else {
             ui.btnCamera.classList.remove('active');
             state.photoLatLng = null;
             stopCamera();
+            ui.camWrap.classList.remove('show');
         }
     });
 
