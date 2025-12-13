@@ -112,6 +112,8 @@
         <script src="data/LOTLINE_FLAGGING_9.js"></script>
         <script src="data/DWY_ALL_10.js"></script>
         <script src="data/RD_EOA_11.js"></script>
+				        <script src="data/SIERRA2_2.js"></script>
+				        <script src="data/SIERRA1_3.js"></script>
 
         <script>
             // --- 1. MAP INITIALIZATION ---
@@ -468,7 +470,8 @@ function style_DWY_ALL_10_0() {
         pane: 'pane_DWY_ALL_10',
         opacity: 1,
         color: 'rgba(33,33,18,1.0)',
-        dashArray: '',
+        dashArr
+		ay: '',
         lineCap: 'round',
         lineJoin: 'round',
         weight: 1.0,
@@ -519,13 +522,33 @@ var layer_RD_EOA_11 = new L.geoJson(json_RD_EOA_11, {
 });
 bounds_group.addLayer(layer_RD_EOA_11);
 
+ function pop_SIERRA1_3(feature, layer) {}
+            function style_SIERRA1_3_0() { return { pane: 'pane_SIERRA1_3', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
+            map.createPane('pane_SIERRA1_3); map.getPane('pane_SIERRA1_3').style.zIndex = 450; var layer_SIERRA1_3 = new L.geoJson(json_SIERRA1_3,{attribution:'',interactive:false,dataVar:'json_SIERRA1_3',layerName:'layer_SIERRA1_3',pane:'pane_SIERRA1_3',onEachFeature:pop_SIERRA1_3,style:style_SIERRA1_3_0}); bounds_group.addLayer(layer_SIERRA1_3); 
+			// map.addLayer(layer_SIERRA1_3);
+			
+			 function pop_SIERRA2_2(feature, layer) {}
+            function style_SIERRA2_2_0() { return { pane: 'pane_SIERRA2_2', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
+            map.createPane('pane_SIERRA2_2); map.getPane('pane_SIERRA2_2').style.zIndex = 450; var layer_SIERRA2_2 = new L.geoJson(json_SIERRA2_2,{attribution:'',interactive:false,dataVar:'json_SIERRA2_2',layerName:'layer_SIERRA2_2',pane:'pane_SIERRA2_2',onEachFeature:pop_SIERRA2_2,style:style_SIERRA2_2_0}); bounds_group.addLayer(layer_SIERRA2_2); 
+			// map.addLayer(layer_SIERRA2_2);
+			
+
+
+
+
+
+
+
+
+
+
+
                        var overlaysTree = [
                 {label: '<b>User Content</b>', selectAllCheckbox: true, children: [
-                    {label: '<i class="fas fa-map-pin" style="color:#ff8c00; margin-right: 5px;"></i> User Pins', layer: pinsLayer},
-                    {label: '<i class="fas fa-camera" style="color:#7e57c2; margin-right: 5px;"></i> User Photos', layer: photosLayer}
+                    {label: '<i class="fas fa-map-pin" style="color:#ff8c00; margin-right: 5px;"></i> Pins', layer: pinsLayer},
+                    {label: '<i class="fas fa-camera" style="color:#7e57c2; margin-right: 5px;"></i> Photos', layer: photosLayer}
                 ]},
                                 {label: '<b>Main Layers</b>', selectAllCheckbox: true, children: [
-									 {label: '<img src="legend/BNDRY_4.png" /> BNDRY', layer: layer_BNDRY_4},
 									 {label: '<img src="legend/LOTS_5.png" /> LOTS', layer: layer_LOTS_5},
                    
                     {label: '<img src="legend/EX_FENCE_21.png" /> OLD_FENCE', layer: layer_EX_FENCE_21},
@@ -534,8 +557,8 @@ bounds_group.addLayer(layer_RD_EOA_11);
 									         {label: '<img src="legend/EX_BLD_10.png" /> EXIST_BLD', layer: layer_EX_BLD_10},
                     {label: '<img src="legend/SBE_9.png" /> NEW_BLD', layer: layer_SBE_9},
                     {label: '<img src="legend/CE_14.png" /> CNSTR_ENV', layer: layer_CE_14},
-                    {label: '<img src="legend/DWY_ALL_10.png" /> DRVWAY', layer: layer_DWY_ALL_10},
-                    {label: '<img src="legend/WELLS_19.png" /> WELLS', layer: layer_WELLS_19},
+                    {label: '<img src="legend/DWY_ALL_10.png" /> DRVWY', layer: layer_DWY_ALL_10},
+                    {label: '<img src="legend/WELLS_19.png" /> WELL', layer: layer_WELLS_19},
                     {label: '<img src="legend/SEPTIC_18.png" /> SEPTIC', layer: layer_SEPTIC_18},
                     {label: '<img src="legend/ALR_16.png" /> ALR', layer: layer_ALR_16},
                    
@@ -544,26 +567,30 @@ bounds_group.addLayer(layer_RD_EOA_11);
 										{label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
 
                     {label: '<img src="legend/CRK_COV_11.png" /> CRK_COV', layer: layer_CRK_COV_11},
+														 {label: '<img src="legend/BNDRY_4.png" /> PARCEL_BNDRY', layer: layer_BNDRY_4},
+
            
 									                    {label: '<img src="legend/DWY_L4_PVMT_8.png" /> L4_DRVWY', layer: layer_DWY_L4_PVMT_8},
                 ]},
-                {label: '<b>Secondary</b>', selectAllCheckbox: true, children: [
+                {label: '<b>Other Layers</b>', selectAllCheckbox: true, children: [
 
 			           {label: '<img src="legend/BA_15.png" /> BLD_AREA', layer: layer_BA_15},
+					   									 {label: '<img src="legend/BNDRY_4.png" /> PARCEL1_P2', layer: layer_SIERRA1_3},
+														 									 {label: '<img src="legend/BNDRY_4.png" /> PARCEL2_P2', layer: layer_SIERRA2_2},
 					                              {label: '<img src="legend/FUT_RD_3.png" /> LOTS_P2', layer: layer_FUT_LGL_P2A_5},
 
       {label: '<img src="legend/LOTS_5.png" /> EXIST_LGL', layer: layer_EX_LGL_6},
                     {label: '<img src="legend/DWY_L4_GRVL_7.png" /> L4_GRVL', layer: layer_DWY_L4_GRVL_7},
                     {label: '<img src="legend/RD_EOA_11.png" /> ROAD_PVMT', layer: layer_RD_EOA_11},
 			                    {label: '<img src="legend/SRW_MOTI_13.png" /> MOTI_SRW', layer: layer_SRW_MOTI_13},
-                    {label: '<img src="legend/FUT_RD_3.png" /> FUT_RD', layer: layer_FUT_RD_3},
+                    {label: '<img src="legend/FUT_RD_3.png" /> FUT_ROAD', layer: layer_FUT_RD_3},
                     {label: '<img src="legend/FUT_RD_3.png" /> FUT_LEGAL', layer: layer_FUT_LGL_EXT_4},
                              {label: '<img src="legend/CONT_6.png" /> CONTOUR', layer: layer_CONT_6},
               			                    {label: 'ESA<br /><table><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone10.png" /></td><td>Zone 1</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone21.png" /></td><td>Zone 2</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone32.png" /></td><td>Zone 3</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone43.png" /></td><td>Zone 4</td></tr></table>', layer: layer_ESA_7},
          
                 ]},
 
-                {label: '<b>Baselayers</b>', selectAllCheckbox: true, children: [
+                {label: '<b>Base Layers</b>', selectAllCheckbox: true, children: [
                     {label: "World Imagery", layer: layer_WorldImagery_3, radioGroup: 'bm' },
                     {label: "Google Satellite", layer: layer_GoogleSatellite_2, radioGroup: 'bm' },
                     {label: "OSM", layer: layer_OSM_1, radioGroup: 'bm' },
