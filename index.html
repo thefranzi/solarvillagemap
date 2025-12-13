@@ -302,8 +302,8 @@ function style_FUT_LGL_EXT_4_0() {
         pane: 'pane_FUT_LGL_EXT_4',
         opacity: 1,
         color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
-        dashArray: '6,14',           // dashed
-        lineCap: 'round',
+        dashArray: '16,14',           // dashed
+        lineCap: 'square',
         lineJoin: 'round',
         weight: 3.0,                // same thickness as new LOTS_5
         fillOpacity: 0,
@@ -417,8 +417,8 @@ function style_DWY_L4_PVMT_8_0() {
         lineJoin: 'round',
         weight: 0.5,
         fill: true,
-        fillColor: 'rgba(20, 20, 20, 1.0)',    // fresh blacktop
-        fillOpacity: 0.75,
+        fillColor: 'rgba(33, 33, 18, 1.0)',    // fresh blacktop
+        fillOpacity: 1.0,
         interactive: true
     }
 }
@@ -566,7 +566,7 @@ bounds_group.addLayer(layer_RD_EOA_11);
 										{label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
 
                     {label: '<img src="legend/CRK_COV_11.png" /> CRK_COV', layer: layer_CRK_COV_11},
-														 {label: '<img src="legend/BNDRY_4.png" /> PARCEL_BNDRY', layer: layer_BNDRY_4},
+														 {label: '<img src="legend/BNDRY_4.png" /> 6025_BNDRY', layer: layer_BNDRY_4},
 
            
 									                    {label: '<img src="legend/DWY_L4_PVMT_8.png" /> L4_DRVWY', layer: layer_DWY_L4_PVMT_8},
@@ -574,8 +574,8 @@ bounds_group.addLayer(layer_RD_EOA_11);
                 {label: '<b>Other Layers</b>', selectAllCheckbox: true, children: [
 
 			           {label: '<img src="legend/BA_15.png" /> BLD_AREA', layer: layer_BA_15},
-					   									 {label: '<img src="legend/BNDRY_4.png" /> PARCEL1_P2', layer: layer_SIERRA1_3},
-														 									 {label: '<img src="legend/BNDRY_4.png" /> PARCEL2_P2', layer: layer_SIERRA2_2},
+					   									 {label: '<img src="legend/BNDRY_4.png" /> SIERRA1_BNDRY', layer: layer_SIERRA1_3},
+														 									 {label: '<img src="legend/BNDRY_4.png" /> SIERRA2_BNDRY', layer: layer_SIERRA2_2},
 					                              {label: '<img src="legend/FUT_RD_3.png" /> LOTS_P2', layer: layer_FUT_LGL_P2A_5},
 
       {label: '<img src="legend/LOTS_5.png" /> EXIST_LGL', layer: layer_EX_LGL_6},
