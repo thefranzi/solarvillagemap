@@ -239,7 +239,7 @@ map.on('locationerror', function (e) {
             map.createPane('pane_ENV_RST_12'); map.getPane('pane_ENV_RST_12').style.zIndex = 412; var layer_ENV_RST_12 = new L.geoJson(json_ENV_RST_12,{attribution:'',interactive:false,dataVar:'json_ENV_RST_12',layerName:'layer_ENV_RST_12',pane:'pane_ENV_RST_12',onEachFeature:pop_ENV_RST_12,style:style_ENV_RST_12_0}); bounds_group.addLayer(layer_ENV_RST_12); map.addLayer(layer_ENV_RST_12);
             function pop_SRW_MOTI_13(feature, layer) {}
             function style_SRW_MOTI_13_0() { return { pane: 'pane_SRW_MOTI_13', opacity: 1, color: 'rgba(35,35,35,0.383)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(255,157,157,0.383)', interactive: false } }
-            map.createPane('pane_SRW_MOTI_13'); map.getPane('pane_SRW_MOTI_13').style.zIndex = 413; var layer_SRW_MOTI_13 = new L.geoJson(json_SRW_MOTI_13,{attribution:'',interactive:false,dataVar:'json_SRW_MOTI_13',layerName:'layer_SRW_MOTI_13',pane:'pane_SRW_MOTI_13',onEachFeature:pop_SRW_MOTI_13,style:style_SRW_MOTI_13_0}); bounds_group.addLayer(layer_SRW_MOTI_13); map.addLayer(layer_SRW_MOTI_13);
+            map.createPane('pane_SRW_MOTI_13'); map.getPane('pane_SRW_MOTI_13').style.zIndex = 413; var layer_SRW_MOTI_13 = new L.geoJson(json_SRW_MOTI_13,{attribution:'',interactive:false,dataVar:'json_SRW_MOTI_13',layerName:'layer_SRW_MOTI_13',pane:'pane_SRW_MOTI_13',onEachFeature:pop_SRW_MOTI_13,style:style_SRW_MOTI_13_0}); bounds_group.addLayer(layer_SRW_MOTI_13);
             function pop_CE_14(feature, layer) {}
             function style_CE_14_0() { return { pane: 'pane_CE_14', opacity: 1, color: 'rgba(35,35,229,0.199)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 8.0, fill: true, fillOpacity: 1, fillColor: 'rgba(206,252,255,0.199)', interactive: true } }
             map.createPane('pane_CE_14'); map.getPane('pane_CE_14').style.zIndex = 414; var layer_CE_14 = new L.geoJson(json_CE_14,{attribution:'',interactive:true,dataVar:'json_CE_14',layerName:'layer_CE_14',pane:'pane_CE_14',onEachFeature:pop_CE_14,style:style_CE_14_0}); bounds_group.addLayer(layer_CE_14); map.addLayer(layer_CE_14);
@@ -487,6 +487,7 @@ var layer_DWY_ALL_10 = new L.geoJson(json_DWY_ALL_10, {
     style: style_DWY_ALL_10_0
 });
 bounds_group.addLayer(layer_DWY_ALL_10);
+			 map.addLayer(layer_DWY_ALL_10);
 
 function pop_RD_EOA_11(feature, layer) {}
 function style_RD_EOA_11_0() {
