@@ -177,6 +177,27 @@ map.on('locationerror', function (e) {
             });
             new L.Control.Home({ position: 'topleft' }).addTo(map);
 
+
+// NEW 3D VIEW CONTROL BUTTON
+L.Control.View3D = L.Control.extend({
+    onAdd: function(map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-view3d');
+        // Big, clear "3D" label
+        container.innerHTML = '<a href="#" title="Open 3D view" ' +
+                              'style="font-weight:bold;font-size:16px;font-family:Arial, sans-serif;line-height:26px;text-align:center;">3D</a>';
+        L.DomEvent.disableClickPropagation(container);
+        L.DomEvent.on(container, 'click', function(e){
+            e.preventDefault();
+            window.open("https://solarvillage3d.netlify.app", "_blank", "noopener,noreferrer");
+        });
+        return container;
+    }
+});
+new L.Control.View3D({ position: 'topleft' }).addTo(map);
+
+
+			
+
             L.Control.Logo = L.Control.extend({
                 onAdd: function(map) {
                     var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
