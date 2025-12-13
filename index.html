@@ -245,7 +245,8 @@ map.on('locationerror', function (e) {
             map.createPane('pane_CE_14'); map.getPane('pane_CE_14').style.zIndex = 414; var layer_CE_14 = new L.geoJson(json_CE_14,{attribution:'',interactive:true,dataVar:'json_CE_14',layerName:'layer_CE_14',pane:'pane_CE_14',onEachFeature:pop_CE_14,style:style_CE_14_0}); bounds_group.addLayer(layer_CE_14); map.addLayer(layer_CE_14);
             function pop_BA_15(feature, layer) {}
             function style_BA_15_0() { return { pane: 'pane_BA_15', opacity: 1, color: 'rgba(0,255,155,0.843)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 2.0, fillOpacity: 0, interactive: false } }
-            map.createPane('pane_BA_15'); map.getPane('pane_BA_15').style.zIndex = 415; var layer_BA_15 = new L.geoJson(json_BA_15,{attribution:'',interactive:false,dataVar:'json_BA_15',layerName:'layer_BA_15',pane:'pane_BA_15',onEachFeature:pop_BA_15,style:style_BA_15_0}); bounds_group.addLayer(layer_BA_15); map.addLayer(layer_BA_15);
+            map.createPane('pane_BA_15'); map.getPane('pane_BA_15').style.zIndex = 415; var layer_BA_15 = new L.geoJson(json_BA_15,{attribution:'',interactive:false,dataVar:'json_BA_15',layerName:'layer_BA_15',pane:'pane_BA_15',onEachFeature:pop_BA_15,style:style_BA_15_0}); bounds_group.addLayer(layer_BA_15); 
+			// map.addLayer(layer_BA_15);
             function pop_ALR_16(feature, layer) {}
             function style_ALR_16_0() { return { pane: 'pane_ALR_16', opacity: 1, color: 'rgba(35,83,35,0.376)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 1.0, fill: true, fillOpacity: 1, fillColor: 'rgba(207,0,0,0.376)', interactive: false } }
             map.createPane('pane_ALR_16'); map.getPane('pane_ALR_16').style.zIndex = 416; var layer_ALR_16 = new L.geoJson(json_ALR_16,{attribution:'',interactive:false,dataVar:'json_ALR_16',layerName:'layer_ALR_16',pane:'pane_ALR_16',onEachFeature:pop_ALR_16,style:style_ALR_16_0}); bounds_group.addLayer(layer_ALR_16); map.addLayer(layer_ALR_16);
@@ -431,7 +432,8 @@ var layer_DWY_L4_PVMT_8 = new L.geoJson(json_DWY_L4_PVMT_8, {
     style: style_DWY_L4_PVMT_8_0
 });
 bounds_group.addLayer(layer_DWY_L4_PVMT_8);
-
+map.addLayer(layer_DWY_L4_PVMT_8);
+			
 function pop_LOTLINE_FLAGGING_9(feature, layer) {}
 function style_LOTLINE_FLAGGING_9_0() {
     return {
