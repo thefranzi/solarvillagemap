@@ -200,7 +200,7 @@ map.on('locationerror', function (e) {
             var layer_WorldImagery_3 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { pane: 'pane_WorldImagery_3', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21 });
             map.addLayer(layer_WorldImagery_3);
             function pop_BNDRY_4(feature, layer) {}
-            function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,0,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
+            function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
             map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); map.addLayer(layer_BNDRY_4);
             function pop_LOTS_5(feature, layer) {}
             function style_LOTS_5_0() {
@@ -276,7 +276,7 @@ function style_FUT_RD_3_0() {
         pane: 'pane_FUT_RD_3',
         opacity: 1,
         color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
-        dashArray: '6,4',           // dashed
+        dashArray: '6,14',           // dashed
         lineCap: 'square',
         lineJoin: 'bevel',
         weight: 4.0,                // same thickness as new LOTS_5
@@ -303,7 +303,7 @@ function style_FUT_LGL_EXT_4_0() {
         pane: 'pane_FUT_LGL_EXT_4',
         opacity: 1,
         color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
-        dashArray: '6,4',           // dashed
+        dashArray: '6,14',           // dashed
         lineCap: 'round',
         lineJoin: 'round',
         weight: 3.0,                // same thickness as new LOTS_5
@@ -330,7 +330,7 @@ function style_FUT_LGL_P2A_5_0() {
         pane: 'pane_FUT_LGL_P2A_5',
         opacity: 1,
         color: 'rgba(0,0,0,1.0)',   // same color as new LOTS_5
-        dashArray: '6,4',           // dashed
+        dashArray: '6,14',           // dashed
         lineCap: 'round',
         lineJoin: 'round',
         weight: 3.0,                // same thickness as new LOTS_5
