@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.51330602169038,
+      49.8016994520083
+    ]
+  },
+  "properties": {
+    "title": "Pin5"
+  }
+}
