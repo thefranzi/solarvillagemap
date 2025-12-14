@@ -58,17 +58,18 @@
     font-size: 16px;
     text-decoration: none;
 }
-/* Keep layer tree from going behind bottom action bar */
-.leaflet-control-layers-tree {
-    max-height: calc(100vh - 140px); /* leave space for bottom buttons */
+/* Keep the layers tree from running under the bottom action bar */
+.leaflet-control-layers-tree,
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+    max-height: calc(100vh - 140px); /* adjust 140px if needed */
     overflow-y: auto;
 }
+
 
 
         </style>
         <title>Solar Village Map</title>
     </head>
-    <>
         <div id="map">
             <div id="camera-wrap">
                 <video id="cam-video" autoplay playsinline muted></video>
