@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.btnAddPin.classList.remove('active');
             // Start camera stream but keep UI hidden until map click
             await startCamera();
-            svShowToast('Tap on the map where the photo was taken');
+            svShowToast('Tap where the photo is being taken');
         } else {
             ui.btnCamera.classList.remove('active');
             state.photoLatLng = null;
