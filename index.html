@@ -58,11 +58,15 @@
     font-size: 16px;
     text-decoration: none;
 }
-/* Keep layer tree from going behind bottom action bar */
-.leaflet-control-layers-tree {
-    max-height: calc(100vh - 140px); /* leave space for bottom buttons */
+/* Limit height of the layers tree so it stays above the bottom action bar */
+.leaflet-top.leaflet-right .leaflet-control-layers,
+.leaflet-top.leaflet-right .leaflet-control-layers-expanded,
+.leaflet-top.leaflet-right .leaflet-control-layers-expanded .leaflet-control-layers-list,
+.leaflet-top.leaflet-right .leaflet-control-layers-list {
+    max-height: calc(100vh - 140px); /* tweak 140 if needed */
     overflow-y: auto;
 }
+
 
 
         </style>
