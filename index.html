@@ -58,10 +58,9 @@
     font-size: 16px;
     text-decoration: none;
 }
-/* Keep the layers tree from running under the bottom action bar */
-.leaflet-control-layers-tree,
-.leaflet-control-layers-expanded .leaflet-control-layers-list {
-    max-height: calc(100vh - 160px); /* adjust 140px if needed */
+/* Keep layers list above the bottom action bar */
+.leaflet-top.leaflet-right .leaflet-control-layers-expanded {
+    max-height: calc(100vh - 140px); /* adjust 140px if needed */
     overflow-y: auto;
 }
 
