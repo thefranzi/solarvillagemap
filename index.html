@@ -46,6 +46,25 @@
             border-radius: 12px; font-size: 14px; opacity: .9;
             pointer-events: none;
         }
+		
+		
+		.leaflet-control-view3d a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;      /* matches standard Leaflet control size */
+    height: 26px;
+    font-weight: bold;
+    font-size: 16px;
+    text-decoration: none;
+}
+/* Keep layer tree from going behind bottom action bar */
+.leaflet-control-layers-tree {
+    max-height: calc(100vh - 140px); /* leave space for bottom buttons */
+    overflow-y: auto;
+}
+
+
         </style>
         <title>Solar Village Map</title>
     </head>
