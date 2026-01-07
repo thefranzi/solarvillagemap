@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33665171265604,
+      49.956047702396305
+    ]
+  },
+  "properties": {
+    "title": "Boundary on lot one",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1767825431919.jpg",
+    "ts": 1767825431919
+  }
+}
