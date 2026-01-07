@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33651089668275,
+      49.95583458212513
+    ]
+  },
+  "properties": {
+    "title": "Lot 1"
+  }
+}
