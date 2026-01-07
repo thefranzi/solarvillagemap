@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33650955557823,
+      49.95583458212513
+    ]
+  },
+  "properties": {
+    "title": "Boundary one"
+  }
+}
