@@ -224,7 +224,7 @@ new L.Control.View3D({ position: 'topleft' }).addTo(map);
                 onAdd: function(map) {
                     var container = L.DomUtil.create('div', 'leaflet-control-logo leaflet-control');
                     // Logo width is now 60px
-                    container.innerHTML = '<a href="https://www.solarvillage.ca" target="_blank" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo" style="width:60px;height:auto;"></a>';
+                    container.innerHTML = '<a href="https://www.solarvillage.ca" target="_self" rel="noopener noreferrer"><img src="solarvilla.png" alt="Solar Village Logo" style="width:60px;height:auto;"></a>';
                     return container;
                 }
             });
