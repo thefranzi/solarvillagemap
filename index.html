@@ -121,7 +121,8 @@
         <script src="data/ALR_16.js"></script>
         <script src="data/AOI_17.js"></script>
         <script src="data/SEPTIC_18.js"></script>
-        <script src="data/WELLS_19.js"></script>
+        <script src="data/DWY_PROP_0.js"></script>
+        <script src="data/WELL_PTS_8.js"></script>
         <script src="data/FENCE_20.js"></script>
         <script src="data/EX_FENCE_21.js"></script>
         <!-- NEW DATA LAYERS -->
@@ -132,8 +133,9 @@
         <script src="data/DWY_L4_GRVL_7.js"></script>
         <script src="data/DWY_L4_PVMT_8.js"></script>
         <script src="data/LOTLINE_FLAGGING_9.js"></script>
-        <script src="data/DWY_ALL_10.js"></script>
         <script src="data/RD_EOA_11.js"></script>
+        <script src="data/DWAY_IFC_1.js"></script>
+        <script src="data/DWY_ASBUILT_2.js"></script>
 				        <script src="data/SIERRA2_2.js"></script>
 				        <script src="data/SIERRA1_3.js"></script>
 
@@ -301,9 +303,167 @@ new L.Control.View3D({ position: 'topleft' }).addTo(map);
             function pop_SEPTIC_18(feature, layer) {}
             function style_SEPTIC_18_0() { return { pane: 'pane_SEPTIC_18', opacity: 1, color: 'rgba(35,35,35,0.9)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 1, fill: true, fillOpacity: 1, fillColor: 'rgba(122,115,93,0.9)', interactive: true } }
             map.createPane('pane_SEPTIC_18'); map.getPane('pane_SEPTIC_18').style.zIndex = 418; var layer_SEPTIC_18 = new L.geoJson(json_SEPTIC_18,{attribution:'',interactive:true,dataVar:'json_SEPTIC_18',layerName:'layer_SEPTIC_18',pane:'pane_SEPTIC_18',onEachFeature:pop_SEPTIC_18,style:style_SEPTIC_18_0}); bounds_group.addLayer(layer_SEPTIC_18); map.addLayer(layer_SEPTIC_18);
-            function pop_WELLS_19(feature, layer) {}
-            function style_WELLS_19_0() { return { pane: 'pane_WELLS_19', opacity: 1, color: 'rgba(35,35,255,1.0)', dashArray: '', lineCap: 'butt', lineJoin: 'miter', weight: 3.0, fill: true, fillOpacity: 1, fillColor: 'rgba(53,0,255,1.0)', interactive: true } }
-            map.createPane('pane_WELLS_19'); map.getPane('pane_WELLS_19').style.zIndex = 419; var layer_WELLS_19 = new L.geoJson(json_WELLS_19,{attribution:'',interactive:true,dataVar:'json_WELLS_19',layerName:'layer_WELLS_19',pane:'pane_WELLS_19',onEachFeature:pop_WELLS_19,style:style_WELLS_19_0}); bounds_group.addLayer(layer_WELLS_19); map.addLayer(layer_WELLS_19);
+
+
+// remove popup row if "visible-with-data" field is null
+function removeEmptyRowsFromPopupContent(content, feature) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    var rows = tempDiv.querySelectorAll('tr');
+    for (var i = 0; i < rows.length; i++) {
+        var td = rows[i].querySelector('td.visible-with-data');
+        var key = td ? td.id : '';
+        if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+            rows[i].parentNode.removeChild(rows[i]);
+        }
+    }
+    return tempDiv.innerHTML;
+}
+
+// widen popup if media is present
+function addClassToPopupIfMedia(content, popup) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    if (tempDiv.querySelector('td img')) {
+        popup._contentNode.classList.add('media');
+        setTimeout(function() {
+            popup.update();
+        }, 10);
+    } else {
+        popup._contentNode.classList.remove('media');
+    }
+}
+
+
+            function pop_DWY_PROP_0(feature, layer) {
+                var popupContent = '<table>\
+                        <tr>\
+                            <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        </tr>\
+                        <tr>\
+                            <td colspan="2">' + (feature.properties['LOT_ID'] !== null ? autolinker.link(String(feature.properties['LOT_ID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        </tr>\
+                        <tr>\
+                            <td colspan="2">' + (feature.properties['STATUS'] !== null ? autolinker.link(String(feature.properties['STATUS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        </tr>\
+                    </table>';
+                var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+                layer.on('popupopen', function(e) {
+                    addClassToPopupIfMedia(content, e.popup);
+                });
+                layer.bindPopup(content, { maxHeight: 400 });
+            }
+
+            function style_DWY_PROP_0_0(feature) {
+                switch(String(feature.properties['STATUS'])) {
+                    case 'Complete':
+                        return {
+                            pane: 'pane_DWY_PROP_0',
+                            opacity: 1,
+                            color: 'rgba(35,35,35,0.716)',
+                            dashArray: '',
+                            lineCap: 'butt',
+                            lineJoin: 'miter',
+                            weight: 1.0,
+                            fill: true,
+                            fillOpacity: 1,
+                            fillColor: 'rgba(0,164,84,0.716)',
+                            interactive: true,
+                        };
+                    case 'Partially Constructed':
+                        return {
+                            pane: 'pane_DWY_PROP_0',
+                            opacity: 1,
+                            color: 'rgba(35,35,35,0.716)',
+                            dashArray: '',
+                            lineCap: 'butt',
+                            lineJoin: 'miter',
+                            weight: 1.0,
+                            fill: true,
+                            fillOpacity: 1,
+                            fillColor: 'rgba(164,155,0,0.716)',
+                            interactive: true,
+                        };
+                    case 'Unconstructed':
+                        return {
+                            pane: 'pane_DWY_PROP_0',
+                            opacity: 1,
+                            color: 'rgba(35,35,35,0.716)',
+                            dashArray: '',
+                            lineCap: 'butt',
+                            lineJoin: 'miter',
+                            weight: 1.0,
+                            fill: true,
+                            fillOpacity: 1,
+                            fillColor: 'rgba(164,46,0,0.716)',
+                            interactive: true,
+                        };
+                }
+            }
+            map.createPane('pane_DWY_PROP_0');
+            map.getPane('pane_DWY_PROP_0').style.zIndex = 4181;
+            map.getPane('pane_DWY_PROP_0').style['mix-blend-mode'] = 'normal';
+            var layer_DWY_PROP_0 = new L.geoJson(json_DWY_PROP_0, {
+                attribution: '',
+                interactive: true,
+                dataVar: 'json_DWY_PROP_0',
+                layerName: 'layer_DWY_PROP_0',
+                pane: 'pane_DWY_PROP_0',
+                onEachFeature: pop_DWY_PROP_0,
+                style: style_DWY_PROP_0_0,
+            });
+            bounds_group.addLayer(layer_DWY_PROP_0);
+            map.addLayer(layer_DWY_PROP_0);
+
+            function pop_WELL_PTS_8(feature, layer) {
+                var popupContent = '<table>\
+                        <tr>\
+                            <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        </tr>\
+                        <tr>\
+                            <td colspan="2">' + (feature.properties['WELL_ID'] !== null ? autolinker.link(String(feature.properties['WELL_ID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        </tr>\
+                    </table>';
+                var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+                layer.on('popupopen', function(e) {
+                    addClassToPopupIfMedia(content, e.popup);
+                });
+                layer.bindPopup(content, { maxHeight: 400 });
+            }
+
+            function style_WELL_PTS_8_0() {
+                return {
+                    pane: 'pane_WELL_PTS_8',
+                    radius: 2.8,
+                    opacity: 1,
+                    color: 'rgba(35,35,35,1.0)',
+                    dashArray: '',
+                    lineCap: 'butt',
+                    lineJoin: 'miter',
+                    weight: 1,
+                    fill: true,
+                    fillOpacity: 1,
+                    fillColor: 'rgba(14,14,231,1.0)',
+                    interactive: true,
+                };
+            }
+            map.createPane('pane_WELL_PTS_8');
+            map.getPane('pane_WELL_PTS_8').style.zIndex = 4182;
+            map.getPane('pane_WELL_PTS_8').style['mix-blend-mode'] = 'normal';
+            var layer_WELL_PTS_8 = new L.geoJson(json_WELL_PTS_8, {
+                attribution: '',
+                interactive: true,
+                dataVar: 'json_WELL_PTS_8',
+                layerName: 'layer_WELL_PTS_8',
+                pane: 'pane_WELL_PTS_8',
+                onEachFeature: pop_WELL_PTS_8,
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, style_WELL_PTS_8_0(feature));
+                },
+            });
+            bounds_group.addLayer(layer_WELL_PTS_8);
+            map.addLayer(layer_WELL_PTS_8);
+
             function pop_FENCE_20(feature, layer) {}
             function style_FENCE_20_0() { return { pane: 'pane_FENCE_20', opacity: 1, color: 'rgba(234,255,35,0.647)', dashArray: '3.0,6.0', lineCap: 'square', lineJoin: 'bevel', weight: 3.0, fillOpacity: 0, interactive: true } }
             map.createPane('pane_FENCE_20'); map.getPane('pane_FENCE_20').style.zIndex = 420; var layer_FENCE_20 = new L.geoJson(json_FENCE_20,{attribution:'',interactive:true,dataVar:'json_FENCE_20',layerName:'layer_FENCE_20',pane:'pane_FENCE_20',onEachFeature:pop_FENCE_20,style:style_FENCE_20_0}); bounds_group.addLayer(layer_FENCE_20); map.addLayer(layer_FENCE_20);
@@ -507,35 +667,6 @@ var layer_LOTLINE_FLAGGING_9 = new L.geoJson(json_LOTLINE_FLAGGING_9, {
 bounds_group.addLayer(layer_LOTLINE_FLAGGING_9);
 			map.addLayer(layer_LOTLINE_FLAGGING_9);
 
-function pop_DWY_ALL_10(feature, layer) {}
-function style_DWY_ALL_10_0() {
-    return {
-        pane: 'pane_DWY_ALL_10',
-        opacity: 1,
-        color: 'rgba(33,33,18,1.0)',
-        dashArray: '',
-        lineCap: 'round',
-        lineJoin: 'round',
-        weight: 1.0,
-		    fill: true,
-        fillColor: 'rgba(20, 20, 20, 1.0)',    // fresh blacktop
-        fillOpacity: 0.4,
-        interactive: true
-    }
-}
-map.createPane('pane_DWY_ALL_10');
-map.getPane('pane_DWY_ALL_10').style.zIndex = 405;
-var layer_DWY_ALL_10 = new L.geoJson(json_DWY_ALL_10, {
-    attribution: '',
-    interactive: true,
-    dataVar: 'json_DWY_ALL_10',
-    layerName: 'layer_DWY_ALL_10',
-    pane: 'pane_DWY_ALL_10',
-    onEachFeature: pop_DWY_ALL_10,
-    style: style_DWY_ALL_10_0
-});
-bounds_group.addLayer(layer_DWY_ALL_10);
-			 map.addLayer(layer_DWY_ALL_10);
 
 function pop_RD_EOA_11(feature, layer) {}
 function style_RD_EOA_11_0() {
@@ -569,7 +700,96 @@ bounds_group.addLayer(layer_RD_EOA_11);
             map.createPane('pane_SIERRA1_3'); map.getPane('pane_SIERRA1_3').style.zIndex = 450; var layer_SIERRA1_3 = new L.geoJson(json_SIERRA1_3,{attribution:'',interactive:false,dataVar:'json_SIERRA1_3',layerName:'layer_SIERRA1_3',pane:'pane_SIERRA1_3',onEachFeature:pop_SIERRA1_3,style:style_SIERRA1_3_0}); bounds_group.addLayer(layer_SIERRA1_3); 
 			// map.addLayer(layer_SIERRA1_3);
 			
-			 function pop_SIERRA2_2(feature, layer) {}
+			 
+function pop_DWAY_IFC_1(feature, layer) {
+    var popupContent = '<table>\
+            <tr>\
+                <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+            </tr>\
+            <tr>\
+                <td colspan="2">' + (feature.properties['lot'] !== null ? autolinker.link(String(feature.properties['lot']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+            </tr>\
+        </table>';
+    var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+    layer.on('popupopen', function(e) {
+        addClassToPopupIfMedia(content, e.popup);
+    });
+    layer.bindPopup(content, { maxHeight: 400 });
+}
+function style_DWAY_IFC_1_0() {
+    return {
+        pane: 'pane_DWAY_IFC_1',
+        opacity: 1,
+        color: 'rgba(35,35,35,0.716)',
+        dashArray: '5.0,1.0',
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        weight: 1.0,
+        fill: true,
+        fillOpacity: 1,
+        fillColor: 'rgba(161,139,147,0.716)',
+        interactive: true,
+    };
+}
+map.createPane('pane_DWAY_IFC_1');
+map.getPane('pane_DWAY_IFC_1').style.zIndex = 4351;
+map.getPane('pane_DWAY_IFC_1').style['mix-blend-mode'] = 'normal';
+var layer_DWAY_IFC_1 = new L.geoJson(json_DWAY_IFC_1, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_DWAY_IFC_1',
+    layerName: 'layer_DWAY_IFC_1',
+    pane: 'pane_DWAY_IFC_1',
+    onEachFeature: pop_DWAY_IFC_1,
+    style: style_DWAY_IFC_1_0,
+});
+bounds_group.addLayer(layer_DWAY_IFC_1);
+
+function pop_DWY_ASBUILT_2(feature, layer) {
+    var popupContent = '<table>\
+            <tr>\
+                <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+            </tr>\
+            <tr>\
+                <td colspan="2">' + (feature.properties['Lot'] !== null ? autolinker.link(String(feature.properties['Lot']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+            </tr>\
+        </table>';
+    var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+    layer.on('popupopen', function(e) {
+        addClassToPopupIfMedia(content, e.popup);
+    });
+    layer.bindPopup(content, { maxHeight: 400 });
+}
+function style_DWY_ASBUILT_2_0() {
+    return {
+        pane: 'pane_DWY_ASBUILT_2',
+        opacity: 1,
+        color: 'rgba(35,35,35,0.774)',
+        dashArray: '',
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        weight: 1.0,
+        fill: true,
+        fillOpacity: 1,
+        fillColor: 'rgba(190,178,151,0.774)',
+        interactive: true,
+    };
+}
+map.createPane('pane_DWY_ASBUILT_2');
+map.getPane('pane_DWY_ASBUILT_2').style.zIndex = 4352;
+map.getPane('pane_DWY_ASBUILT_2').style['mix-blend-mode'] = 'normal';
+var layer_DWY_ASBUILT_2 = new L.geoJson(json_DWY_ASBUILT_2, {
+    attribution: '',
+    interactive: true,
+    dataVar: 'json_DWY_ASBUILT_2',
+    layerName: 'layer_DWY_ASBUILT_2',
+    pane: 'pane_DWY_ASBUILT_2',
+    onEachFeature: pop_DWY_ASBUILT_2,
+    style: style_DWY_ASBUILT_2_0,
+});
+bounds_group.addLayer(layer_DWY_ASBUILT_2);
+
+function pop_SIERRA2_2(feature, layer) {}
             function style_SIERRA2_2_0() { return { pane: 'pane_SIERRA2_2', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
             map.createPane('pane_SIERRA2_2'); map.getPane('pane_SIERRA2_2').style.zIndex = 450; var layer_SIERRA2_2 = new L.geoJson(json_SIERRA2_2,{attribution:'',interactive:false,dataVar:'json_SIERRA2_2',layerName:'layer_SIERRA2_2',pane:'pane_SIERRA2_2',onEachFeature:pop_SIERRA2_2,style:style_SIERRA2_2_0}); bounds_group.addLayer(layer_SIERRA2_2); 
 			// map.addLayer(layer_SIERRA2_2);
@@ -592,18 +812,18 @@ bounds_group.addLayer(layer_RD_EOA_11);
                 ]},
                                 {label: '<b>Main Layers</b>', selectAllCheckbox: true, children: [
 									 {label: '<img src="legend/LOTS_5.png" /> LOTS', layer: layer_LOTS_5},
-                   
+
                     {label: '<img src="legend/EX_FENCE_21.png" /> OLD_FENCE', layer: layer_EX_FENCE_21},
                     {label: '<img src="legend/FENCE_20.png" /> REQ_FENCE', layer: layer_FENCE_20},
 									                    {label: '<img src="legend/LOTLINE_FLAGGING_9.png" /> NEW_FENCE', layer: layer_LOTLINE_FLAGGING_9},
 									         {label: '<img src="legend/EX_BLD_10.png" /> EXIST_BLD', layer: layer_EX_BLD_10},
                     {label: '<img src="legend/SBE_9.png" /> NEW_BLD', layer: layer_SBE_9},
                     {label: '<img src="legend/CE_14.png" /> CNSTR_ENV', layer: layer_CE_14},
-                    {label: '<img src="legend/DWY_ALL_10.png" /> DRVWY', layer: layer_DWY_ALL_10},
-                    {label: '<img src="legend/WELLS_19.png" /> WELL', layer: layer_WELLS_19},
+                    {label: '<img src="legend/WELL_PTS_8.png" /> WELL', layer: layer_WELL_PTS_8},
                     {label: '<img src="legend/SEPTIC_18.png" /> SEPTIC', layer: layer_SEPTIC_18},
+                    {label: 'DWY_PROPOSED<br /><table><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Complete0.png" /></td><td>Complete</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_PartiallyConstructed1.png" /></td><td>Partially Constructed</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Unconstructed2.png" /></td><td>Unconstructed</td></tr></table>', layer: layer_DWY_PROP_0},
                     {label: '<img src="legend/ALR_16.png" /> ALR', layer: layer_ALR_16},
-                   
+
 
                     {label: '<img src="legend/ENV_RST_12.png" /> ENV_REST', layer: layer_ENV_RST_12},
 										{label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
@@ -611,8 +831,9 @@ bounds_group.addLayer(layer_RD_EOA_11);
                     {label: '<img src="legend/CRK_COV_11.png" /> CRK_COV', layer: layer_CRK_COV_11},
 														 {label: '<img src="legend/BNDRY_4.png" /> 6025_BNDRY', layer: layer_BNDRY_4},
 
-           
+
 									                    {label: '<img src="legend/DWY_L4_PVMT_8.png" /> L4_DRVWY', layer: layer_DWY_L4_PVMT_8},
+                    {label: '<img src="legend/DWY_ASBUILT_2.png" /> DWY_ASBUILT', layer: layer_DWY_ASBUILT_2},
                 ]},
                 {label: '<b>Other Layers</b>', selectAllCheckbox: true, children: [
 
@@ -625,11 +846,12 @@ bounds_group.addLayer(layer_RD_EOA_11);
                     {label: '<img src="legend/DWY_L4_GRVL_7.png" /> L4_GRVL', layer: layer_DWY_L4_GRVL_7},
                     {label: '<img src="legend/RD_EOA_11.png" /> ROAD_PVMT', layer: layer_RD_EOA_11},
 			                    {label: '<img src="legend/SRW_MOTI_13.png" /> MOTI_SRW', layer: layer_SRW_MOTI_13},
+                    {label: '<img src="legend/DWAY_IFC_1.png" /> DWY_IFC', layer: layer_DWAY_IFC_1},
                     {label: '<img src="legend/FUT_RD_3.png" /> FUT_ROAD', layer: layer_FUT_RD_3},
                     {label: '<img src="legend/FUT_RD_3.png" /> FUT_LEGAL', layer: layer_FUT_LGL_EXT_4},
                              {label: '<img src="legend/CONT_6.png" /> CONTOUR', layer: layer_CONT_6},
               			                    {label: 'ESA<br /><table><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone10.png" /></td><td>Zone 1</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone21.png" /></td><td>Zone 2</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone32.png" /></td><td>Zone 3</td></tr><tr><td style="text-align: center;"><img src="legend/ESA_7_Zone43.png" /></td><td>Zone 4</td></tr></table>', layer: layer_ESA_7},
-         
+
                 ]},
 
                 {label: '<b>Base Layers</b>', selectAllCheckbox: true, children: [
