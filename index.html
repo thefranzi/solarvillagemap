@@ -14,12 +14,16 @@
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
-        html, body, #map {
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-        }
+html, body, #map {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#map {
+    background: #ffffff;
+}
         /* Custom styles for camera and action bar */
         #camera-wrap { display:none; z-index: 10000; position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
         #camera-wrap.show { display:block; }
@@ -245,6 +249,8 @@ new L.Control.View3D({ position: 'topleft' }).addTo(map);
             map.createPane('pane_WorldImagery_3'); map.getPane('pane_WorldImagery_3').style.zIndex = 403;
             var layer_WorldImagery_3 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { pane: 'pane_WorldImagery_3', opacity: 1.0, attribution: '', minZoom: 15, maxZoom: 21 });
             map.addLayer(layer_WorldImagery_3);
+			var layerBlank4 = L.layerGroup();
+			
             function pop_BNDRY_4(feature, layer) {}
             function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
             map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); map.addLayer(layer_BNDRY_4);
@@ -856,9 +862,11 @@ function pop_SIERRA2_2(feature, layer) {}
 
                 {label: '<b>Base Layers</b>', selectAllCheckbox: true, children: [
                     {label: "World Imagery", layer: layer_WorldImagery_3, radioGroup: 'bm' },
-                   {label: "Google Maps", layer: layer_GoogleMaps_0, radioGroup: 'bm' },
-                    {label: "Google Satellite", layer: layer_GoogleSatellite_2, radioGroup: 'bm' },
-                    {label: "OSM", layer: layer_OSM_1, radioGroup: 'bm' }
+                    {label: "OSM", layer: layer_OSM_1, radioGroup: 'bm' },
+                    {label: "Blank", layer: layerBlank4, radioGroup: 'bm' },
+					{label: "Google Satellite", layer: layer_GoogleSatellite_2, radioGroup: 'bm' },
+					{label: "Google Maps", layer: layer_GoogleMaps_0, radioGroup: 'bm' }
+                   
 
                 ]}
             ];
