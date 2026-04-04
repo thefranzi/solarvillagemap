@@ -5,7 +5,9 @@ async function listPins() {
 
     let items = [];
     try {
-        items = await gh('/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(pinsDir) + '?ref=' + branch);
+        items = await gh(
+            '/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(pinsDir) + '?ref=' + branch
+        );
     } catch (e) {
         console.error('listPins directory read failed:', e);
         return { type: 'FeatureCollection', features: [] };
@@ -114,7 +116,9 @@ export async function handler(event) {
 
         if (event.httpMethod === 'DELETE') {
             const key = (new URL(event.rawUrl)).searchParams.get('key');
-            if (!key) return { statusCode: 400, body: 'key required' };
+            if (!key) {
+                return { statusCode: 400, body: 'key required' };
+            }
 
             await deletePin(key);
 
