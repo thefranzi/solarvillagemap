@@ -632,6 +632,7 @@ function style_DWY_L4_PVMT_8_0() {
     }
 }
 map.createPane('pane_DWY_L4_PVMT_8');
+		
 map.getPane('pane_DWY_L4_PVMT_8').style.zIndex = 435;
 var layer_DWY_L4_PVMT_8 = new L.geoJson(json_DWY_L4_PVMT_8, {
     attribution: '',
@@ -643,7 +644,7 @@ var layer_DWY_L4_PVMT_8 = new L.geoJson(json_DWY_L4_PVMT_8, {
     style: style_DWY_L4_PVMT_8_0
 });
 bounds_group.addLayer(layer_DWY_L4_PVMT_8);
-map.addLayer(layer_DWY_L4_PVMT_8);
+// map.addLayer(layer_DWY_L4_PVMT_8);
 			
 function pop_LOTLINE_FLAGGING_9(feature, layer) {}
 function style_LOTLINE_FLAGGING_9_0() {
