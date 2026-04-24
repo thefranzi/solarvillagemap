@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3336113269637,
+      49.95549256507952
+    ]
+  },
+  "properties": {
+    "title": "Survey Pin (Possible Fence Endpoint if Required)"
+  }
+}
