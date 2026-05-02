@@ -125,7 +125,7 @@ html, body, #map {
         <script src="data/ALR_16.js"></script>
         <script src="data/AOI_17.js"></script>
         <script src="data/SEPTIC_18.js"></script>
-        <script src="data/DWY_PROP_0.js"></script>
+//        <script src="data/DWY_PROP_0.js"></script>
         <script src="data/WELL_PTS_8.js"></script>
         <script src="data/FENCE_20.js"></script>
         <script src="data/EX_FENCE_21.js"></script>
@@ -253,7 +253,7 @@ new L.Control.View3D({ position: 'topleft' }).addTo(map);
 			
             function pop_BNDRY_4(feature, layer) {}
             function style_BNDRY_4_0() { return { pane: 'pane_BNDRY_4', opacity: 1, color: 'rgba(0,0,50,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 4.0, fillOpacity: 0, interactive: false, } }
-            map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); map.addLayer(layer_BNDRY_4);
+            map.createPane('pane_BNDRY_4'); map.getPane('pane_BNDRY_4').style.zIndex = 404; var layer_BNDRY_4 = new L.geoJson(json_BNDRY_4,{attribution:'',interactive:false,dataVar:'json_BNDRY_4',layerName:'layer_BNDRY_4',pane:'pane_BNDRY_4',onEachFeature:pop_BNDRY_4,style:style_BNDRY_4_0}); bounds_group.addLayer(layer_BNDRY_4); //map.addLayer(layer_BNDRY_4);
             function pop_LOTS_5(feature, layer) {}
             function style_LOTS_5_0() {
     return {
@@ -340,7 +340,7 @@ function addClassToPopupIfMedia(content, popup) {
     }
 }
 
-
+<!--
             function pop_DWY_PROP_0(feature, layer) {
                 var popupContent = '<table>\
                         <tr>\
@@ -420,7 +420,7 @@ function addClassToPopupIfMedia(content, popup) {
             });
             bounds_group.addLayer(layer_DWY_PROP_0);
            // map.addLayer(layer_DWY_PROP_0);
-
+-->
             function pop_WELL_PTS_8(feature, layer) {
                 var popupContent = '<table>\
                         <tr>\
@@ -829,7 +829,8 @@ function pop_SIERRA2_2(feature, layer) {}
 										{label: 'AOI<br /><table><tr><td style="text-align: center;"><img src="legend/AOI_17_Cleared0.png" /></td><td>Cleared</td></tr><tr><td style="text-align: center;"><img src="legend/AOI_17_NotCleared1.png" /></td><td>Not Cleared</td></tr></table>', layer: layer_AOI_17},
 
                     {label: '<img src="legend/CRK_COV_11.png" /> CRK_COV', layer: layer_CRK_COV_11},
-														 {label: '<img src="legend/BNDRY_4.png" /> 6025_BNDRY', layer: layer_BNDRY_4},
+														                    {label: '<img src="legend/DWY_ASBUILT_2.png" /> DWY_ASBUILT', layer: layer_DWY_ASBUILT_2},
+													
 
 
 
@@ -839,9 +840,9 @@ function pop_SIERRA2_2(feature, layer) {}
 
 			           {label: '<img src="legend/BA_15.png" /> BLD_AREA', layer: layer_BA_15},
 					                    {label: '<img src="legend/DWAY_IFC_1.png" /> DWY_IFC', layer: layer_DWAY_IFC_1},
-					                    {label: '<img src="legend/DWY_ASBUILT_2.png" /> DWY_ASBUILT', layer: layer_DWY_ASBUILT_2},
-									  {label: 'DWY_PROPOSED<br /><table><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Complete0.png" /></td><td>Complete</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_PartiallyConstructed1.png" /></td><td>Partially Constructed</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Unconstructed2.png" /></td><td>Unconstructed</td></tr></table>', layer: layer_DWY_PROP_0},
 
+									//  {label: 'DWY_PROPOSED<br /><table><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Complete0.png" /></td><td>Complete</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_PartiallyConstructed1.png" /></td><td>Partially Constructed</td></tr><tr><td style="text-align: center;"><img src="legend/DWY_PROP_0_Unconstructed2.png" /></td><td>Unconstructed</td></tr></table>', layer: layer_DWY_PROP_0},
+	 {label: '<img src="legend/BNDRY_4.png" /> 6025_BNDRY', layer: layer_BNDRY_4},
 					   									 {label: '<img src="legend/BNDRY_4.png" /> SIERRA1_BNDRY', layer: layer_SIERRA1_3},
 														 									 {label: '<img src="legend/BNDRY_4.png" /> SIERRA2_BNDRY', layer: layer_SIERRA2_2},
 					                              {label: '<img src="legend/FUT_RD_3.png" /> LOTS_PHASE2', layer: layer_FUT_LGL_P2A_5},
