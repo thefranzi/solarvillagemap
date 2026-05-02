@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33574134902527,
+      49.95722913563217
+    ]
+  },
+  "properties": {
+    "title": "lot3 septic field view",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1777682099899.jpg",
+    "ts": 1777682099899
+  }
+}
