@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33491498003005,
+      49.95717578352445
+    ]
+  },
+  "properties": {
+    "title": "lot3 up driveway ",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1777682208722.jpg",
+    "ts": 1777682208722
+  }
+}
