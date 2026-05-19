@@ -168,8 +168,8 @@ map.on('locationerror', function (e) {
             var hash = new L.Hash(map);
             map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a>');
 
-          // ---  var pinsLayer = L.featureGroup().addTo(map);
-           // ---  var photosLayer = L.featureGroup().addTo(map);
+          var pinsLayer = L.featureGroup();
+        var photosLayer = L.featureGroup();
 
             var labels = [];
             var totalMarkers = 0;
