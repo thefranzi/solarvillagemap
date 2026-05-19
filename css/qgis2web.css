@@ -264,3 +264,10 @@ html, body, #map {
     order: -1; /* This makes it the first item in the top-left stack */
     margin-bottom: 10px; /* This adds a nice space below the logo */
 }
+
+/* --- LOT LABELS STYLING --- */
+.css_LOTS_5 {
+    font-weight: bold !important;
+    color: yellow !important;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
+}
