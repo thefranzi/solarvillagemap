@@ -268,7 +268,7 @@ html, body, #map {
 /* --- LOT LABELS STYLING --- */
 .css_LOTS_5 {
     font-weight: normal !important;
-    color: rgba(0, 100, 255, 0.4) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
     text-shadow: -1px -1px 0 rgba(0,0,0,0.8), 1px -1px 0 rgba(0,0,0,0.8), -1px 1px 0 rgba(0,0,0,0.8), 1px 1px 0 rgba(0,0,0,0.8) !important;
     font-size: 14px !important;
 }
