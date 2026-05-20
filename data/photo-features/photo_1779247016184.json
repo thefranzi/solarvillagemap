@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3368897587061,
+      49.957010039404864
+    ]
+  },
+  "properties": {
+    "title": "lot2 CE corner",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1779247016184.jpg",
+    "ts": 1779247016184
+  }
+}
