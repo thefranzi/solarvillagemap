@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33420734014364,
+      49.95864461198689
+    ]
+  },
+  "properties": {
+    "title": "double rainbow",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1782531946132.jpg",
+    "ts": 1782531946132
+  }
+}
