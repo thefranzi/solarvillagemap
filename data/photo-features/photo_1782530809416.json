@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33414787054065,
+      49.95872888190411
+    ]
+  },
+  "properties": {
+    "title": "rainy sunset in June",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1782530809416.jpg",
+    "ts": 1782530809416
+  }
+}
