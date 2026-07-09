@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33645725250246,
+      49.958212502221926
+    ]
+  },
+  "properties": {
+    "title": "Lot3-lot4-2",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1783617759856.jpg",
+    "ts": 1783617759856
+  }
+}
