@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33373749256135,
+      49.960318105924
+    ]
+  },
+  "properties": {
+    "title": "5-6-m",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1783622392974.jpg",
+    "ts": 1783622392974
+  }
+}
