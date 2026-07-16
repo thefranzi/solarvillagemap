@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33362483978273,
+      49.960300416173254
+    ]
+  },
+  "properties": {
+    "title": "Lot  5 Primary Dwelling Suggested Location"
+  }
+}
