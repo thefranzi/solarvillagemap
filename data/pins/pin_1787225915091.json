@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33632850646974,
+      49.95684746334669
+    ]
+  },
+  "properties": {
+    "title": "lot 2 building corner"
+  }
+}
