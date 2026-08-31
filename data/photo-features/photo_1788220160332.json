@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33496253006467,
+      49.95660550928459
+    ]
+  },
+  "properties": {
+    "title": "New fence",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1788220160332.jpg",
+    "ts": 1788220160332
+  }
+}
