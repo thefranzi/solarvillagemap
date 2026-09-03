@@ -473,7 +473,7 @@ function addClassToPopupIfMedia(content, popup) {
             map.addLayer(layer_WELL_PTS_8);
 
             function pop_FENCE_20(feature, layer) {}
-            function style_FENCE_20_0() { return { pane: 'pane_FENCE_20', opacity: 1, color: 'rgba(234,255,35,0.647)', dashArray: '3.0,6.0', lineCap: 'square', lineJoin: 'bevel', weight: 3.0, fillOpacity: 0, interactive: true } }
+            function style_FENCE_20_0() { return { pane: 'pane_FENCE_20', opacity: 1, color: 'rgba(255,106,0,1)', dashArray: '3.0,6.0', lineCap: 'square', lineJoin: 'bevel', weight: 3.0, fillOpacity: 0, interactive: true } }
             map.createPane('pane_FENCE_20'); map.getPane('pane_FENCE_20').style.zIndex = 420; var layer_FENCE_20 = new L.geoJson(json_FENCE_20,{attribution:'',interactive:true,dataVar:'json_FENCE_20',layerName:'layer_FENCE_20',pane:'pane_FENCE_20',onEachFeature:pop_FENCE_20,style:style_FENCE_20_0}); bounds_group.addLayer(layer_FENCE_20); map.addLayer(layer_FENCE_20);
             function pop_EX_FENCE_21(feature, layer) {}
             function style_EX_FENCE_21_0() { return { pane: 'pane_EX_FENCE_21', opacity: 1, color: 'rgba(185,202,28,0.728)', dashArray: '3.0,6.0', lineCap: 'square', lineJoin: 'bevel', weight: 3.0, fillOpacity: 0, interactive: true } }
@@ -821,7 +821,7 @@ function pop_SIERRA2_2(feature, layer) {}
 									 {label: '<img src="legend/LOTS_5.png" /> LOTS', layer: layer_LOTS_5},
 
                     {label: '<img src="legend/EX_FENCE_21.png" /> EXIST_FENCE', layer: layer_EX_FENCE_21},
-                    {label: '<img src="legend/FENCE_20.png" /> REQ_FENCE', layer: layer_FENCE_20},
+                    {label: '<span aria-hidden="true" style="display:inline-block;width:16px;border-top:4px dashed #ff6a00;vertical-align:middle;margin-right:4px;"></span> REQ_FENCE', layer: layer_FENCE_20},
 									                    {label: '<img src="legend/LOTLINE_FLAGGING_9.png" /> LOTLINE_FENCE', layer: layer_LOTLINE_FLAGGING_9},
 									         {label: '<img src="legend/EX_BLD_10.png" /> EXIST_BLD', layer: layer_EX_BLD_10},
                     {label: '<img src="legend/SBE_9.png" /> NEW_BLD', layer: layer_SBE_9},
@@ -897,6 +897,8 @@ function pop_SIERRA2_2(feature, layer) {}
                 resetLabels([layer_LOTS_5]);
             });
         </script>
+
+        <script src="js/view-presets.js"></script>
         
         <script>
             function openPhotoModal(src) { 
