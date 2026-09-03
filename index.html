@@ -113,6 +113,8 @@ html, body, #map {
         <script src="js/leaflet-measure.js"></script>
         <script src="data/BNDRY_4.js"></script>
         <script src="data/LOTS_5.js"></script>
+        <script src="data/CE_COV_PIN.js"></script>
+        <script src="js/survey-pins.js"></script>
         <script src="data/CONT_6.js"></script>
         <script src="data/ESA_7.js"></script>
         <script src="data/SBE_9.js"></script>
@@ -804,6 +806,12 @@ function pop_SIERRA2_2(feature, layer) {}
             map.createPane('pane_SIERRA2_2'); map.getPane('pane_SIERRA2_2').style.zIndex = 450; var layer_SIERRA2_2 = new L.geoJson(json_SIERRA2_2,{attribution:'',interactive:false,dataVar:'json_SIERRA2_2',layerName:'layer_SIERRA2_2',pane:'pane_SIERRA2_2',onEachFeature:pop_SIERRA2_2,style:style_SIERRA2_2_0}); bounds_group.addLayer(layer_SIERRA2_2); 
 			// map.addLayer(layer_SIERRA2_2);
 			
+            var layer_CE_COV_PIN = createSurveyPinLayer(map, json_CE_COV_PIN, 'CE_COV_PIN', {
+                radius: 3.2,
+                fillColor: '#ffffff',
+                fillOpacity: 0.8
+            });
+
                        var overlaysTree = [
                 {label: '<b>Added Content</b>', selectAllCheckbox: true, children: [
                     {label: '<i class="fas fa-map-pin" style="color:#ff8c00; margin-right: 5px;"></i> Pins', layer: pinsLayer},
@@ -836,6 +844,7 @@ function pop_SIERRA2_2(feature, layer) {}
                 ]},
 						   
                 {label: '<b>Other Layers</b>', selectAllCheckbox: true, children: [
+                    {label: '<img src="legend/CE_COV_PIN.svg" alt="" /> CE_COV_PIN', layer: layer_CE_COV_PIN},
 
 			           {label: '<img src="legend/BA_15.png" /> BLD_AREA', layer: layer_BA_15},
 					                    {label: '<img src="legend/DWAY_IFC_1.png" /> DWY_IFC', layer: layer_DWAY_IFC_1},
