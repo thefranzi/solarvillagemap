@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.33441870473668,
+      49.95887985736161
+    ]
+  },
+  "properties": {
+    "title": "rainy sep view",
+    "description": "",
+    "imageUrl": "/.netlify/functions/photo/photo_1789516019625.jpg",
+    "ts": 1789516019625
+  }
+}
