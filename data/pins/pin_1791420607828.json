@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -119.3355915695429,
+      49.96137065755878
+    ]
+  },
+  "properties": {
+    "title": "5-6ip"
+  }
+}
